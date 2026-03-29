@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    package="com.gnoemes.shikimori">
+    xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
 
     <application
         android:name=".App"
@@ -22,6 +23,7 @@
 
         <activity
             android:name=".presentation.view.splash.SplashActivity"
+            android:exported="true"
             android:theme="@style/ShikimoriAppTheme.Launch">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -32,6 +34,7 @@
 
         <activity
             android:name=".presentation.view.main.MainActivity"
+            android:exported="true"
             android:windowSoftInputMode="adjustPan">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -69,11 +72,8 @@
 
         <activity android:name=".presentation.view.screenshots.ScreenshotsActivity" />
 
-        <meta-data
-            android:name="io.fabric.ApiKey"
-            android:value="49adb365d3d365dabad78f3110d69bd84e717eea" />
-
-        <receiver android:name="com.gnoemes.shikimori.utils.widgets.MockMediaButtonReceiver">
+        <receiver android:name="com.gnoemes.shikimori.utils.widgets.MockMediaButtonReceiver"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
             </intent-filter>
