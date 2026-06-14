@@ -22,6 +22,14 @@ captures/
 *.iml
 .idea/
 
+# Eclipse
+*.classpath
+*.project
+.settings/
+
+# Build output dumps
+build_output*.txt
+
 # Keystore files
 # Uncomment the following line if you do not want to check your keystore files in.
 #*.jks
