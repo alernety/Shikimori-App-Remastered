@@ -2,7 +2,7 @@ package com.gnoemes.shikimori.presentation.view.base.activity;
 
 import android.os.Bundle;
 
-import com.arellomobile.mvp.MvpDelegate;
+import moxy.MvpDelegate;
 
 import androidx.appcompat.app.AppCompatActivity;
 

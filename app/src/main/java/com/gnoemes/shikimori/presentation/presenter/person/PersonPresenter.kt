@@ -1,6 +1,6 @@
 package com.gnoemes.shikimori.presentation.presenter.person
 
-import com.arellomobile.mvp.InjectViewState
+import moxy.InjectViewState
 import com.gnoemes.shikimori.domain.roles.PersonInteractor
 import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.common.presentation.DetailsContentItem

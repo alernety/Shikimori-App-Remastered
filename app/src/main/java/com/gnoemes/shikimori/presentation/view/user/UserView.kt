@@ -1,7 +1,7 @@
 package com.gnoemes.shikimori.presentation.view.user
 
-import com.arellomobile.mvp.viewstate.strategy.AddToEndSingleStrategy
-import com.arellomobile.mvp.viewstate.strategy.StateStrategyType
+import moxy.viewstate.strategy.AddToEndSingleStrategy
+import moxy.viewstate.strategy.StateStrategyType
 import com.gnoemes.shikimori.entity.user.presentation.UserContentViewModel
 import com.gnoemes.shikimori.entity.user.presentation.UserHeadViewModel
 import com.gnoemes.shikimori.entity.user.presentation.UserInfoViewModel

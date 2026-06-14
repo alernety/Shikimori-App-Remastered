@@ -1,6 +1,6 @@
 package com.gnoemes.shikimori.presentation.presenter.calendar
 
-import com.arellomobile.mvp.InjectViewState
+import moxy.InjectViewState
 import com.gnoemes.shikimori.domain.calendar.CalendarInteractor
 import com.gnoemes.shikimori.entity.calendar.domain.CalendarItem
 import com.gnoemes.shikimori.entity.calendar.presentation.CalendarViewModel

@@ -1,6 +1,6 @@
 package com.gnoemes.shikimori.presentation.presenter.auth
 
-import com.arellomobile.mvp.InjectViewState
+import moxy.InjectViewState
 import com.gnoemes.shikimori.domain.auth.AuthInteractor
 import com.gnoemes.shikimori.entity.auth.AuthType
 import com.gnoemes.shikimori.presentation.presenter.base.BaseNetworkPresenter

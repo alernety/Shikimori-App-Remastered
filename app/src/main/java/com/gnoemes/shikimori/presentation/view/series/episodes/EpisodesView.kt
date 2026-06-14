@@ -1,7 +1,7 @@
 package com.gnoemes.shikimori.presentation.view.series.episodes
 
-import com.arellomobile.mvp.viewstate.strategy.SkipStrategy
-import com.arellomobile.mvp.viewstate.strategy.StateStrategyType
+import moxy.viewstate.strategy.SkipStrategy
+import moxy.viewstate.strategy.StateStrategyType
 import com.gnoemes.shikimori.entity.series.presentation.EpisodeViewModel
 import com.gnoemes.shikimori.presentation.view.base.fragment.BaseFragmentView
 
