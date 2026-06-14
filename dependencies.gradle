@@ -1,14 +1,13 @@
 ext.versions = [
         minSdk            : 21,
-        compileSdk        : 34,
-        targetSdk         : 34,
-        buildTools        : '34.0.0',
+        compileSdk        : 35,
+        targetSdk         : 35,
 
-        gradlePlugin      : '8.7.2',
+        gradlePlugin      : '9.1.1',
         jetifier          : '1.0.0-beta10',
-        gms               : '4.4.2',
+        gms               : '4.4.4',
 
-        kotlin            : '1.9.24',
+        kotlin            : '2.3.21',
         constraint        : '2.1.4',
         androidx          : '1.7.0',
         androidxFragment  : '1.8.4',
@@ -16,9 +15,9 @@ ext.versions = [
         material          : '1.12.0',
         ktx               : '1.13.1',
 
-        room              : '2.6.1',
+        room              : '2.7.1',
 
-        dagger            : '2.51.1',
+        dagger            : '2.59.2',
         rxJava            : '2.2.21',
         rxAndroid         : '2.1.1',
 
@@ -27,10 +26,10 @@ ext.versions = [
         gson              : '2.11.0',
         urlConnection     : '4.12.0',
 
-        cicerone          : '3.0.0',
-        storIO            : '3.0.0',
+        cicerone          : '5.1.1',
+        // storIO removed - migrated to Room
         jodaDateTime      : '2.12.7',
-        moxy              : '1.5.5',
+        moxy              : '2.2.2',
         materialDialogs   : '3.3.0',
         glide             : '4.16.0',
         spinKit           : '1.4.0',
@@ -49,14 +48,10 @@ ext.versions = [
 
         fabric            : '1.31.2',
         crashlytics       : '19.2.1',
-        advancedVersioning: '1.6.0',
+        advancedVersioning: '4.0.0',
 
-        ratingBar         : '1.4.2',
+        ratingBar         : '1.5.1',
         jsoup             : '1.17.2',
-
-        firebaseMessaging : '24.0.3',
-        firebaseFirestore : '25.1.1',
-        firebaseStorage   : '21.0.1',
 
         multidex          : '2.0.1',
         slidr             : '2.1.0',
