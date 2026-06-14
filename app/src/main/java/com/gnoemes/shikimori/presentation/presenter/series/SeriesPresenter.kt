@@ -1,6 +1,6 @@
 package com.gnoemes.shikimori.presentation.presenter.series
 
-import com.arellomobile.mvp.InjectViewState
+import moxy.InjectViewState
 import com.gnoemes.shikimori.data.local.preference.SettingsSource
 import com.gnoemes.shikimori.domain.download.DownloadInteractor
 import com.gnoemes.shikimori.domain.series.SeriesInteractor
@@ -386,7 +386,7 @@ class SeriesPresenter @Inject constructor(
     }
 
     private fun onDiscussionNotExist(throwable: Throwable?) {
-        router.showSystemMessage(commonResourceProvider.topicNotFound)
+        viewState.showSystemMessage(commonResourceProvider.topicNotFound)
         viewState.showFab(false)
     }
 

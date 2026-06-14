@@ -1,6 +1,6 @@
 package com.gnoemes.shikimori.presentation.presenter.manga
 
-import com.arellomobile.mvp.InjectViewState
+import moxy.InjectViewState
 import com.gnoemes.shikimori.data.local.preference.SettingsSource
 import com.gnoemes.shikimori.domain.manga.MangaInteractor
 import com.gnoemes.shikimori.domain.ranobe.RanobeInteractor
@@ -105,7 +105,7 @@ class MangaPresenter @Inject constructor(
 
     override fun onOpenDiscussion() {
         currentManga.topicId?.let { onTopicClicked(it) }
-                ?: router.showSystemMessage(resourceProvider.topicNotFound)
+                ?: viewState.showSystemMessage(resourceProvider.topicNotFound)
     }
 
     override fun onSimilarClicked() {

@@ -1,6 +1,6 @@
 package com.gnoemes.shikimori.presentation.presenter.character
 
-import com.arellomobile.mvp.InjectViewState
+import moxy.InjectViewState
 import com.gnoemes.shikimori.domain.roles.CharacterInteractor
 import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.common.presentation.DetailsContentItem
@@ -54,7 +54,7 @@ class CharacterPresenter @Inject constructor(
     fun onOpenSource() {
         when {
             !::currentCharacter.isInitialized -> Unit
-            currentCharacter.descriptionSource.isNullOrBlank() -> router.showSystemMessage(resourceProvider.emptyMessage)
+            currentCharacter.descriptionSource.isNullOrBlank() -> viewState.showSystemMessage(resourceProvider.emptyMessage)
             else -> onOpenWeb(currentCharacter.descriptionSource)
         }
     }

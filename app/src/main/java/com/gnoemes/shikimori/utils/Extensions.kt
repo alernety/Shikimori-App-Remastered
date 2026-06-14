@@ -31,7 +31,7 @@ fun String.appendHostIfNeed(host: String = BuildConfig.ShikimoriBaseUrl): String
 }
 
 fun String.firstUpperCase(): String? {
-    return if (TextUtils.isEmpty(this)) null else this.substring(0, 1).toUpperCase() + this.substring(1)
+    return if (TextUtils.isEmpty(this)) null else this.substring(0, 1).uppercase() + this.substring(1)
 }
 
 fun String?.nullIfEmpty(): String? {

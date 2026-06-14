@@ -1,6 +1,6 @@
 package com.gnoemes.shikimori.presentation.presenter.user
 
-import com.arellomobile.mvp.InjectViewState
+import moxy.InjectViewState
 import com.gnoemes.shikimori.domain.user.UserInteractor
 import com.gnoemes.shikimori.entity.app.domain.AnalyticEvent
 import com.gnoemes.shikimori.entity.app.domain.Constants
@@ -138,7 +138,7 @@ class UserPresenter @Inject constructor(
 
     private fun onFriendshipStatusChanged(newStatus: Boolean) {
         if (checkUserStatus()) {
-            router.showSystemMessage(resourceProvider.needAuth)
+            viewState.showSystemMessage(resourceProvider.needAuth)
             return
         }
 
@@ -208,7 +208,7 @@ class UserPresenter @Inject constructor(
 
     private fun checkUserStatus(): Boolean {
         return if (isGuest()) {
-            router.showSystemMessage(resourceProvider.needAuth)
+            viewState.showSystemMessage(resourceProvider.needAuth)
             true
         } else false
     }

@@ -1,6 +1,6 @@
 package com.gnoemes.shikimori.presentation.presenter.chronology
 
-import com.arellomobile.mvp.InjectViewState
+import moxy.InjectViewState
 import com.gnoemes.shikimori.BuildConfig
 import com.gnoemes.shikimori.data.local.preference.SettingsSource
 import com.gnoemes.shikimori.domain.chronology.ChronologyInteractor
@@ -110,7 +110,7 @@ class ChronologyPresenter @Inject constructor(
                     .subscribe(this::onRefresh, this::processErrors)
                     .addToDisposables()
         } else {
-            router.showSystemMessage(resourceProvider.needAuth)
+            viewState.showSystemMessage(resourceProvider.needAuth)
         }
     }
 

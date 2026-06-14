@@ -6,8 +6,8 @@ import androidx.core.view.ViewCompat
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.arellomobile.mvp.presenter.InjectPresenter
-import com.arellomobile.mvp.presenter.ProvidePresenter
+import moxy.presenter.InjectPresenter
+import moxy.presenter.ProvidePresenter
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.entity.anime.domain.Anime
 import com.gnoemes.shikimori.entity.anime.domain.AnimeType
@@ -157,7 +157,7 @@ class TopicFragment : BasePaginationFragment<CommentViewModel, TopicPresenter, T
                     }
 
                     fun convertType(type: AnimeType, episodes: Int): String {
-                        return String.format(context.getString(R.string.type_pattern_without_duration), type.type.toUpperCase(),
+                        return String.format(context.getString(R.string.type_pattern_without_duration), type.type.uppercase(),
                                 episodes.unknownIfZero())
                     }
 

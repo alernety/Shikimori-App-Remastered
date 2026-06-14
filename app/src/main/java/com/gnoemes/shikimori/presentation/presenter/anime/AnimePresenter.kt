@@ -1,6 +1,6 @@
 package com.gnoemes.shikimori.presentation.presenter.anime
 
-import com.arellomobile.mvp.InjectViewState
+import moxy.InjectViewState
 import com.gnoemes.shikimori.data.local.preference.SettingsSource
 import com.gnoemes.shikimori.domain.anime.AnimeInteractor
 import com.gnoemes.shikimori.domain.rates.RatesInteractor
@@ -111,7 +111,7 @@ open class AnimePresenter @Inject constructor(
 
     override fun onOpenDiscussion() {
         currentAnime.topicId?.let { onTopicClicked(it) }
-                ?: router.showSystemMessage(resourceProvider.topicNotFound)
+                ?: viewState.showSystemMessage(resourceProvider.topicNotFound)
         logEvent(AnalyticEvent.ANIME_DETAILS_DISCUSSION)
     }
 

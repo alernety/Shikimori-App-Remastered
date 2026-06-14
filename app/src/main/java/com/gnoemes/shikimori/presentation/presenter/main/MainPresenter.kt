@@ -1,7 +1,7 @@
 package com.gnoemes.shikimori.presentation.presenter.main
 
-import com.arellomobile.mvp.InjectViewState
-import com.crashlytics.android.Crashlytics
+import moxy.InjectViewState
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.gnoemes.shikimori.domain.series.SeriesSyncInteractor
 import com.gnoemes.shikimori.entity.main.BottomScreens
 import com.gnoemes.shikimori.presentation.presenter.base.BaseNavigationPresenter
@@ -29,7 +29,7 @@ class MainPresenter @Inject constructor(
     private fun startEpisodesSync() {
         val d =
                 interactor.startSync()
-                        .subscribe({}, { Crashlytics.logException(it) })
+                        .subscribe({}, { FirebaseCrashlytics.getInstance().recordException(it) })
         disposable.add(d)
     }
 

@@ -94,7 +94,7 @@ class TopicLinkedAdapterDelegate(
         }
 
         private fun convertType(type: AnimeType, episodes: Int): String {
-            return String.format(itemView.context.getString(R.string.type_pattern_without_duration), type.type.toUpperCase(),
+            return String.format(itemView.context.getString(R.string.type_pattern_without_duration), type.type.uppercase(),
                     episodes.unknownIfZero())
         }
 

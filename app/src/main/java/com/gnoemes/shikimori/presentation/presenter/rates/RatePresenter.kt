@@ -1,6 +1,6 @@
 package com.gnoemes.shikimori.presentation.presenter.rates
 
-import com.arellomobile.mvp.InjectViewState
+import moxy.InjectViewState
 import com.gnoemes.shikimori.data.local.preference.RateSortSource
 import com.gnoemes.shikimori.data.local.preference.SettingsSource
 import com.gnoemes.shikimori.domain.app.CancelableTaskInteractor
@@ -230,6 +230,7 @@ class RatePresenter @Inject constructor(
         when (it) {
             is DetailsAction.ChangeRateStatus -> onChangeRateStatus(it.id, it.newStatus)
             is DetailsAction.WatchOnline -> onWatchOnline(it.id!!)
+            else -> Unit
         }
     }
 
@@ -300,7 +301,7 @@ class RatePresenter @Inject constructor(
         if (item != null) {
             if (item.anime != null) onAnimeClicked(item.anime.id)
             else if (item.manga != null) onMangaClicked(item.manga.id)
-        } else router.showSystemMessage(resourceProvider.emptyMessage)
+        } else viewState.showSystemMessage(resourceProvider.emptyMessage)
     }
 
     private fun onEditRate(rate: RateViewModel) {
@@ -560,6 +561,3 @@ class RatePresenter @Inject constructor(
         logEvent(AnalyticEvent.NAVIGATION_AUTHORIZATION)
     }
 }
-
-
-

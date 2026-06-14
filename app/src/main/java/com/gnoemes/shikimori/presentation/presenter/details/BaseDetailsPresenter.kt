@@ -91,7 +91,7 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView>(
                     .map { links -> links.map { it.copy(name = it.name!!.replace("_", " ").firstUpperCase()!!) } }
                     .subscribe({
                         if (it.isNotEmpty()) viewState.showLinks(it)
-                        else router.showSystemMessage(resourceProvider.emptyMessage)
+                        else viewState.showSystemMessage(resourceProvider.emptyMessage)
                     }, this::processErrors)
                     .addToDisposables()
 
@@ -110,7 +110,7 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView>(
             ratesInteractor.createRate(id, type, rate ?: UserRate(status = newStatus), userId)
                     .updateContentData()
         } else {
-            router.showSystemMessage(resourceProvider.needAuth)
+            viewState.showSystemMessage(resourceProvider.needAuth)
         }
     }
 
@@ -155,6 +155,7 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView>(
             is DetailsAction.Similar -> onSimilarClicked()
             is DetailsAction.Statistic -> onStatisticClicked()
             is DetailsAction.Share -> onShareClicked()
+            is DetailsAction.AddVideo -> onAddVideo()
         }
     }
 
@@ -226,6 +227,9 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView>(
     }
 
     protected open fun onStatusDialog() {
+    }
+
+    protected open fun onAddVideo() {
     }
 
     protected open fun processUserErrors(throwable: Throwable) {
