@@ -9,12 +9,17 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.content.FileProvider
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.files.fileChooser
-import com.crashlytics.android.Crashlytics
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.DialogBackupBinding
+import com.gnoemes.shikimori.databinding.DialogBaseBottomSheetBinding
+import com.gnoemes.shikimori.databinding.LayoutBackupSaveBinding
+import com.gnoemes.shikimori.databinding.LayoutBackupDownloadBinding
 import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.app.domain.SettingsExtras
 import com.gnoemes.shikimori.entity.app.domain.ThemeExtras
@@ -27,9 +32,6 @@ import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import com.kotlinpermissions.KotlinPermissions
-import kotlinx.android.synthetic.main.dialog_backup.*
-import kotlinx.android.synthetic.main.dialog_base_bottom_sheet.*
-import kotlinx.android.synthetic.main.layout_backup_save.view.*
 import org.joda.time.DateTime
 import org.joda.time.Days
 import java.io.BufferedWriter
@@ -38,6 +40,12 @@ import java.io.FileWriter
 import java.io.IOException
 
 class BackupDialog : BaseBottomSheetDialogFragment() {
+
+    private var _binding: DialogBackupBinding? = null
+    private val binding get() = _binding!!
+
+    private var _baseBinding: DialogBaseBottomSheetBinding? = null
+    private val baseBinding get() = _baseBinding!!
 
     private val firebase by lazy { FirebaseStorage.getInstance() }
 
@@ -50,26 +58,37 @@ class BackupDialog : BaseBottomSheetDialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        _baseBinding = DialogBaseBottomSheetBinding.bind(view)
+        _binding = DialogBackupBinding.bind((view.findViewById<ViewGroup>(R.id.fragment_content)).getChildAt(0))
 
-        with(toolbar) {
+        val saveBinding = LayoutBackupSaveBinding.bind(binding.saveLayout)
+        val downloadBinding = LayoutBackupDownloadBinding.bind(binding.downloadLayout)
+
+        with(baseBinding.toolbar) {
             setTitle(R.string.settings_backup_title)
             inflateMenu(R.menu.menu_close)
             onMenuClick { dismiss(); true }
         }
 
-        saveLayout.cloudBtn.onClick {
+        saveBinding.cloudBtn.onClick {
             val userId = getUserId(it.context)
             if (userId == Constants.NO_ID) Toast.makeText(it.context, R.string.common_need_auth, Toast.LENGTH_LONG).show()
             else uploadToCloud(userId, createBackupPrivate())
         }
-        saveLayout.deviceBtn.onClick { writeFileToPublic(createBackupPrivate()) }
-        saveLayout.shareBtn.onClick { shareBackup() }
-        downloadLayout.deviceBtn.onClick { findBackupLocal() }
-        downloadLayout.cloudBtn.onClick {
+        saveBinding.deviceBtn.onClick { writeFileToPublic(createBackupPrivate()) }
+        saveBinding.shareBtn.onClick { shareBackup() }
+        downloadBinding.deviceBtn.onClick { findBackupLocal() }
+        downloadBinding.cloudBtn.onClick {
             val userId = getUserId(it.context)
             if (userId == Constants.NO_ID) Toast.makeText(it.context, R.string.common_need_auth, Toast.LENGTH_LONG).show()
             else downloadFromCloud(userId)
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+        _baseBinding = null
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -116,7 +135,7 @@ class BackupDialog : BaseBottomSheetDialogFragment() {
                 Toast.makeText(context, R.string.backup_saved, Toast.LENGTH_LONG).show()
             } catch (e: IOException) {
                 e.printStackTrace()
-                Crashlytics.logException(e)
+                FirebaseCrashlytics.getInstance().recordException(e)
                 Toast.makeText(context, R.string.backup_write_error, Toast.LENGTH_LONG).show()
             }
         }
@@ -189,7 +208,7 @@ class BackupDialog : BaseBottomSheetDialogFragment() {
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
-                Crashlytics.logException(e)
+                FirebaseCrashlytics.getInstance().recordException(e)
                 Toast.makeText(context, R.string.backup_read_error, Toast.LENGTH_LONG).show()
             }
         }
@@ -226,7 +245,7 @@ class BackupDialog : BaseBottomSheetDialogFragment() {
             Toast.makeText(context, text, Toast.LENGTH_LONG).show()
         } catch (e: Exception) {
             e.printStackTrace()
-            Crashlytics.logException(e)
+            FirebaseCrashlytics.getInstance().recordException(e)
             Toast.makeText(context, R.string.backup_read_error, Toast.LENGTH_LONG).show()
         }
     }
@@ -236,7 +255,7 @@ class BackupDialog : BaseBottomSheetDialogFragment() {
             context?.shareFile(createBackupPrivate().absolutePath)
         } catch (e: IllegalArgumentException) {
             e.printStackTrace()
-            Crashlytics.logException(e)
+            FirebaseCrashlytics.getInstance().recordException(e)
             Toast.makeText(context, R.string.backup_write_error, Toast.LENGTH_LONG).show()
         }
     }
@@ -307,7 +326,8 @@ class BackupDialog : BaseBottomSheetDialogFragment() {
         val days = Math.abs(Days.daysBetween(DateTime.now(), date).days)
         val text = if (days == 0) context!!.getString(R.string.common_today) else
             context!!.resources.getQuantityString(R.plurals.days_ago, days, days)
-        downloadLayout.cloudLabel.text = text
+        val downloadBinding = LayoutBackupDownloadBinding.bind(binding.downloadLayout)
+        downloadBinding.cloudLabel.text = text
     }
 
     private fun getUserId(context: Context): Long {

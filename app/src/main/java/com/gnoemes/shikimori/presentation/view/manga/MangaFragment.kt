@@ -2,9 +2,10 @@ package com.gnoemes.shikimori.presentation.view.manga
 
 import android.os.Bundle
 import android.view.View
-import com.arellomobile.mvp.presenter.InjectPresenter
-import com.arellomobile.mvp.presenter.ProvidePresenter
+import moxy.presenter.InjectPresenter
+import moxy.presenter.ProvidePresenter
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.FragmentDetailsBinding
 import com.gnoemes.shikimori.entity.app.domain.AppExtras
 import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.common.presentation.DetailsAction
@@ -21,10 +22,11 @@ import com.gnoemes.shikimori.presentation.view.details.BaseDetailsFragment
 import com.gnoemes.shikimori.utils.gone
 import com.gnoemes.shikimori.utils.onMenuClick
 import com.gnoemes.shikimori.utils.withArgs
-import kotlinx.android.synthetic.main.fragment_details.*
-import kotlinx.android.synthetic.main.layout_collapsing_toolbar.*
 
 class MangaFragment : BaseDetailsFragment<MangaPresenter, MangaView>(), MangaView {
+
+    private var _binding: FragmentDetailsBinding? = null
+    private val binding get() = _binding!!
 
     @InjectPresenter
     lateinit var mangaPresenter: MangaPresenter
@@ -47,11 +49,12 @@ class MangaFragment : BaseDetailsFragment<MangaPresenter, MangaView>(), MangaVie
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        _binding = FragmentDetailsBinding.bind(view)
 
-        videoLayout.gone()
-        screenshotsLayout.gone()
+        binding.videoLayout.gone()
+        binding.screenshotsLayout.gone()
 
-        with(toolbar) {
+        with(binding.toolbar) {
             inflateMenu(R.menu.menu_manga)
             onMenuClick {
                 when (it?.itemId) {
@@ -64,11 +67,16 @@ class MangaFragment : BaseDetailsFragment<MangaPresenter, MangaView>(), MangaVie
         }
 
         contentHolders.apply {
-            put(DetailsContentType.CHARACTERS, DetailsContentViewHolder(charactersLayout, charactersAdapter, true))
-            put(DetailsContentType.RELATED, DetailsContentViewHolder(relatedLayout, relatedAdapter))
+            put(DetailsContentType.CHARACTERS, DetailsContentViewHolder(binding.charactersLayout, charactersAdapter, true))
+            put(DetailsContentType.RELATED, DetailsContentViewHolder(binding.relatedLayout, relatedAdapter))
         }
 
-        actionBtn.gone()
+        binding.actionBtn.gone()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     override fun dialogItemIdCallback(tag: String?, id: Long) {

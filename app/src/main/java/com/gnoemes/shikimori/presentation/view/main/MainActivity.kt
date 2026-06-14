@@ -8,11 +8,13 @@ import android.util.Log
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
-import com.arellomobile.mvp.presenter.InjectPresenter
-import com.arellomobile.mvp.presenter.ProvidePresenter
-import com.crashlytics.android.Crashlytics
+import moxy.presenter.InjectPresenter
+import moxy.presenter.ProvidePresenter
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.gnoemes.shikimori.BuildConfig
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.ActivityMainBinding
+import com.gnoemes.shikimori.databinding.LayoutBottomBarBinding
 import com.gnoemes.shikimori.entity.app.domain.AnalyticEvent
 import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.app.domain.SettingsExtras
@@ -26,7 +28,6 @@ import com.gnoemes.shikimori.presentation.view.bottom.BottomTabContainer
 import com.gnoemes.shikimori.utils.*
 import com.gnoemes.shikimori.utils.navigation.SupportAppNavigator
 import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.android.synthetic.main.layout_bottom_bar.*
 import ru.terrakok.cicerone.Navigator
 import ru.terrakok.cicerone.NavigatorHolder
 import ru.terrakok.cicerone.Router
@@ -45,6 +46,9 @@ class MainActivity : BaseActivity<MainPresenter, MainView>(), MainView, RouterPr
     @Inject
     lateinit var localNavigatorHolder: NavigatorHolder
 
+    private lateinit var binding: ActivityMainBinding
+    private lateinit var bottomBinding: LayoutBottomBarBinding
+
     private val tabs = arrayOf(
             Tab(R.id.tab_rates, BottomScreens.RATES),
             Tab(R.id.tab_calendar, BottomScreens.CALENDAR),
@@ -55,24 +59,34 @@ class MainActivity : BaseActivity<MainPresenter, MainView>(), MainView, RouterPr
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        
+        // Accessing the included bottom bar. 
+        // Based on activity_main.xml, the include tag doesn't have an ID, 
+        // so we bind it to its root view within the coordinator layout.
+        // Or we can find it by type if it's unique.
+        val bottomNavView = binding.root.findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(R.id.bottomNav)
+        bottomBinding = LayoutBottomBarBinding.bind(bottomNavView)
+
         initBottomNav()
         initContainer()
         if (savedInstanceState == null) syncValues()
     }
 
     private fun initBottomNav() {
-        bottomNav.setOnNavigationItemSelectedListener { item ->
+        bottomBinding.bottomNav.setOnNavigationItemSelectedListener { item ->
             val tab = tabs.find { it.id == item.itemId }!!
             analyzeNavigation(tab.screenKey)
             presenter.onTabItemSelected(tab.screenKey)
             true
         }
-        bottomNav.setOnNavigationItemReselectedListener { item ->
+        bottomBinding.bottomNav.setOnNavigationItemReselectedListener { item ->
             val tab = tabs.find { it.id == item.itemId }!!
             presenter.onTabItemReselected(tab.screenKey)
         }
 
-        navbarDivider.visibleIf { getCurrentTheme != R.style.ShikimoriAppTheme_Amoled }
+        bottomBinding.navbarDivider.visibleIf { getCurrentTheme != R.style.ShikimoriAppTheme_Amoled }
     }
 
     private fun initContainer() {
@@ -103,9 +117,10 @@ class MainActivity : BaseActivity<MainPresenter, MainView>(), MainView, RouterPr
                     val shimoriUrl = it.documents.firstOrNull()?.data?.get("shimori_url") as? String ?: Constants.SHIMORI_URL
 
                     getDefaultSharedPreferences().putBoolean(SettingsExtras.NEW_VERSION_AVAILABLE, hasUpdate)
+                    getDefaultSharedPreferences().putBoolean(SettingsExtras.NEW_VERSION_AVAILABLE, hasUpdate)
                     getDefaultSharedPreferences().putString(SettingsExtras.DONATION_LINK, donationLink)
                     getDefaultSharedPreferences().putString(SettingsExtras.SHIMORI_URL, shimoriUrl)
-                }.addOnFailureListener { Crashlytics.logException(it) }
+                }.addOnFailureListener { FirebaseCrashlytics.getInstance().recordException(it) }
     }
 
     private fun invokeTabRootActionOrClearBackStack(screenKey: String) {
@@ -141,7 +156,7 @@ class MainActivity : BaseActivity<MainPresenter, MainView>(), MainView, RouterPr
         val tab = tabs.find { it.screenKey == screen }
         if (tab != null) {
             clearBackStack(tab.screenKey)
-            bottomNav.selectedItemId = tab.id
+            bottomBinding.bottomNav.selectedItemId = tab.id
         }
     }
 
@@ -191,7 +206,7 @@ class MainActivity : BaseActivity<MainPresenter, MainView>(), MainView, RouterPr
 
         override fun exit() {
             if (!canExit) {
-                presenter.router.showSystemMessage(getString(R.string.main_exit_message))
+                presenter.viewState.showSystemMessage(getString(R.string.main_exit_message))
                 canExit = true
                 Handler().postDelayed({ canExit = false }, Constants.EXIT_TIMEOUT)
             } else {

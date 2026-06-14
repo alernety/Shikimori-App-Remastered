@@ -10,9 +10,10 @@ import android.widget.LinearLayout
 import androidx.appcompat.widget.SearchView
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.arellomobile.mvp.presenter.InjectPresenter
-import com.arellomobile.mvp.presenter.ProvidePresenter
+import moxy.presenter.InjectPresenter
+import moxy.presenter.ProvidePresenter
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.FragmentCalendarBinding
 import com.gnoemes.shikimori.entity.calendar.presentation.CalendarViewModel
 import com.gnoemes.shikimori.entity.series.presentation.SeriesPlaceholderItem
 import com.gnoemes.shikimori.presentation.presenter.calendar.CalendarPresenter
@@ -23,12 +24,12 @@ import com.gnoemes.shikimori.utils.*
 import com.gnoemes.shikimori.utils.images.ImageLoader
 import com.gnoemes.shikimori.utils.widgets.OverlapHeaderScrollingBehavior
 import com.gnoemes.shikimori.utils.widgets.VerticalSpaceItemDecorator
-import kotlinx.android.synthetic.main.fragment_calendar.*
-import kotlinx.android.synthetic.main.layout_default_list.*
-import kotlinx.android.synthetic.main.layout_default_placeholders.*
 import javax.inject.Inject
 
 class CalendarFragment : BaseFragment<CalendarPresenter, CalendarView>(), CalendarView {
+
+    private var _binding: FragmentCalendarBinding? = null
+    private val binding get() = _binding!!
 
     @Inject
     lateinit var imageLoader: ImageLoader
@@ -47,14 +48,17 @@ class CalendarFragment : BaseFragment<CalendarPresenter, CalendarView>(), Calend
 
     private val adapter by lazy { CalendarAdapter(imageLoader, getPresenter()::onAnimeClicked) }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? = inflater.inflate(getFragmentLayout(), container, false)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        _binding = FragmentCalendarBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        toolbar.setNavigationIcon(R.drawable.ic_search)
+        binding.toolbar.setNavigationIcon(R.drawable.ic_search)
 
-        with(recyclerView) {
+        with(binding.recyclerView) {
             adapter = this@CalendarFragment.adapter
             layoutManager = LinearLayoutManager(context).apply { initialPrefetchItemCount = 3 }
             val customSpacing = context.dp(84)
@@ -62,18 +66,18 @@ class CalendarFragment : BaseFragment<CalendarPresenter, CalendarView>(), Calend
             setHasFixedSize(true)
         }
 
-        refreshLayout.layoutParams = (refreshLayout.layoutParams as? CoordinatorLayout.LayoutParams)?.apply {
+        binding.refreshLayout.layoutParams = (binding.refreshLayout.layoutParams as? CoordinatorLayout.LayoutParams)?.apply {
             behavior = OverlapHeaderScrollingBehavior()
         }
-        refreshLayout.setProgressViewOffset(false, context!!.dp(24), context!!.dp(96))
+        binding.refreshLayout.setProgressViewOffset(false, context!!.dp(24), context!!.dp(96))
 
-        networkErrorView.apply {
+        binding.networkErrorView.apply {
             setText(R.string.common_error_message_without_pull)
             callback = { getPresenter().initData() }
             showButton()
         }
 
-        with(searchView) {
+        with(binding.searchView) {
             setOnQueryTextListener(object : SearchView.OnQueryTextListener {
                 override fun onQueryTextSubmit(query: String?): Boolean {
                     hideSoftInput()
@@ -102,7 +106,12 @@ class CalendarFragment : BaseFragment<CalendarPresenter, CalendarView>(), Calend
             }
         }
 
-        refreshLayout.setOnRefreshListener { calendarPresenter.onRefresh() }
+        binding.refreshLayout.setOnRefreshListener { calendarPresenter.onRefresh() }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -121,9 +130,9 @@ class CalendarFragment : BaseFragment<CalendarPresenter, CalendarView>(), Calend
         adapter.bindItems(items)
     }
 
-    override fun showContent(show: Boolean) = recyclerView.visibleIf { show }
-    override fun onShowLoading() = refreshLayout.showRefresh()
-    override fun onHideLoading() = refreshLayout.hideRefresh()
+    override fun showContent(show: Boolean) = binding.recyclerView.visibleIf { show }
+    override fun onShowLoading() = binding.refreshLayout.showRefresh()
+    override fun onHideLoading() = binding.refreshLayout.hideRefresh()
 
     override fun showEmptyView() {
         val item = SeriesPlaceholderItem(R.string.calendar_empty_title, R.string.calendar_empty_description)

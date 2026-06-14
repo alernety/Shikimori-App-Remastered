@@ -4,9 +4,10 @@ import android.os.Bundle
 import android.view.View
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.arellomobile.mvp.presenter.InjectPresenter
-import com.arellomobile.mvp.presenter.ProvidePresenter
+import moxy.presenter.InjectPresenter
+import moxy.presenter.ProvidePresenter
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.FragmentForumBinding
 import com.gnoemes.shikimori.entity.forum.domain.Forum
 import com.gnoemes.shikimori.presentation.presenter.forum.ForumPresenter
 import com.gnoemes.shikimori.presentation.view.base.fragment.BaseFragment
@@ -16,11 +17,11 @@ import com.gnoemes.shikimori.utils.gone
 import com.gnoemes.shikimori.utils.hideRefresh
 import com.gnoemes.shikimori.utils.showRefresh
 import com.gnoemes.shikimori.utils.visibleIf
-import kotlinx.android.synthetic.main.layout_default_list.*
-import kotlinx.android.synthetic.main.layout_default_placeholders.*
-import kotlinx.android.synthetic.main.layout_toolbar.*
 
 class ForumFragment : BaseFragment<ForumPresenter, ForumView>(), ForumView {
+
+    private var _binding: FragmentForumBinding? = null
+    private val binding get() = _binding!!
 
     @InjectPresenter
     lateinit var forumPresenter: ForumPresenter
@@ -40,17 +41,23 @@ class ForumFragment : BaseFragment<ForumPresenter, ForumView>(), ForumView {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        _binding = FragmentForumBinding.bind(view.findViewById(R.id.fragment_content))
 
-        toolbar?.gone()
+        toolbarBinding.toolbar.gone()
 
-        with(recyclerView) {
+        with(binding.recyclerView) {
             adapter = this@ForumFragment.adapter
             layoutManager = LinearLayoutManager(context)
             setHasFixedSize(true)
             addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
         }
-        refreshLayout.setOnRefreshListener { getPresenter().onRefresh() }
-        networkErrorView.setText(R.string.common_error_message)
+        binding.refreshLayout.setOnRefreshListener { getPresenter().onRefresh() }
+        placeholdersBinding.networkErrorView.setText(R.string.common_error_message)
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -70,9 +77,9 @@ class ForumFragment : BaseFragment<ForumPresenter, ForumView>(), ForumView {
     }
 
     override fun showContent(show: Boolean) {
-        recyclerView.visibleIf { show }
+        binding.recyclerView.visibleIf { show }
     }
 
-    override fun onShowLoading() = refreshLayout.showRefresh()
-    override fun onHideLoading() = refreshLayout.hideRefresh()
+    override fun onShowLoading() = binding.refreshLayout.showRefresh()
+    override fun onHideLoading() = binding.refreshLayout.hideRefresh()
 }

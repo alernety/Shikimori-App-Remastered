@@ -4,9 +4,10 @@ import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.View
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.arellomobile.mvp.presenter.InjectPresenter
-import com.arellomobile.mvp.presenter.ProvidePresenter
+import moxy.presenter.InjectPresenter
+import moxy.presenter.ProvidePresenter
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.FragmentDefaultListBinding
 import com.gnoemes.shikimori.entity.common.domain.CommonNavigationData
 import com.gnoemes.shikimori.entity.rates.domain.RateStatus
 import com.gnoemes.shikimori.presentation.presenter.similar.SimilarPresenter
@@ -17,12 +18,12 @@ import com.gnoemes.shikimori.presentation.view.similar.adapter.SimilarAdapter
 import com.gnoemes.shikimori.utils.*
 import com.gnoemes.shikimori.utils.images.ImageLoader
 import com.gnoemes.shikimori.utils.widgets.VerticalSpaceItemDecorator
-import kotlinx.android.synthetic.main.layout_default_list.*
-import kotlinx.android.synthetic.main.layout_default_placeholders.*
-import kotlinx.android.synthetic.main.layout_toolbar.*
 import javax.inject.Inject
 
 class SimilarFragment : BaseFragment<SimilarPresenter, SimilarView>(), SimilarView, RateStatusDialog.RateStatusCallback {
+
+    private var _binding: FragmentDefaultListBinding? = null
+    private val binding get() = _binding!!
 
     @Inject
     lateinit var imageLoader: ImageLoader
@@ -45,22 +46,28 @@ class SimilarFragment : BaseFragment<SimilarPresenter, SimilarView>(), SimilarVi
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        _binding = FragmentDefaultListBinding.bind(view.findViewById(R.id.fragment_content))
 
-        toolbar?.apply {
+        toolbarBinding.toolbar.apply {
             addBackButton { getPresenter().onBackPressed() }
             setTitle(R.string.common_similar)
         }
 
-        with(recyclerView) {
+        with(binding.recyclerView) {
             adapter = this@SimilarFragment.adapter
             layoutManager = LinearLayoutManager(context)
             addItemDecoration(VerticalSpaceItemDecorator(context.dp(8)))
         }
 
-        refreshLayout.background = ColorDrawable(context!!.colorAttr(R.attr.colorSurface))
-        refreshLayout.setOnRefreshListener { getPresenter().onRefresh() }
+        binding.refreshLayout.background = ColorDrawable(context!!.colorAttr(R.attr.colorSurface))
+        binding.refreshLayout.setOnRefreshListener { getPresenter().onRefresh() }
 
-        emptyContentView.setText(R.string.similar_empty_description)
+        placeholdersBinding.emptyContentView.setText(R.string.similar_empty_description)
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     override fun onStatusChanged(id: Long, newStatus: RateStatus) {
@@ -89,8 +96,8 @@ class SimilarFragment : BaseFragment<SimilarPresenter, SimilarView>(), SimilarVi
         dialog.show(childFragmentManager, "StatusDialog")
     }
 
-    override fun showContent(show: Boolean) = recyclerView.visibleIf { show }
-    override fun onShowLoading() = refreshLayout.showRefresh()
-    override fun onHideLoading() = refreshLayout.hideRefresh()
+    override fun showContent(show: Boolean) = binding.recyclerView.visibleIf { show }
+    override fun onShowLoading() = binding.refreshLayout.showRefresh()
+    override fun onHideLoading() = binding.refreshLayout.hideRefresh()
 
 }

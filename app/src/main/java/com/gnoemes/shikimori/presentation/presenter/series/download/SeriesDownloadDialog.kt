@@ -2,21 +2,24 @@ package com.gnoemes.shikimori.presentation.presenter.series.download
 
 import android.content.Context
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.DialogSeriesDownloadBinding
 import com.gnoemes.shikimori.entity.series.domain.Video
 import com.gnoemes.shikimori.entity.series.presentation.SeriesDownloadItem
 import com.gnoemes.shikimori.presentation.view.base.fragment.BaseBottomSheetDialogFragment
-import com.gnoemes.shikimori.utils.addBackButton
 import com.gnoemes.shikimori.utils.dimenAttr
 import com.gnoemes.shikimori.utils.dp
 import com.gnoemes.shikimori.utils.widgets.VerticalSpaceItemDecorator
 import com.gnoemes.shikimori.utils.withArgs
-import kotlinx.android.synthetic.main.dialog_base_bottom_sheet.*
-import kotlinx.android.synthetic.main.dialog_series_download.*
 
 class SeriesDownloadDialog : BaseBottomSheetDialogFragment() {
+
+    private var _binding: DialogSeriesDownloadBinding? = null
+    private val binding get() = _binding!!
 
     companion object {
         fun newInstance(title: String, items: List<SeriesDownloadItem>) = SeriesDownloadDialog().withArgs {
@@ -33,6 +36,11 @@ class SeriesDownloadDialog : BaseBottomSheetDialogFragment() {
         peekHeight = context.dimenAttr(android.R.attr.actionBarSize)
     }
 
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        _binding = DialogSeriesDownloadBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -40,19 +48,23 @@ class SeriesDownloadDialog : BaseBottomSheetDialogFragment() {
                 ?.map { it as SeriesDownloadItem }
                 ?.toList() ?: emptyList()
 
-        with(toolbar) {
-            title = arguments?.getString(TITLE_KEY)
-        }
-
+        // The toolbar is likely in the parent layout (BaseBottomSheetDialogFragment)
+        // or we need to access it via binding if it's in the XML.
+        // BaseBottomSheetDialogFragment uses dialog_base_bottom_sheet.xml which has @id/toolbar
+        
         val seriesAdapter = SeriesDownloadAdapter(items, (parentFragment as? SeriesDownloadCallback)) { dismiss() }
 
-        with(recyclerView) {
+        with(binding.recyclerView) {
             adapter = seriesAdapter
             layoutManager = LinearLayoutManager(context)
             val margin = context.dp(16)
             addItemDecoration(VerticalSpaceItemDecorator(context.dp(10), true, margin, margin))
         }
+    }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     override fun getDialogLayout(): Int = R.layout.dialog_series_download

@@ -17,8 +17,8 @@ import com.gnoemes.shikimori.presentation.view.base.fragment.*
 import com.gnoemes.shikimori.utils.navigation.SupportAppNavigator
 import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
+import dagger.android.HasAndroidInjector
 import dagger.android.support.AndroidSupportInjection
-import dagger.android.support.HasSupportFragmentInjector
 import ru.terrakok.cicerone.Cicerone
 import ru.terrakok.cicerone.Navigator
 import ru.terrakok.cicerone.Router
@@ -26,7 +26,7 @@ import ru.terrakok.cicerone.commands.Command
 import javax.inject.Inject
 import javax.inject.Named
 
-class BottomTabContainer : MvpFragment(), RouterProvider, BackButtonListener, HasSupportFragmentInjector, TabContainer {
+class BottomTabContainer : MvpFragment(), RouterProvider, BackButtonListener, HasAndroidInjector, TabContainer {
 
     @Inject
     lateinit var ciceroneHolder: LocalCiceroneHolder
@@ -36,9 +36,9 @@ class BottomTabContainer : MvpFragment(), RouterProvider, BackButtonListener, Ha
     lateinit var childFM: FragmentManager
 
     @Inject
-    lateinit var childFragmentInjector: DispatchingAndroidInjector<Fragment>
+    lateinit var childFragmentInjector: DispatchingAndroidInjector<Any>
 
-    override fun supportFragmentInjector(): AndroidInjector<Fragment> = childFragmentInjector
+    override fun androidInjector(): AndroidInjector<Any> = childFragmentInjector
 
     companion object {
         fun newInstance() = BottomTabContainer()

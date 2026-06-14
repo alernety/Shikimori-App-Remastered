@@ -7,9 +7,10 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentStatePagerAdapter
-import com.arellomobile.mvp.presenter.InjectPresenter
-import com.arellomobile.mvp.presenter.ProvidePresenter
+import moxy.presenter.InjectPresenter
+import moxy.presenter.ProvidePresenter
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.FragmentShikimoriMainBinding
 import com.gnoemes.shikimori.entity.forum.domain.ForumType
 import com.gnoemes.shikimori.presentation.presenter.shikimorimain.ShikimoriMainPresenter
 import com.gnoemes.shikimori.presentation.view.base.fragment.BaseFragment
@@ -20,20 +21,20 @@ import com.gnoemes.shikimori.utils.gone
 import com.gnoemes.shikimori.utils.ifNotNull
 import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
-import dagger.android.support.HasSupportFragmentInjector
-import kotlinx.android.synthetic.main.fragment_shikimori_main.*
-import kotlinx.android.synthetic.main.layout_appbar_tabs.*
-import kotlinx.android.synthetic.main.layout_toolbar.*
+import dagger.android.HasAndroidInjector
 import ru.terrakok.cicerone.Navigator
 import ru.terrakok.cicerone.Router
 import javax.inject.Inject
 
-class ShikimoriMainFragment : BaseFragment<ShikimoriMainPresenter, ShikimoriMainView>(), ShikimoriMainView, RouterProvider, HasSupportFragmentInjector {
+class ShikimoriMainFragment : BaseFragment<ShikimoriMainPresenter, ShikimoriMainView>(), ShikimoriMainView, RouterProvider, HasAndroidInjector {
+
+    private var _binding: FragmentShikimoriMainBinding? = null
+    private val binding get() = _binding!!
 
     @Inject
-    lateinit var childFragmentInjector: DispatchingAndroidInjector<Fragment>
+    lateinit var childFragmentInjector: DispatchingAndroidInjector<Any>
 
-    override fun supportFragmentInjector(): AndroidInjector<Fragment> = childFragmentInjector
+    override fun androidInjector(): AndroidInjector<Any> = childFragmentInjector
 
     @InjectPresenter
     lateinit var mainPresenter: ShikimoriMainPresenter
@@ -56,17 +57,23 @@ class ShikimoriMainFragment : BaseFragment<ShikimoriMainPresenter, ShikimoriMain
     private val adapter by lazy { PagerAdapter(childFragmentManager) }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(getFragmentLayout(), container, false)
+        _binding = FragmentShikimoriMainBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        toolbar?.gone()
+        toolbarBinding.toolbar.gone()
 
-        pagesContainerView.adapter = adapter
-        pagesContainerView.offscreenPageLimit = 3
-        tabLayout.setupWithViewPager(pagesContainerView)
+        binding.pagesContainerView.adapter = adapter
+        binding.pagesContainerView.offscreenPageLimit = 3
+        binding.tabLayout.setupWithViewPager(binding.pagesContainerView)
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     ///////////////////////////////////////////////////////////////////////////

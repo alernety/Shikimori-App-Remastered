@@ -1,10 +1,13 @@
 package com.gnoemes.shikimori.presentation.view.anime
 
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
-import com.arellomobile.mvp.presenter.InjectPresenter
-import com.arellomobile.mvp.presenter.ProvidePresenter
+import android.view.ViewGroup
+import moxy.presenter.InjectPresenter
+import moxy.presenter.ProvidePresenter
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.FragmentDetailsBinding
 import com.gnoemes.shikimori.entity.app.domain.AppExtras
 import com.gnoemes.shikimori.entity.common.presentation.DetailsAction
 import com.gnoemes.shikimori.entity.common.presentation.DetailsContentType
@@ -19,10 +22,11 @@ import com.gnoemes.shikimori.presentation.view.details.BaseDetailsFragment
 import com.gnoemes.shikimori.utils.onClick
 import com.gnoemes.shikimori.utils.onMenuClick
 import com.gnoemes.shikimori.utils.withArgs
-import kotlinx.android.synthetic.main.fragment_details.*
-import kotlinx.android.synthetic.main.layout_collapsing_toolbar.*
 
 class AnimeFragment : BaseDetailsFragment<AnimePresenter, AnimeView>(), AnimeView {
+
+    private var _binding: FragmentDetailsBinding? = null
+    private val binding get() = _binding!!
 
     @InjectPresenter
     lateinit var animePresenter: AnimePresenter
@@ -45,8 +49,9 @@ class AnimeFragment : BaseDetailsFragment<AnimePresenter, AnimeView>(), AnimeVie
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        _binding = FragmentDetailsBinding.bind(view)
 
-        with(toolbar) {
+        with(binding.toolbar) {
             inflateMenu(R.menu.menu_anime)
             onMenuClick {
                 when (it?.itemId) {
@@ -60,16 +65,21 @@ class AnimeFragment : BaseDetailsFragment<AnimePresenter, AnimeView>(), AnimeVie
         }
 
         contentHolders.apply {
-            put(DetailsContentType.VIDEO, DetailsContentViewHolder(videoLayout, videoAdapter))
-            put(DetailsContentType.CHARACTERS, DetailsContentViewHolder(charactersLayout, charactersAdapter, true))
-            put(DetailsContentType.SCREENSHOTS, DetailsContentViewHolder(screenshotsLayout, screenshotsAdapter))
-            put(DetailsContentType.RELATED, DetailsContentViewHolder(relatedLayout, relatedAdapter))
+            put(DetailsContentType.VIDEO, DetailsContentViewHolder(binding.videoLayout, videoAdapter))
+            put(DetailsContentType.CHARACTERS, DetailsContentViewHolder(binding.charactersLayout, charactersAdapter, true))
+            put(DetailsContentType.SCREENSHOTS, DetailsContentViewHolder(binding.screenshotsLayout, screenshotsAdapter))
+            put(DetailsContentType.RELATED, DetailsContentViewHolder(binding.relatedLayout, relatedAdapter))
         }
 
-        with(actionBtn) {
+        with(binding.actionBtn) {
             setImageResource(R.drawable.ic_play_arrow_filled)
             onClick { getPresenter().onAction(DetailsAction.WatchOnline()) }
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     override fun dialogItemIdCallback(tag: String?, id: Long) {

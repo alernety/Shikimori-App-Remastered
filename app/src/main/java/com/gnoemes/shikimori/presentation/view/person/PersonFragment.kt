@@ -2,10 +2,11 @@ package com.gnoemes.shikimori.presentation.view.person
 
 import android.os.Bundle
 import android.view.View
-import com.arellomobile.mvp.presenter.InjectPresenter
-import com.arellomobile.mvp.presenter.ProvidePresenter
+import moxy.presenter.InjectPresenter
+import moxy.presenter.ProvidePresenter
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.data.local.preference.SettingsSource
+import com.gnoemes.shikimori.databinding.FragmentPersonBinding
 import com.gnoemes.shikimori.entity.app.domain.AppExtras
 import com.gnoemes.shikimori.entity.common.presentation.DetailsContentItem
 import com.gnoemes.shikimori.entity.common.presentation.DetailsContentType
@@ -22,11 +23,12 @@ import com.gnoemes.shikimori.utils.addBackButton
 import com.gnoemes.shikimori.utils.ifNotNull
 import com.gnoemes.shikimori.utils.images.ImageLoader
 import com.gnoemes.shikimori.utils.withArgs
-import kotlinx.android.synthetic.main.fragment_person.*
-import kotlinx.android.synthetic.main.layout_toolbar.*
 import javax.inject.Inject
 
 class PersonFragment : BaseFragment<PersonPresenter, PersonView>(), PersonView {
+
+    private var _binding: FragmentPersonBinding? = null
+    private val binding get() = _binding!!
 
     @Inject
     lateinit var imageLoader: ImageLoader
@@ -66,8 +68,9 @@ class PersonFragment : BaseFragment<PersonPresenter, PersonView>(), PersonView {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        _binding = FragmentPersonBinding.bind(view)
 
-        toolbar?.apply {
+        toolbarBinding.toolbar.apply {
             addBackButton { getPresenter().onBackPressed() }
             setTitle(R.string.common_person)
             inflateMenu(R.menu.menu_browser)
@@ -79,14 +82,19 @@ class PersonFragment : BaseFragment<PersonPresenter, PersonView>(), PersonView {
             }
         }
 
-        headHolder = DetailsHeadSimpleViewHolder(headLayout, imageLoader)
-        descriptionHolder = DetailsDescriptionViewHolder(descriptionLayout, getPresenter()::onContentClicked)
+        headHolder = DetailsHeadSimpleViewHolder(binding.headLayout, imageLoader)
+        descriptionHolder = DetailsDescriptionViewHolder(binding.descriptionLayout, getPresenter()::onContentClicked)
 
         contentHolders.apply {
-            put(DetailsContentType.CHARACTERS, DetailsContentViewHolder(charactersLayout, charactersAdapter))
-            put(DetailsContentType.WORKS, DetailsContentViewHolder(worksLayout, worksAdapter))
+            put(DetailsContentType.CHARACTERS, DetailsContentViewHolder(binding.charactersLayout, charactersAdapter))
+            put(DetailsContentType.WORKS, DetailsContentViewHolder(binding.worksLayout, worksAdapter))
         }
 
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     ///////////////////////////////////////////////////////////////////////////
