@@ -23,6 +23,7 @@ import moxy.presenter.InjectPresenter
 import moxy.presenter.ProvidePresenter
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.databinding.FragmentRateBinding
+import com.gnoemes.shikimori.databinding.LayoutDefaultPlaceholdersBinding
 import com.gnoemes.shikimori.data.local.preference.SettingsSource
 import com.gnoemes.shikimori.entity.app.domain.AppExtras
 import com.gnoemes.shikimori.entity.common.domain.Type
@@ -80,6 +81,8 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
 
     private var _binding: FragmentRateBinding? = null
     private val binding get() = _binding!!
+    private var _fragmentPlaceholdersBinding: LayoutDefaultPlaceholdersBinding? = null
+    private val fragmentPlaceholdersBinding get() = _fragmentPlaceholdersBinding!!
 
     companion object {
         private const val DRAWER_KEY = "DRAWER_KEY"
@@ -90,6 +93,7 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentRateBinding.inflate(inflater, container, false)
+        _fragmentPlaceholdersBinding = LayoutDefaultPlaceholdersBinding.bind(binding.coordinator)
         return binding.root
     }
 
@@ -167,14 +171,14 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
         }
         binding.includedLayoutDefaultList.refreshLayout.setProgressViewOffset(false, context!!.dp(24), context!!.dp(96))
 
-        binding.includedLayoutDefaultPlaceholders.emptyContentView.setText(R.string.rate_empty)
-        binding.includedLayoutDefaultPlaceholders.networkErrorView.apply {
+        fragmentPlaceholdersBinding.emptyContentView.setText(R.string.rate_empty)
+        fragmentPlaceholdersBinding.networkErrorView.apply {
             setText(R.string.common_error_message_without_pull)
             callback = { getPresenter().initData() }
             showButton()
         }
         binding.rateEmptyView.root.gone()
-        progressBinding.progressBar?.gone()
+        progressBinding?.progressBar?.gone()
 
         binding.authLayout.signInBtn.onClick { getPresenter().onSignIn() }
         binding.authLayout.signUpBtn.onClick { getPresenter().onSignUp() }
@@ -414,7 +418,7 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
                 .show()
     }
 
-    override fun showNetworkView() = binding.includedLayoutDefaultPlaceholders.networkErrorView.visible()
+    override fun showNetworkView() = fragmentPlaceholdersBinding.networkErrorView.visible()
 
-    override fun hideNetworkView() = binding.includedLayoutDefaultPlaceholders.networkErrorView.gone()
+    override fun hideNetworkView() = fragmentPlaceholdersBinding.networkErrorView.gone()
 }

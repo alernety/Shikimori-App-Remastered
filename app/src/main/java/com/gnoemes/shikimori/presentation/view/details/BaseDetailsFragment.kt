@@ -66,14 +66,14 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View>, View 
     }
 
     protected open fun showToolbar() {
-        toolbarBinding.toolbar.apply {
+        toolbarBinding?.toolbar?.apply {
             detailsName?.let { title = it } ?: setTitle(titleRes)
             background = ColorDrawable(context.colorAttr(R.attr.colorPrimary))
         }
     }
 
     protected open fun hideToolbar() {
-        toolbarBinding.toolbar.apply {
+        toolbarBinding?.toolbar?.apply {
             title = null
             background = ColorDrawable(Color.TRANSPARENT)
         }
@@ -92,7 +92,7 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View>, View 
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): android.view.View {
         fragmentBinding = FragmentDetailsBinding.inflate(inflater, container, false)
-        val appBarLayout = fragmentBinding!!.root.findViewById<AppBarLayout>(R.id.appBarLayout)
+        val appBarLayout = fragmentBinding!!.root.findViewById<AppBarLayout>(R.id.included_layout_collapsing_toolbar)
         collapsingToolbarBinding = LayoutCollapsingToolbarBinding.bind(appBarLayout!!)
         charactersBinding = LayoutDetailsContentWithSearchBinding.bind(fragmentBinding!!.charactersLayout as ViewGroup)
         return fragmentBinding!!.root
@@ -101,7 +101,7 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View>, View 
     override fun onViewCreated(view: android.view.View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        toolbarBinding.toolbar.apply {
+        toolbarBinding?.toolbar?.apply {
             addBackButton { getPresenter().onBackPressed() }
             title = null
         }

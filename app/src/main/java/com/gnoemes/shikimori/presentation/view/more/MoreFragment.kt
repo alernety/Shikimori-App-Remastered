@@ -53,10 +53,10 @@ class MoreFragment : BaseFragment<MorePresenter, MoreView>(), MoreView, AuthDial
             layoutManager = LinearLayoutManager(context)
         }
 
-        toolbarBinding.toolbar.gone()
-        placeholdersBinding.emptyContentView.gone()
-        placeholdersBinding.networkErrorView.gone()
-        progressBinding.progressBar.gone()
+        toolbarBinding?.toolbar?.gone()
+        placeholdersBinding?.emptyContentView?.gone()
+        placeholdersBinding?.networkErrorView?.gone()
+        progressBinding?.progressBar?.gone()
     }
 
     override fun onDestroyView() {

@@ -69,15 +69,15 @@ class TopicListFragment : BasePaginationFragment<TopicViewModel, TopicListPresen
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val view = super.onCreateView(inflater, container, savedInstanceState)!!
-        topicListBinding = LayoutDefaultListBinding.bind(view.findViewById(R.id.refreshLayout))
+        topicListBinding = LayoutDefaultListBinding.bind(view.findViewById(R.id.included_layout_default_list))
         return view
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        if (parentFragment is ShikimoriMainFragment) toolbarBinding.toolbar.gone()
-        else toolbarBinding.toolbar.addBackButton { topicPresenter.onBackPressed() }
+        if (parentFragment is ShikimoriMainFragment) toolbarBinding?.toolbar?.gone()
+        else toolbarBinding?.toolbar?.addBackButton { topicPresenter.onBackPressed() }
 
         with(topicListBinding.recyclerView) {
             adapter = this@TopicListFragment.adapter
@@ -87,8 +87,8 @@ class TopicListFragment : BasePaginationFragment<TopicViewModel, TopicListPresen
         }
         ViewCompat.setNestedScrollingEnabled(topicListBinding.recyclerView, false)
 
-        placeholdersBinding.networkErrorView.setText(R.string.common_error_message)
-        placeholdersBinding.emptyContentView.setText(R.string.search_nothing)
+        placeholdersBinding?.networkErrorView?.setText(R.string.common_error_message)
+        placeholdersBinding?.emptyContentView?.setText(R.string.search_nothing)
     }
 
     override fun onDestroyView() {
@@ -109,6 +109,6 @@ class TopicListFragment : BasePaginationFragment<TopicViewModel, TopicListPresen
     ///////////////////////////////////////////////////////////////////////////
 
     override fun setMyClubsEmptyText() {
-        placeholdersBinding.emptyContentView.setText(R.string.forum_my_clubs_empty)
+        placeholdersBinding?.emptyContentView?.setText(R.string.forum_my_clubs_empty)
     }
 }

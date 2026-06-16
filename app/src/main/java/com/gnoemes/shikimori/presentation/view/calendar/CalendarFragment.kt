@@ -14,6 +14,7 @@ import moxy.presenter.InjectPresenter
 import moxy.presenter.ProvidePresenter
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.databinding.FragmentCalendarBinding
+import com.gnoemes.shikimori.databinding.LayoutDefaultPlaceholdersBinding
 import com.gnoemes.shikimori.entity.calendar.presentation.CalendarViewModel
 import com.gnoemes.shikimori.entity.series.presentation.SeriesPlaceholderItem
 import com.gnoemes.shikimori.presentation.presenter.calendar.CalendarPresenter
@@ -30,6 +31,8 @@ class CalendarFragment : BaseFragment<CalendarPresenter, CalendarView>(), Calend
 
     private var _binding: FragmentCalendarBinding? = null
     private val binding get() = _binding!!
+    private var _fragmentPlaceholdersBinding: LayoutDefaultPlaceholdersBinding? = null
+    private val fragmentPlaceholdersBinding get() = _fragmentPlaceholdersBinding!!
 
     @Inject
     lateinit var imageLoader: ImageLoader
@@ -50,6 +53,7 @@ class CalendarFragment : BaseFragment<CalendarPresenter, CalendarView>(), Calend
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         _binding = FragmentCalendarBinding.inflate(inflater, container, false)
+        _fragmentPlaceholdersBinding = LayoutDefaultPlaceholdersBinding.bind(binding.coordinator)
         return binding.root
     }
 
@@ -71,7 +75,7 @@ class CalendarFragment : BaseFragment<CalendarPresenter, CalendarView>(), Calend
         }
         binding.includedLayoutDefaultList.refreshLayout.setProgressViewOffset(false, context!!.dp(24), context!!.dp(96))
 
-        binding.includedLayoutDefaultPlaceholders.networkErrorView.apply {
+        fragmentPlaceholdersBinding.networkErrorView.apply {
             setText(R.string.common_error_message_without_pull)
             callback = { getPresenter().initData() }
             showButton()
@@ -112,6 +116,7 @@ class CalendarFragment : BaseFragment<CalendarPresenter, CalendarView>(), Calend
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+        _fragmentPlaceholdersBinding = null
     }
 
     ///////////////////////////////////////////////////////////////////////////

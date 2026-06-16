@@ -86,7 +86,7 @@ class SearchFragment : BasePaginationFragment<SearchItem, SearchPresenter, Searc
         super.onViewCreated(view, savedInstanceState)
         _viewBinding = FragmentSearchBinding.bind(view.findViewById(R.id.fragment_content))
 
-        progressBinding.progressBar.gone()
+        progressBinding?.progressBar?.gone()
 
         spinner = ReSpinner(view.context)
         spinner?.adapter = ArrayAdapter<String>(
@@ -97,7 +97,7 @@ class SearchFragment : BasePaginationFragment<SearchItem, SearchPresenter, Searc
         spinner?.setOnItemClickListener { _, _, position, _ -> getPresenter().onTypeChanged(position) }
         spinner?.background = spinner?.background?.apply { tint(context!!.colorAttr(R.attr.colorOnPrimary)) }
 
-        toolbarBinding.toolbar.apply {
+        toolbarBinding?.toolbar?.apply {
             title = null
             addView(spinner)
             inflateMenu(R.menu.menu_search)
@@ -105,7 +105,7 @@ class SearchFragment : BasePaginationFragment<SearchItem, SearchPresenter, Searc
 
         searchView = LayoutInflater.from(context).inflate(R.layout.layout_search_view, null) as? androidx.appcompat.widget.SearchView
 
-        toolbarBinding.toolbar.menu?.findItem(R.id.item_search)?.actionView = searchView
+        toolbarBinding?.toolbar?.menu?.findItem(R.id.item_search)?.actionView = searchView
         searchView?.run {
 
             setOnQueryTextListener(searchViewQueryListener)
@@ -147,13 +147,13 @@ class SearchFragment : BasePaginationFragment<SearchItem, SearchPresenter, Searc
     }
 
     override fun onTabRootAction() {
-        toolbarBinding.toolbar.menu?.findItem(R.id.item_search)?.expandActionView()
+        toolbarBinding?.toolbar?.menu?.findItem(R.id.item_search)?.expandActionView()
     }
 
     private val searchViewQueryListener = object : androidx.appcompat.widget.SearchView.OnQueryTextListener {
         override fun onQueryTextSubmit(query: String?): Boolean {
             getPresenter().onQuerySearch(query)
-            toolbarBinding.toolbar.menu?.findItem(R.id.item_search)?.collapseActionView()
+            toolbarBinding?.toolbar?.menu?.findItem(R.id.item_search)?.collapseActionView()
             return false
         }
 
@@ -195,7 +195,7 @@ class SearchFragment : BasePaginationFragment<SearchItem, SearchPresenter, Searc
     }
 
     override fun addBackButton() {
-        toolbarBinding.toolbar.addBackButton { getPresenter().onBackPressed() }
+        toolbarBinding?.toolbar?.addBackButton { getPresenter().onBackPressed() }
     }
 
     override fun updateFilterIcon(empty: Boolean) {
@@ -204,6 +204,6 @@ class SearchFragment : BasePaginationFragment<SearchItem, SearchPresenter, Searc
 
     override fun showFilterButton() = viewBinding.fab.show()
     override fun hideFilterButton() = viewBinding.fab.hide()
-    override fun setSimpleEmptyText() = placeholdersBinding.emptyContentView.setText(R.string.search_need_query)
-    override fun setDefaultEmptyText() = placeholdersBinding.emptyContentView.setText(R.string.search_nothing)
+    override fun setSimpleEmptyText() { placeholdersBinding?.emptyContentView?.setText(R.string.search_need_query) }
+    override fun setDefaultEmptyText() { placeholdersBinding?.emptyContentView?.setText(R.string.search_nothing) }
 }

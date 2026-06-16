@@ -94,8 +94,8 @@ class TopicFragment : BasePaginationFragment<CommentViewModel, TopicPresenter, T
         userHolder = TopicUserViewHolder(userBinding, imageLoader, getPresenter()::onContentClicked)
         contentHolder = TopicContentViewHolder(topicBinding, getPresenter()::onContentClicked)
 
-        toolbarBinding.toolbar.addBackButton { getPresenter().onBackPressed() }
-        toolbarBinding.toolbar.title = null
+        toolbarBinding?.toolbar?.addBackButton { getPresenter().onBackPressed() }
+        toolbarBinding?.toolbar?.title = null
 
         with(commentsBinding.recyclerView) {
             adapter = this@TopicFragment.adapter
@@ -107,7 +107,7 @@ class TopicFragment : BasePaginationFragment<CommentViewModel, TopicPresenter, T
         commentsBinding.commentsMore.setOnClickListener { isPrevious = false; getPresenter().loadNextPage() }
         commentsBinding.commentsBefore.setOnClickListener { isPrevious = true; getPresenter().onPreviousClicked() }
 
-        placeholdersBinding.networkErrorView.apply {
+        placeholdersBinding?.networkErrorView?.apply {
             setText(R.string.common_error_message_without_pull)
             callback = { getPresenter().initData() }
             showButton()
@@ -241,11 +241,11 @@ class TopicFragment : BasePaginationFragment<CommentViewModel, TopicPresenter, T
     }
 
     override fun onShowLoading() {
-        progressBinding.progressBar.visible()
+        progressBinding?.progressBar?.visible()
     }
 
     override fun onHideLoading() {
-        progressBinding.progressBar.gone()
+        progressBinding?.progressBar?.gone()
     }
 
     override fun setCommentsCount(count: Long) {

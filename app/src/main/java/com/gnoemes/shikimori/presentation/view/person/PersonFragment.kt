@@ -70,7 +70,7 @@ class PersonFragment : BaseFragment<PersonPresenter, PersonView>(), PersonView {
         super.onViewCreated(view, savedInstanceState)
         _viewBinding = FragmentPersonBinding.bind(view)
 
-        toolbarBinding.toolbar.apply {
+        toolbarBinding?.toolbar?.apply {
             addBackButton { getPresenter().onBackPressed() }
             setTitle(R.string.common_person)
             inflateMenu(R.menu.menu_browser)

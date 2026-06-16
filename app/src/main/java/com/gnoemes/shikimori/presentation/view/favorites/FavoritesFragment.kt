@@ -49,7 +49,7 @@ class FavoritesFragment : BaseFragment<FavoritesPresenter, FavoritesView>(), Fav
         super.onViewCreated(view, savedInstanceState)
         _viewBinding = FragmentFavoritesBinding.bind(view)
 
-        toolbarBinding.toolbar.apply {
+        toolbarBinding?.toolbar?.apply {
             setTitle(R.string.common_favorite)
             addBackButton { getPresenter().onBackPressed() }
         }
@@ -90,8 +90,8 @@ class FavoritesFragment : BaseFragment<FavoritesPresenter, FavoritesView>(), Fav
     }
 
     override fun showFavoritesCount(count: Int) {
-        toolbarBinding.toolbar.menu?.add("$count")
-        toolbarBinding.toolbar.menu?.getItem(0)?.apply {
+        toolbarBinding?.toolbar?.menu?.add("$count")
+        toolbarBinding?.toolbar?.menu?.getItem(0)?.apply {
             isEnabled = false
             setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
         }

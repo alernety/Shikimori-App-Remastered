@@ -48,7 +48,7 @@ class SimilarFragment : BaseFragment<SimilarPresenter, SimilarView>(), SimilarVi
         super.onViewCreated(view, savedInstanceState)
         _viewBinding = FragmentDefaultListBinding.bind(view.findViewById(R.id.fragment_content))
 
-        toolbarBinding.toolbar.apply {
+        toolbarBinding?.toolbar?.apply {
             addBackButton { getPresenter().onBackPressed() }
             setTitle(R.string.common_similar)
         }
@@ -62,7 +62,7 @@ class SimilarFragment : BaseFragment<SimilarPresenter, SimilarView>(), SimilarVi
         viewBinding.includedLayoutDefaultList.refreshLayout.background = ColorDrawable(context!!.colorAttr(R.attr.colorSurface))
         viewBinding.includedLayoutDefaultList.refreshLayout.setOnRefreshListener { getPresenter().onRefresh() }
 
-        placeholdersBinding.emptyContentView.setText(R.string.similar_empty_description)
+        placeholdersBinding?.emptyContentView?.setText(R.string.similar_empty_description)
     }
 
     override fun onDestroyView() {

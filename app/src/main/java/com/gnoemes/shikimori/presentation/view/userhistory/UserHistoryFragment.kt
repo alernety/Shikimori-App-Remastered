@@ -60,14 +60,14 @@ class UserHistoryFragment : BasePaginationFragment<UserHistoryViewModel, UserHis
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val view = super.onCreateView(inflater, container, savedInstanceState)!!
-        historyListBinding = LayoutDefaultListBinding.bind(view.findViewById(R.id.refreshLayout))
+        historyListBinding = LayoutDefaultListBinding.bind(view.findViewById(R.id.included_layout_default_list))
         return view
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        toolbarBinding.toolbar.apply {
+        toolbarBinding?.toolbar?.apply {
             setTitle(R.string.common_user_history)
             addBackButton { getPresenter().onBackPressed() }
         }
@@ -103,6 +103,6 @@ class UserHistoryFragment : BasePaginationFragment<UserHistoryViewModel, UserHis
 
     override fun setTitle(title: String) {
         val text = String.format(context!!.getString(R.string.profile_history_format), title)
-        toolbarBinding.toolbar.title = text
+        toolbarBinding?.toolbar?.title = text
     }
 }

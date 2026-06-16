@@ -47,7 +47,7 @@ class FriendsFragment : BaseFragment<FriendsPresenter, FriendsView>(), FriendsVi
         super.onViewCreated(view, savedInstanceState)
         _viewBinding = FragmentDefaultListBinding.bind(view.findViewById(R.id.fragment_content))
 
-        toolbarBinding.toolbar.apply {
+        toolbarBinding?.toolbar?.apply {
             addBackButton { getPresenter().onBackPressed() }
             setTitle(R.string.common_friends)
         }
@@ -82,8 +82,8 @@ class FriendsFragment : BaseFragment<FriendsPresenter, FriendsView>(), FriendsVi
     }
 
     override fun showFriendsCount(count: Int) {
-        toolbarBinding.toolbar.menu?.add("$count")
-        toolbarBinding.toolbar.menu?.getItem(0)?.apply {
+        toolbarBinding?.toolbar?.menu?.add("$count")
+        toolbarBinding?.toolbar?.menu?.getItem(0)?.apply {
             isEnabled = false
             setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
         }

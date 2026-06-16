@@ -71,7 +71,7 @@ class CharacterFragment : BaseFragment<CharacterPresenter, CharacterView>(), Cha
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentCharacterBinding.bind(view)
 
-        toolbarBinding.toolbar.apply {
+        toolbarBinding?.toolbar?.apply {
             addBackButton { getPresenter().onBackPressed() }
             setTitle(R.string.common_character)
             inflateMenu(R.menu.menu_character)

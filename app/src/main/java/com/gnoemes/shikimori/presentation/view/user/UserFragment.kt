@@ -81,7 +81,7 @@ class UserFragment : BaseFragment<UserPresenter, UserView>(), UserView {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _profileBinding = FragmentUserProfileBinding.inflate(inflater, container, false)
 
-        val appBarLayout = profileBinding.root.findViewById<AppBarLayout>(R.id.appBarLayout)
+        val appBarLayout = profileBinding.root.findViewById<AppBarLayout>(R.id.included_layout_user_profile_toolbar)
         userToolbarBinding = LayoutUserProfileToolbarBinding.bind(appBarLayout)
         userPlaceholdersBinding = LayoutDefaultPlaceholdersBinding.bind(profileBinding.coordinator)
         authBinding = LayoutProfileAuthBinding.bind(profileBinding.authLayout.root)

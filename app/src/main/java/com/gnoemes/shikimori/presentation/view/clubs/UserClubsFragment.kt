@@ -47,7 +47,7 @@ class UserClubsFragment : BaseFragment<UserClubsPresenter, UserClubsView>(), Use
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentDefaultListBinding.bind(view.findViewById(R.id.fragment_content))
 
-        toolbarBinding.toolbar.apply {
+        toolbarBinding?.toolbar?.apply {
             addBackButton { getPresenter().onBackPressed() }
             setTitle(R.string.common_clubs)
         }
@@ -82,8 +82,8 @@ class UserClubsFragment : BaseFragment<UserClubsPresenter, UserClubsView>(), Use
     }
 
     override fun showClubsCount(count: Int) {
-        toolbarBinding.toolbar.menu?.add("$count")
-        toolbarBinding.toolbar.menu?.getItem(0)?.apply {
+        toolbarBinding?.toolbar?.menu?.add("$count")
+        toolbarBinding?.toolbar?.menu?.getItem(0)?.apply {
             isEnabled = false
             setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
         }

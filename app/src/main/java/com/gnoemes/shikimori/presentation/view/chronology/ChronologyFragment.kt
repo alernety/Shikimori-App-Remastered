@@ -49,7 +49,7 @@ class ChronologyFragment : BaseFragment<ChronologyPresenter, ChronologyView>(), 
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentChronologyBinding.bind(view.findViewById(R.id.fragment_content))
 
-        toolbarBinding.toolbar.apply {
+        toolbarBinding?.toolbar?.apply {
             addBackButton { getPresenter().onBackPressed() }
             setTitle(R.string.common_chronology)
             inflateMenu(R.menu.menu_chronology)
@@ -71,7 +71,7 @@ class ChronologyFragment : BaseFragment<ChronologyPresenter, ChronologyView>(), 
         binding.includedLayoutDefaultList.refreshLayout.background = ColorDrawable(context!!.colorAttr(R.attr.colorSurface))
         binding.includedLayoutDefaultList.refreshLayout.setOnRefreshListener { getPresenter().onRefresh() }
 
-        placeholdersBinding.emptyContentView.setText(R.string.similar_empty_description)
+        placeholdersBinding?.emptyContentView?.setText(R.string.similar_empty_description)
         binding.fab.onClick { getPresenter().onFabClicked() }
     }
 

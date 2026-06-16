@@ -43,7 +43,7 @@ class ForumFragment : BaseFragment<ForumPresenter, ForumView>(), ForumView {
         super.onViewCreated(view, savedInstanceState)
         _viewBinding = FragmentForumBinding.bind(view.findViewById(R.id.fragment_content))
 
-        toolbarBinding.toolbar.gone()
+        toolbarBinding?.toolbar?.gone()
 
         with(viewBinding.includedLayoutDefaultList.recyclerView) {
             adapter = this@ForumFragment.adapter
@@ -52,7 +52,7 @@ class ForumFragment : BaseFragment<ForumPresenter, ForumView>(), ForumView {
             addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
         }
         viewBinding.includedLayoutDefaultList.refreshLayout.setOnRefreshListener { getPresenter().onRefresh() }
-        placeholdersBinding.networkErrorView.setText(R.string.common_error_message)
+        placeholdersBinding?.networkErrorView?.setText(R.string.common_error_message)
     }
 
     override fun onDestroyView() {

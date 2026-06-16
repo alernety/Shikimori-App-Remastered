@@ -130,7 +130,7 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
 
         _toolbarTransparentBinding = LayoutToolbarTransparentWithSearchBinding.bind(seriesBinding.root.findViewById(R.id.toolbarTransparentWithSearch))
         _seriesToolbarBinding = LayoutSeriesToolbarBinding.bind(seriesBinding.root.findViewById(R.id.seriesToolbar))
-        _defaultPlaceholdersBinding = LayoutDefaultPlaceholdersBinding.bind(seriesBinding.root.findViewById(R.id.defaultPlaceholders))
+        _defaultPlaceholdersBinding = LayoutDefaultPlaceholdersBinding.bind(seriesBinding.holders)
         _authorsLayoutBinding = LayoutSeriesEmptyAuthorsBinding.bind(seriesBinding.root.findViewById(R.id.authorsLayout))
 
         with(toolbarTransparentBinding.toolbar) {

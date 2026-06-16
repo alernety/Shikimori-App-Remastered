@@ -64,7 +64,7 @@ class ShikimoriMainFragment : BaseFragment<ShikimoriMainPresenter, ShikimoriMain
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        toolbarBinding.toolbar.gone()
+        // Base toolbar is not inflated (onCreateView overridden without super), no need to hide it
 
         viewBinding.pagesContainerView.adapter = adapter
         viewBinding.pagesContainerView.offscreenPageLimit = 3
