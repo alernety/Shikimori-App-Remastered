@@ -83,7 +83,7 @@ class UserPresenter @Inject constructor(
                     .doOnSuccess { loadFavorites() }
                     .doOnSuccess { loadFriends() }
                     .doOnSuccess { loadClubs() }
-                    .subscribe({}, this::processErrors)
+                    .subscribe({ viewState.showContent(true) }, this::processErrors)
                     .addToDisposables()
 
     private fun loadUser(showLoading: Boolean = true): Single<UserDetails> =

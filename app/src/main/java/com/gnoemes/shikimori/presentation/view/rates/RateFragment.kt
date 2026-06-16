@@ -190,6 +190,9 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
+        // View may be destroyed if fragment is in background (e.g., AuthActivity launched on top)
+        // Check _binding to avoid NullPointerException from the non-null binding getter
+        if (_binding == null) return
         outState.putBoolean(DRAWER_KEY, binding.drawer?.isDrawerOpen(GravityCompat.START) ?: false)
     }
 
@@ -377,7 +380,10 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
         }
     }
 
-    override fun showContent(show: Boolean) = binding.includedLayoutDefaultList.recyclerView.visibleIf { show }
+    override fun showContent(show: Boolean) {
+        binding.includedLayoutDefaultList.recyclerView.visibleIf { show }
+        if (show) fragmentPlaceholdersBinding.emptyContentView.gone()
+    }
 
     override fun onShowLoading() = binding.includedLayoutDefaultList.refreshLayout.showRefresh()
 
@@ -404,6 +410,7 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
         }
 
         binding.rateEmptyView.root.visibility = if (show) View.VISIBLE else View.GONE
+        if (show) fragmentPlaceholdersBinding.emptyContentView.gone()
     }
 
     override fun showNeedAuthView(show: Boolean) {
@@ -424,7 +431,13 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
                 .show()
     }
 
-    override fun showNetworkView() = fragmentPlaceholdersBinding.networkErrorView.visible()
+    override fun showNetworkView() {
+        fragmentPlaceholdersBinding.networkErrorView.visible()
+        fragmentPlaceholdersBinding.emptyContentView.gone()
+    }
 
-    override fun hideNetworkView() = fragmentPlaceholdersBinding.networkErrorView.gone()
+    override fun hideNetworkView() {
+        fragmentPlaceholdersBinding.networkErrorView.gone()
+        fragmentPlaceholdersBinding.emptyContentView.gone()
+    }
 }

@@ -19,7 +19,7 @@ class DetailsInfoViewHolder(
         private val infoAdapter: InfoAdapter
 ) {
 
-    private val placeholder: DetailsPlaceholderViewHolder by lazy { DetailsPlaceholderViewHolder(binding.infoContent.root, binding.infoPlaceholder as ShimmerFrameLayout) }
+    private val placeholder: DetailsPlaceholderViewHolder by lazy { DetailsPlaceholderViewHolder(binding.infoContent.root, binding.infoPlaceholder.root as ShimmerFrameLayout) }
 
     init {
         with(binding.infoContent) {

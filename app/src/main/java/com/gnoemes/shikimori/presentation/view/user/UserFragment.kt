@@ -186,6 +186,7 @@ class UserFragment : BaseFragment<UserPresenter, UserView>(), UserView {
 
     override fun showContent(show: Boolean) {
         profileBinding.scrollView.visibleIf { show }
+        if (show) userPlaceholdersBinding?.emptyContentView?.gone()
         if (userToolbarBinding!!.toolbar.navigationIcon == null) userToolbarBinding!!.appBarLayout.visible()
         else userToolbarBinding!!.appBarLayout.visibleIf { show }
     }
