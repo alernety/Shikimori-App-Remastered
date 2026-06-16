@@ -30,7 +30,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <include layout="@layout/layout_player_rewind_forward" />
+    <include android:id="@+id/included_layout_player_rewind_forward" layout="@layout/layout_player_rewind_forward" />
 
     <ProgressBar
         android:id="@+id/progressBar"

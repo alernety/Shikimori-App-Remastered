@@ -22,12 +22,13 @@ import com.gnoemes.shikimori.presentation.view.base.activity.BaseThemedActivity
 import com.gnoemes.shikimori.utils.Utils
 import com.gnoemes.shikimori.utils.widgets.VideoWebChromeClient
 import dagger.android.AndroidInjection
-import kotlinx.android.synthetic.main.activity_web_player.*
+import com.gnoemes.shikimori.databinding.ActivityWebPlayerBinding
 import java.util.regex.Pattern
 import javax.inject.Inject
 
 class WebPlayerActivity : BaseThemedActivity() {
 
+    private lateinit var binding: ActivityWebPlayerBinding
     private lateinit var chromeClient: VideoWebChromeClient
     private lateinit var webView: WebView
 
@@ -42,15 +43,16 @@ class WebPlayerActivity : BaseThemedActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
+        binding = ActivityWebPlayerBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN)
-        setContentView(R.layout.activity_web_player)
 
         showNoAdsMessage()
 
         if (settingsSource.isOpenLandscape) requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
 
         webView = WebView(applicationContext)
-        frame.addView(webView)
+        binding.frame.addView(webView)
 
         chromeClient = VideoWebChromeClient(webView, windowCallback)
         webView.apply {
@@ -59,7 +61,6 @@ class WebPlayerActivity : BaseThemedActivity() {
             setLayerType(WebView.LAYER_TYPE_HARDWARE, null)
 
             settings.apply {
-                setAppCacheEnabled(true)
                 cacheMode = WebSettings.LOAD_CACHE_ELSE_NETWORK
                 javaScriptCanOpenWindowsAutomatically = true
                 javaScriptEnabled = true
@@ -118,10 +119,8 @@ class WebPlayerActivity : BaseThemedActivity() {
     }
 
     override fun onDestroy() {
-        frame?.removeAllViews()
+        binding.frame?.removeAllViews()
         window.decorView.destroyDrawingCache()
-        webView.webChromeClient = null
-        webView.webViewClient = null
         webView.destroy()
         super.onDestroy()
     }
