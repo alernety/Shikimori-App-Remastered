@@ -15,13 +15,13 @@ class EmptyContentView @JvmOverloads constructor(context: Context,
                                                   defStyleInt: Int = 0
 ) : BaseView(context, attrs, defStyleInt) {
 
-    private val binding: ViewEmptyBinding by lazy { ViewEmptyBinding.inflate(android.view.LayoutInflater.from(context), this, true) }
+    private lateinit var binding: ViewEmptyBinding
     lateinit var callback: (View) -> Unit
 
     override fun getLayout(): Int = R.layout.view_empty
 
     override fun init(context: Context, attrs: AttributeSet?) {
-        super.init(context, attrs)
+        binding = ViewEmptyBinding.inflate(android.view.LayoutInflater.from(context), this, true)
         binding.btnView.setOnClickListener {
             if (::callback.isInitialized) {
                 callback.invoke(it)
