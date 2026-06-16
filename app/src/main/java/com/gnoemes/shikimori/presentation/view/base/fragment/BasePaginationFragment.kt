@@ -41,7 +41,7 @@ abstract class BasePaginationFragment<Items : Any, Presenter : BasePaginationPre
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        _listBinding = LayoutDefaultListBinding.bind(view.findViewById(R.id.refreshLayout))
+        _listBinding = LayoutDefaultListBinding.bind(view.findViewById(R.id.included_layout_default_list))
         super.onViewCreated(view, savedInstanceState)
 
         listBinding.refreshLayout.setOnRefreshListener { getPresenter().onRefresh() }

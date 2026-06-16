@@ -37,13 +37,16 @@ abstract class BaseFragment<Presenter : BasePresenter<V>, V : BaseNetworkView>
     protected val baseBinding get() = _baseBinding!!
 
     private var _toolbarBinding: LayoutToolbarBinding? = null
-    protected val toolbarBinding get() = _toolbarBinding!!
+    protected val toolbarBinding: LayoutToolbarBinding?
+        get() = _toolbarBinding
 
     private var _placeholdersBinding: LayoutDefaultPlaceholdersBinding? = null
-    protected val placeholdersBinding get() = _placeholdersBinding!!
+    protected val placeholdersBinding: LayoutDefaultPlaceholdersBinding?
+        get() = _placeholdersBinding
 
     private var _progressBinding: LayoutProgressBinding? = null
-    protected val progressBinding get() = _progressBinding!!
+    protected val progressBinding: LayoutProgressBinding?
+        get() = _progressBinding
 
     override fun onAttach(context: Context) {
         AndroidSupportInjection.inject(this)
@@ -62,9 +65,9 @@ abstract class BaseFragment<Presenter : BasePresenter<V>, V : BaseNetworkView>
             inflater.inflate(getFragmentLayout(), baseBinding.fragmentContent, true)
         }
         
-        _toolbarBinding = LayoutToolbarBinding.bind(baseBinding.root.findViewById(R.id.appBarLayout))
+        _toolbarBinding = LayoutToolbarBinding.bind(baseBinding.root.findViewById(R.id.included_layout_toolbar))
         _placeholdersBinding = LayoutDefaultPlaceholdersBinding.bind(baseBinding.root.findViewById(R.id.coordinator))
-        _progressBinding = LayoutProgressBinding.bind(baseBinding.root.findViewById(R.id.progressBar))
+        _progressBinding = LayoutProgressBinding.bind(baseBinding.root.findViewById(R.id.included_layout_progress))
 
         return baseBinding.root
     }
@@ -72,9 +75,11 @@ abstract class BaseFragment<Presenter : BasePresenter<V>, V : BaseNetworkView>
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        placeholdersBinding.networkErrorView.setText(R.string.common_error_message_without_pull)
-        placeholdersBinding.networkErrorView.gone()
-        placeholdersBinding.emptyContentView.gone()
+        _placeholdersBinding?.let {
+            it.networkErrorView.setText(R.string.common_error_message_without_pull)
+            it.networkErrorView.gone()
+            it.emptyContentView.gone()
+        }
     }
 
     override fun onDestroyView() {
@@ -125,11 +130,11 @@ abstract class BaseFragment<Presenter : BasePresenter<V>, V : BaseNetworkView>
     override fun onBackPressed() = getPresenter().onBackPressed()
 
     override fun setTitle(title: String) {
-        toolbarBinding.toolbar.title = title
+        toolbarBinding?.toolbar?.title = title
     }
 
     override fun setTitle(stringRes: Int) {
-        toolbarBinding.toolbar.setTitle(stringRes)
+        toolbarBinding?.toolbar?.setTitle(stringRes)
     }
 
     override fun showContent(show: Boolean) {
@@ -137,34 +142,34 @@ abstract class BaseFragment<Presenter : BasePresenter<V>, V : BaseNetworkView>
     }
 
     override fun onShowLoading() {
-        progressBinding.progressBar.visible()
+        progressBinding?.progressBar?.visible()
     }
 
     override fun onHideLoading() {
-        progressBinding.progressBar.gone()
+        progressBinding?.progressBar?.gone()
     }
 
     override fun onShowLightLoading() {
-        progressBinding.progressBar.visible()
+        progressBinding?.progressBar?.visible()
     }
 
     override fun onHideLightLoading() {
-        progressBinding.progressBar.gone()
+        progressBinding?.progressBar?.gone()
     }
 
     override fun showNetworkView() {
-        placeholdersBinding.networkErrorView.visible()
+        _placeholdersBinding?.networkErrorView?.visible()
     }
 
     override fun hideNetworkView() {
-        placeholdersBinding.networkErrorView.gone()
+        _placeholdersBinding?.networkErrorView?.gone()
     }
 
     override fun showEmptyView() {
-        placeholdersBinding.emptyContentView.visible()
+        _placeholdersBinding?.emptyContentView?.visible()
     }
 
     override fun hideEmptyView() {
-        placeholdersBinding.emptyContentView.gone()
+        _placeholdersBinding?.emptyContentView?.gone()
     }
 }
