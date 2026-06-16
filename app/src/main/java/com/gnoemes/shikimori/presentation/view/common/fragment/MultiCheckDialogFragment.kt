@@ -2,8 +2,7 @@ package com.gnoemes.shikimori.presentation.view.common.fragment
 
 import android.app.Dialog
 import android.os.Bundle
-import com.afollestad.materialdialogs.MaterialDialog
-import com.afollestad.materialdialogs.list.listItemsMultiChoice
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.presentation.view.base.fragment.MvpDialogFragment
@@ -51,22 +50,27 @@ class MultiCheckDialogFragment : MvpDialogFragment() {
 
         callback = parentFragment as? DialogCallback
 
-        return MaterialDialog(context!!).show {
-            if (hasTitle()) title(titleRes, title)
-            listItemsMultiChoice(
-                    items = items.map { it.second.first },
-                    initialSelection = items.mapIndexedNotNull { index, pair -> if (pair.first) index else null }.toIntArray(),
-                    waitForPositiveButton = true,
-                    allowEmptySelection = true)
-            { _, indices, _ ->
-                val callbackItems = mutableListOf<String>()
-                indices.forEach { callbackItems.add(items[it].second.second) }
-                callback?.dialogItemCallback(tag, callbackItems)
+        return MaterialAlertDialogBuilder(context!!).apply {
+            if (hasTitle()) {
+                if (title != null) setTitle(title)
+                else setTitle(titleRes)
             }
-
-            positiveButton(res = R.string.common_accept)
-            negativeButton(res = R.string.common_cancel)
-        }
+            val checkedItems = mutableListOf<Int>()
+            items.forEachIndexed { index, pair -> if (pair.first) checkedItems.add(index) }
+            setMultiChoiceItems(
+                    items.map { it.second.first }.toTypedArray(),
+                    BooleanArray(items.size) { index -> checkedItems.contains(index) }
+            ) { _, which, isChecked ->
+                if (isChecked) checkedItems.add(which)
+                else checkedItems.remove(which)
+            }
+            setPositiveButton(R.string.common_accept) { _, _ ->
+                val callbackItems = mutableListOf<String>()
+                checkedItems.forEach { callbackItems.add(items[it].second.second) }
+                callback?.dialogItemCallback(this@MultiCheckDialogFragment.tag, callbackItems)
+            }
+            setNegativeButton(R.string.common_cancel, null)
+        }.create()
     }
 
     private fun hasTitle() = title != null || titleRes != Constants.NO_ID.toInt()

@@ -2,8 +2,7 @@ package com.gnoemes.shikimori.presentation.view.common.fragment
 
 import android.app.Dialog
 import android.os.Bundle
-import com.afollestad.materialdialogs.MaterialDialog
-import com.afollestad.materialdialogs.list.listItems
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.presentation.view.base.fragment.MvpDialogFragment
 import com.gnoemes.shikimori.utils.withArgs
@@ -57,15 +56,18 @@ class ListDialogFragment : MvpDialogFragment() {
         idCallback = parentFragment as? DialogIdCallback
         callback = parentFragment as? DialogCallback
 
-        return MaterialDialog(context!!).show {
-            if (hasTitle()) title(titleRes, title)
-            listItems(items = items.map { it.first }) { _, index, _ ->
-                val action = items[index].second
-                if (isIdCallback) idCallback?.dialogItemIdCallback(tag, action.toLongOrNull()
-                        ?: Constants.NO_ID)
-                else callback?.dialogItemCallback(tag, action)
+        return MaterialAlertDialogBuilder(context!!).apply {
+            if (hasTitle()) {
+                if (title != null) setTitle(title)
+                else setTitle(titleRes)
             }
-        }
+            setItems(items.map { it.first }.toTypedArray()) { _, which ->
+                val action = items[which].second
+                if (isIdCallback) idCallback?.dialogItemIdCallback(this@ListDialogFragment.tag, action.toLongOrNull()
+                        ?: Constants.NO_ID)
+                else callback?.dialogItemCallback(this@ListDialogFragment.tag, action)
+            }
+        }.create()
     }
 
     private fun hasTitle() = title != null || titleRes != Constants.NO_ID.toInt()
