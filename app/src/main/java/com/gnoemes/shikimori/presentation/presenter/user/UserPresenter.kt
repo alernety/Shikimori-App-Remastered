@@ -55,8 +55,18 @@ class UserPresenter @Inject constructor(
         } else loadData()
     }
 
+    override fun processErrors(throwable: Throwable) {
+        viewState.showAuthView(false)
+        super.processErrors(throwable)
+    }
+
     override fun onViewReattached() {
-        if (wasGuest) loadMyUser()
+        if (wasGuest && !isGuest()) {
+            loadMyUser()
+        } else if (wasGuest) {
+            viewState.showContent(false)
+            viewState.showAuthView(true)
+        }
     }
 
     private fun loadMyUser() = interactor.getMyUserId()

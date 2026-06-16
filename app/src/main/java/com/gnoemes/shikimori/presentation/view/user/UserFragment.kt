@@ -97,18 +97,18 @@ class UserFragment : BaseFragment<UserPresenter, UserView>(), UserView {
             addBackButton { getPresenter().onBackPressed() }
         }
 
-        infoHolder = UserInfoViewHolder.create(profileBinding.infoLayout.infoContent.root, getPresenter()::onAction)
+        infoHolder = UserInfoViewHolder.create(profileBinding.infoLayout.root, getPresenter()::onAction)
         animeRateHolder = UserRateViewHolder.create(profileBinding.animeRateLayout.root, true, getPresenter()::onAction, getPresenter()::onArrowClicked)
         mangaRateHolder = UserRateViewHolder.create(profileBinding.mangaRateLayout.root, false, getPresenter()::onAction, getPresenter()::onArrowClicked)
 
         userToolbarBinding!!.appBarLayout.addOnOffsetChangedListener(appbarOffsetListener)
 
         userPlaceholdersBinding!!.networkErrorView.callback = { getPresenter().onRefresh() }
-        userPlaceholdersBinding!!.networkErrorView.showButton()
 
         authBinding!!.signUpBtn.onClick { getPresenter().onSignUp() }
         authBinding!!.signInBtn.onClick { getPresenter().onSignIn() }
         authBinding!!.root.gone()
+        userPlaceholdersBinding!!.networkErrorView.gone()
     }
 
     private val appbarOffsetListener = AppBarLayout.OnOffsetChangedListener { _, offset ->
@@ -214,8 +214,13 @@ class UserFragment : BaseFragment<UserPresenter, UserView>(), UserView {
     override fun showAuthView(show: Boolean) {
         authBinding!!.root.visibleIf { show }
         userToolbarBinding!!.appBarLayout.visible()
+        if (show) userPlaceholdersBinding!!.networkErrorView.gone()
     }
 
-    override fun showNetworkView() = userPlaceholdersBinding!!.networkErrorView.visible()
+    override fun showNetworkView() {
+        userPlaceholdersBinding!!.networkErrorView.visible()
+        authBinding!!.root.gone()
+    }
+
     override fun hideNetworkView() = userPlaceholdersBinding!!.networkErrorView.gone()
 }
