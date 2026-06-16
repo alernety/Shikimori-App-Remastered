@@ -79,7 +79,7 @@
 
     </androidx.core.widget.NestedScrollView>
 
-    <include layout="@layout/layout_collapsing_toolbar" />
+    <include android:id="@+id/included_layout_collapsing_toolbar" layout="@layout/layout_collapsing_toolbar" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/actionBtn"

@@ -69,7 +69,7 @@
         tools:listitem="@layout/item_episode"
         tools:orientation="vertical" />
 
-    <include layout="@layout/layout_default_placeholders" />
+    <include android:id="@+id/included_layout_default_placeholders" layout="@layout/layout_default_placeholders" />
 
     <include
         android:id="@+id/episodesLayout"
