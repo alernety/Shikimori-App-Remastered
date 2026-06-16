@@ -1,6 +1,7 @@
 package com.gnoemes.shikimori.presentation.presenter.base
 
 import com.gnoemes.shikimori.entity.app.domain.AnalyticEvent
+import com.gnoemes.shikimori.entity.common.domain.KeyScreen
 import com.gnoemes.shikimori.entity.common.domain.Screens
 import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.manga.presentation.MangaNavigationData
@@ -19,47 +20,47 @@ abstract class BaseNavigationPresenter<View : BaseView> : BaseAnalyticPresenter<
     override fun onBackPressed() = router.exit()
 
     open fun onAnimeClicked(id: Long) {
-        router.navigateTo(Screens.ANIME_DETAILS, id)
+        router.navigateTo(KeyScreen(Screens.ANIME_DETAILS, id))
         logEvent(AnalyticEvent.NAVIGATION_DETAILS_ANIME)
     }
 
     open fun onMangaClicked(id: Long) {
-        router.navigateTo(Screens.MANGA_DETAILS, MangaNavigationData(id, Type.MANGA))
+        router.navigateTo(KeyScreen(Screens.MANGA_DETAILS, MangaNavigationData(id, Type.MANGA)))
         logEvent(AnalyticEvent.NAVIGATION_DETAILS_MANGA)
     }
 
     open fun onRanobeClicked(id: Long){
-        router.navigateTo(Screens.MANGA_DETAILS, MangaNavigationData(id, Type.RANOBE))
+        router.navigateTo(KeyScreen(Screens.MANGA_DETAILS, MangaNavigationData(id, Type.RANOBE)))
         logEvent(AnalyticEvent.NAVIGATION_DETAILS_RANOBE)
     }
 
     open fun onCharacterClicked(id: Long) {
-        router.navigateTo(Screens.CHARACTER_DETAILS, id)
+        router.navigateTo(KeyScreen(Screens.CHARACTER_DETAILS, id))
         logEvent(AnalyticEvent.NAVIGATION_DETAILS_CHARACTER)
     }
 
     open fun onUserClicked(id: Long) {
-        router.navigateTo(Screens.USER_DETAILS, id)
+        router.navigateTo(KeyScreen(Screens.USER_DETAILS, id))
         logEvent(AnalyticEvent.NAVIGATION_DETAILS_USER)
     }
 
     open fun onPersonClicked(id: Long) {
-        router.navigateTo(Screens.PERSON_DETAILS, id)
+        router.navigateTo(KeyScreen(Screens.PERSON_DETAILS, id))
         logEvent(AnalyticEvent.NAVIGATION_DETAILS_PERSON)
     }
 
     open fun onTopicClicked(id: Long){
-        router.navigateTo(Screens.TOPIC_DETAILS, id)
+        router.navigateTo(KeyScreen(Screens.TOPIC_DETAILS, id))
         logEvent(AnalyticEvent.NAVIGATION_DETAILS_TOPIC)
     }
 
     open fun onClubClicked(id: Long){
-        router.navigateTo(Screens.CLUB_DETAILS, id)
+        router.navigateTo(KeyScreen(Screens.CLUB_DETAILS, id))
         logEvent(AnalyticEvent.NAVIGATION_DETAILS_CLUB)
     }
 
     open fun onOpenWeb(url: String?) {
-        router.navigateTo(Screens.WEB, url)
+        router.navigateTo(KeyScreen(Screens.WEB, url))
         logEvent(AnalyticEvent.NAVIGATION_WEB)
     }
 
@@ -84,17 +85,17 @@ abstract class BaseNavigationPresenter<View : BaseView> : BaseAnalyticPresenter<
     }
 
     open fun openEmbeddedPlayer(payload: Any?) {
-        router.navigateTo(Screens.EMBEDDED_PLAYER, payload)
+        router.navigateTo(KeyScreen(Screens.EMBEDDED_PLAYER, payload))
         logEvent(AnalyticEvent.PLAYER_OPENED_EMBEDDED)
     }
 
     open fun openWebPlayer(payload: Any?) {
-        router.navigateTo(Screens.WEB_PLAYER, payload)
+        router.navigateTo(KeyScreen(Screens.WEB_PLAYER, payload))
         logEvent(AnalyticEvent.PLAYER_OPENED_WEB)
     }
 
     open fun openExternalPlayer(payload: Any?) {
-        router.navigateTo(Screens.EXTERNAL_PLAYER, payload)
+        router.navigateTo(KeyScreen(Screens.EXTERNAL_PLAYER, payload))
         logEvent(AnalyticEvent.PLAYER_OPENED_EXTERNAL)
     }
 
