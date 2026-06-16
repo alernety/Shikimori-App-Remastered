@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.di.base.modules.BaseFragmentModule
+import com.gnoemes.shikimori.entity.common.domain.KeyScreen
 import com.gnoemes.shikimori.entity.main.LocalCiceroneHolder
 import com.gnoemes.shikimori.presentation.presenter.common.RouteHolder
 import com.gnoemes.shikimori.presentation.view.base.fragment.*
@@ -57,7 +58,7 @@ class BottomTabContainer : MvpFragment(), RouterProvider, BackButtonListener, Ha
         super.onActivityCreated(savedInstanceState)
 
         if (childFM.findFragmentById(R.id.fragment_container) == null) {
-            getCicerone().router.replaceScreen(getContainerName())
+            getCicerone().router.replaceScreen(KeyScreen(getContainerName()))
         }
     }
 

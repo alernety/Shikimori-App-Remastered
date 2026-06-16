@@ -188,9 +188,9 @@ class MainActivity : BaseActivity<MainPresenter, MainView>(), MainView, RouterPr
         override fun replace(command: Replace) {
             val fm = fragmentManager
             val ta = fm.beginTransaction()
-            tabs.forEach { tab ->
-                val fragment = fm.findFragmentByTag(tab.screenKey)!!
-                if (tab.screenKey == command.screenKey) {
+        tabs.forEach { tab ->
+            val fragment = fm.findFragmentByTag(tab.screenKey)!!
+            if (tab.screenKey == command.screen.screenKey) {
                     if (fragment.isDetached) {
                         ta.attach(fragment)
                     }

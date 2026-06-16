@@ -33,8 +33,8 @@ abstract class BaseFragment<Presenter : BasePresenter<V>, V : BaseNetworkView>
 
     private val viewHandler = Handler(Looper.getMainLooper())
 
-    private var _binding: FragmentBaseBinding? = null
-    protected val binding get() = _binding!!
+    private var _baseBinding: FragmentBaseBinding? = null
+    protected val baseBinding get() = _baseBinding!!
 
     private var _toolbarBinding: LayoutToolbarBinding? = null
     protected val toolbarBinding get() = _toolbarBinding!!
@@ -56,17 +56,17 @@ abstract class BaseFragment<Presenter : BasePresenter<V>, V : BaseNetworkView>
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        _binding = FragmentBaseBinding.inflate(inflater, container, false)
+        _baseBinding = FragmentBaseBinding.inflate(inflater, container, false)
         
         if (getFragmentLayout() != View.NO_ID) {
-            inflater.inflate(getFragmentLayout(), binding.fragmentContent, true)
+            inflater.inflate(getFragmentLayout(), baseBinding.fragmentContent, true)
         }
         
-        _toolbarBinding = LayoutToolbarBinding.bind(binding.root.findViewById(R.id.appBarLayout))
-        _placeholdersBinding = LayoutDefaultPlaceholdersBinding.bind(binding.root.findViewById(R.id.coordinator))
-        _progressBinding = LayoutProgressBinding.bind(binding.root.findViewById(R.id.progressBar))
+        _toolbarBinding = LayoutToolbarBinding.bind(baseBinding.root.findViewById(R.id.appBarLayout))
+        _placeholdersBinding = LayoutDefaultPlaceholdersBinding.bind(baseBinding.root.findViewById(R.id.coordinator))
+        _progressBinding = LayoutProgressBinding.bind(baseBinding.root.findViewById(R.id.progressBar))
 
-        return binding.root
+        return baseBinding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -80,7 +80,7 @@ abstract class BaseFragment<Presenter : BasePresenter<V>, V : BaseNetworkView>
     override fun onDestroyView() {
         hideSoftInput()
         viewHandler.removeCallbacksAndMessages(null)
-        _binding = null
+        _baseBinding = null
         _toolbarBinding = null
         _placeholdersBinding = null
         _progressBinding = null
@@ -133,7 +133,7 @@ abstract class BaseFragment<Presenter : BasePresenter<V>, V : BaseNetworkView>
     }
 
     override fun showContent(show: Boolean) {
-        binding.fragmentContent.visibleIf { show }
+        baseBinding.fragmentContent.visibleIf { show }
     }
 
     override fun onShowLoading() {
