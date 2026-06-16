@@ -48,10 +48,7 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView>(
     }
 
     override fun onViewReattached() {
-        loadDetails()
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({ viewState.setHeadItem(it) }, this::processErrors)
-                .addToDisposables()
+        loadData()
     }
 
     abstract fun loadContent(showLoading: Boolean = true): Single<DetailsHeadItem>

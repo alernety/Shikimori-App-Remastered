@@ -18,7 +18,7 @@ import com.gnoemes.shikimori.utils.visibleIf
 abstract class BasePaginationFragment<Items : Any, Presenter : BasePaginationPresenter<Items, ViewV>, ViewV : BasePaginationView> : BaseFragment<Presenter, ViewV>(), BasePaginationView {
 
     private var _listBinding: LayoutDefaultListBinding? = null
-    protected val listBinding get() = _listBinding!!
+    protected val listBinding: LayoutDefaultListBinding? get() = _listBinding
 
     abstract val adapter: BasePaginationAdapter
 
@@ -41,14 +41,17 @@ abstract class BasePaginationFragment<Items : Any, Presenter : BasePaginationPre
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        _listBinding = LayoutDefaultListBinding.bind(view.findViewById(R.id.included_layout_default_list))
+        val listView = view.findViewById<View>(R.id.included_layout_default_list)
+        if (listView != null) {
+            _listBinding = LayoutDefaultListBinding.bind(listView)
+        }
         super.onViewCreated(view, savedInstanceState)
 
-        listBinding.refreshLayout.setOnRefreshListener { getPresenter().onRefresh() }
+        _listBinding?.refreshLayout?.setOnRefreshListener { getPresenter().onRefresh() }
     }
 
     override fun onDestroyView() {
-        listBinding.recyclerView.removeOnScrollListener(nextPageListener)
+        _listBinding?.recyclerView?.removeOnScrollListener(nextPageListener)
         _listBinding = null
         super.onDestroyView()
     }
@@ -57,9 +60,9 @@ abstract class BasePaginationFragment<Items : Any, Presenter : BasePaginationPre
         adapter.bindItems(data)
     }
 
-    override fun showContent(show: Boolean) = listBinding.recyclerView.visibleIf { show }
-    override fun onShowLoading() = listBinding.refreshLayout.showRefresh()
-    override fun onHideLoading() = listBinding.refreshLayout.hideRefresh()
+    override fun showContent(show: Boolean) = listBinding?.recyclerView?.visibleIf { show } ?: Unit
+    override fun onShowLoading() = listBinding?.refreshLayout?.showRefresh() ?: Unit
+    override fun onHideLoading() = listBinding?.refreshLayout?.hideRefresh() ?: Unit
     override fun showPageLoading() = postViewAction { adapter.showProgress(true) }
     override fun hidePageLoading() = postViewAction { adapter.showProgress(false) }
     override fun onAllData() = Unit
