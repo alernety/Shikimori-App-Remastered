@@ -4,8 +4,8 @@
     android:layout_height="match_parent"
     android:background="@color/player_surface">
 
-    <include android:id="@+id/included_layout_player_controls" layout="@layout/layout_player_controls" />
+    <include layout="@layout/layout_player_controls" />
 
-    <include android:id="@+id/included_layout_player_bottom" layout="@layout/layout_player_bottom" />
+    <include layout="@layout/layout_player_bottom" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

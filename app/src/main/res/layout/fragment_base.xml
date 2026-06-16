@@ -15,7 +15,7 @@
         android:fitsSystemWindows="true"
         app:layout_behavior="@string/appBarFixScrollingFooterBehavior" />
 
-    <include android:id="@+id/included_layout_default_placeholders" layout="@layout/layout_default_placeholders" />
+    <include layout="@layout/layout_default_placeholders" />
 
     <include android:id="@+id/included_layout_progress" layout="@layout/layout_progress" />
 

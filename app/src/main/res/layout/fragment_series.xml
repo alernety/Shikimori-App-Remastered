@@ -73,7 +73,6 @@
                 app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
                 <include
-        android:id="@+id/defaultPlaceholders"
         layout="@layout/layout_default_placeholders" />
 
                 <include

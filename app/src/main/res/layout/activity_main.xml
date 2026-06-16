@@ -8,7 +8,6 @@
     tools:context="com.gnoemes.shikimori.presentation.view.main.MainActivity">
 
     <include
-        android:id="@+id/included_layout_container"
         layout="@layout/layout_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
