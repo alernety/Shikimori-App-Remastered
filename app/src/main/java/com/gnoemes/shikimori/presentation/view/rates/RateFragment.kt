@@ -408,6 +408,12 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
 
     override fun showNeedAuthView(show: Boolean) {
         binding.authLayout.root.visibility = if (show) View.VISIBLE else View.GONE
+        if (show) {
+            binding.includedLayoutDefaultList.refreshLayout.gone()
+            binding.rateEmptyView.root.gone()
+            fragmentPlaceholdersBinding.emptyContentView.gone()
+            fragmentPlaceholdersBinding.networkErrorView.gone()
+        }
     }
 
     override fun showRateMessage(taskId: Int, message: String, rateId: Long) {
