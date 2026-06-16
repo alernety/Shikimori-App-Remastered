@@ -15,6 +15,8 @@ interface CharacterView : BaseFragmentView {
 
     fun setDescription(item: DetailsDescriptionItem)
 
-    fun setContent(type: DetailsContentType, item: DetailsContentItem)
+    fun setSeyuContent(item: DetailsContentItem)
+    fun setAnimeContent(item: DetailsContentItem)
+    fun setMangaContent(item: DetailsContentItem)
 
 }

@@ -69,7 +69,7 @@ class CharacterFragment : BaseFragment<CharacterPresenter, CharacterView>(), Cha
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        _binding = FragmentCharacterBinding.bind(view)
+        _binding = FragmentCharacterBinding.bind(view.findViewById(R.id.nestedScroll))
 
         toolbarBinding?.toolbar?.apply {
             addBackButton { getPresenter().onBackPressed() }
@@ -121,8 +121,16 @@ class CharacterFragment : BaseFragment<CharacterPresenter, CharacterView>(), Cha
         descriptionHolder.bind(item)
     }
 
-    override fun setContent(type: DetailsContentType, item: DetailsContentItem) {
-        contentHolders[type]?.bind(type, item)
+    override fun setSeyuContent(item: DetailsContentItem) {
+        contentHolders[DetailsContentType.SEYUS]?.bind(DetailsContentType.SEYUS, item)
+    }
+
+    override fun setAnimeContent(item: DetailsContentItem) {
+        contentHolders[DetailsContentType.ANIMES]?.bind(DetailsContentType.ANIMES, item)
+    }
+
+    override fun setMangaContent(item: DetailsContentItem) {
+        contentHolders[DetailsContentType.MANGAS]?.bind(DetailsContentType.MANGAS, item)
     }
 
     override fun showContent(show: Boolean) = Unit

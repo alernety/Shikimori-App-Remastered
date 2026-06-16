@@ -68,7 +68,7 @@ class PersonFragment : BaseFragment<PersonPresenter, PersonView>(), PersonView {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        _viewBinding = FragmentPersonBinding.bind(view)
+        _viewBinding = FragmentPersonBinding.bind(view.findViewById(R.id.nestedScroll))
 
         toolbarBinding?.toolbar?.apply {
             addBackButton { getPresenter().onBackPressed() }
@@ -117,8 +117,12 @@ class PersonFragment : BaseFragment<PersonPresenter, PersonView>(), PersonView {
         descriptionHolder.bind(item)
     }
 
-    override fun setContent(type: DetailsContentType, item: DetailsContentItem) {
-        contentHolders[type]?.bind(type, item)
+    override fun setCharactersContent(item: DetailsContentItem) {
+        contentHolders[DetailsContentType.CHARACTERS]?.bind(DetailsContentType.CHARACTERS, item)
+    }
+
+    override fun setWorksContent(item: DetailsContentItem) {
+        contentHolders[DetailsContentType.WORKS]?.bind(DetailsContentType.WORKS, item)
     }
 
     override fun showContent(show: Boolean) = Unit
