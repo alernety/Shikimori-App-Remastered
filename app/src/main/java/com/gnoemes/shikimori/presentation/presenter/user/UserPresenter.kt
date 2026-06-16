@@ -24,6 +24,7 @@ import com.gnoemes.shikimori.utils.appendHostIfNeed
 import com.gnoemes.shikimori.utils.appendLoadingLogic
 import io.reactivex.Completable
 import io.reactivex.Single
+import io.reactivex.android.schedulers.AndroidSchedulers
 import java.net.URLEncoder
 import javax.inject.Inject
 
@@ -62,6 +63,7 @@ class UserPresenter @Inject constructor(
             .doOnSuccess { id = it }
             .doOnSubscribe { isMe = true }
             .doOnSuccess { wasGuest = false }
+            .observeOn(AndroidSchedulers.mainThread())
             .doOnSuccess { viewState.showAuthView(false) }
             .subscribe({ loadData() }, this::processErrors)
             .addToDisposables()
@@ -80,6 +82,7 @@ class UserPresenter @Inject constructor(
                         if (showLoading) Single.just(it).appendLoadingLogic(viewState)
                         else Single.just(it)
                     }
+                    .observeOn(AndroidSchedulers.mainThread())
                     .doOnSuccess { currentUser = it }
                     .doOnSuccess { viewState.setInfo(converter.convertInfo(it)) }
                     .doOnSuccess { viewState.setHead(converter.convertHead(it)) }
@@ -89,18 +92,21 @@ class UserPresenter @Inject constructor(
     private fun loadFavorites() =
             interactor.getFavorites(id)
                     .map { converter.convertFavorites(it) }
+                    .observeOn(AndroidSchedulers.mainThread())
                     .subscribe({ viewState.setFavorites(currentUser.isMe, it) }, this::processErrors)
                     .addToDisposables()
 
     private fun loadFriends() =
             interactor.getFriends(id)
                     .map { converter.convertFriends(it) }
+                    .observeOn(AndroidSchedulers.mainThread())
                     .subscribe({ viewState.setFriends(currentUser.isMe, it) }, this::processErrors)
                     .addToDisposables()
 
     private fun loadClubs() =
             interactor.getClubs(id)
                     .map { converter.convertClubs(it) }
+                    .observeOn(AndroidSchedulers.mainThread())
                     .subscribe({ viewState.setClubs(currentUser.isMe, it) }, this::processErrors)
                     .addToDisposables()
 

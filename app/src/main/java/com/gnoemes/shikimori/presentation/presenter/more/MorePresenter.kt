@@ -13,6 +13,7 @@ import com.gnoemes.shikimori.entity.user.domain.UserStatus
 import com.gnoemes.shikimori.presentation.presenter.base.BaseNetworkPresenter
 import com.gnoemes.shikimori.presentation.presenter.more.provider.MoreResourceProvider
 import com.gnoemes.shikimori.presentation.view.more.MoreView
+import io.reactivex.android.schedulers.AndroidSchedulers
 import javax.inject.Inject
 
 @InjectViewState
@@ -41,6 +42,7 @@ class MorePresenter @Inject constructor(
 
     private fun loadUser() =
             userInteractor.getMyUserBrief()
+                    .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(this::setUser, this::processErrors)
 
     private fun setUser(user: UserBrief) {

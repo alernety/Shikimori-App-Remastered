@@ -25,6 +25,7 @@ import com.gnoemes.shikimori.BuildConfig
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.presentation.view.base.activity.BaseView
 import io.reactivex.Single
+import io.reactivex.android.schedulers.AndroidSchedulers
 
 fun String.appendHostIfNeed(host: String = BuildConfig.ShikimoriBaseUrl): String {
     return if (this.contains("http")) this else host + this
@@ -177,7 +178,8 @@ fun Toolbar?.addBackButton(@DrawableRes icon: Int = R.drawable.ic_arrow_back, li
 }
 
 fun <T> Single<T>.appendLoadingLogic(viewState: BaseView): Single<T> =
-        this.doOnSubscribe { viewState.onShowLoading() }
+        this.observeOn(AndroidSchedulers.mainThread())
+                .doOnSubscribe { viewState.onShowLoading() }
                 .doOnSubscribe { viewState.hideEmptyView() }
                 .doOnSubscribe { viewState.hideNetworkView() }
                 .doOnSubscribe { viewState.showContent(false) }
@@ -186,7 +188,8 @@ fun <T> Single<T>.appendLoadingLogic(viewState: BaseView): Single<T> =
                 .doOnSuccess { viewState.showContent(true) }
 
 fun <T> Single<T>.appendLightLoadingLogic(viewState: BaseView): Single<T> =
-        this.doOnSubscribe { viewState.onShowLightLoading() }
+        this.observeOn(AndroidSchedulers.mainThread())
+                .doOnSubscribe { viewState.onShowLightLoading() }
                 .doAfterTerminate { viewState.onHideLightLoading() }
                 .doOnEvent { _, _ -> viewState.onHideLightLoading() }
 

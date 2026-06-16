@@ -113,6 +113,7 @@ class RatePresenter @Inject constructor(
                         if (isAnime) rateCountConverter.countAnimeRates(it)
                         else rateCountConverter.countMangaRates(it)
                     }
+                    .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(this::setRateData, this::processErrors)
                     .addToDisposables()
 
@@ -342,6 +343,7 @@ class RatePresenter @Inject constructor(
                 else if (info.first > rate.episodes) rate.episodes + 1
                 else info.second
             }
+                    .observeOn(AndroidSchedulers.mainThread())
                     .subscribe({ checkRateWatchProgress(true, rate, it) }, this::processErrors)
                     .addToDisposables()
         }
@@ -351,6 +353,7 @@ class RatePresenter @Inject constructor(
     private fun checkRateWatchProgress(anime: Boolean, rate: Rate, progress: Int) =
             seriesInteractor.getTranslationSettings(rate.anime?.id!!)
                     .flatMap { ratesInteractor.getRate(rate.id).ignoreElement().andThen(Single.just(it)) }
+                    .observeOn(AndroidSchedulers.mainThread())
                     .subscribe({ watchOnlineOrOpenList(rate, it, progress) }, this::processErrors)
                     .addToDisposables()
 
@@ -379,6 +382,7 @@ class RatePresenter @Inject constructor(
                 logEvent(AnalyticEvent.RATE_DROP_MENU)
             }
             taskInteractor.newTask(task)
+                    .observeOn(AndroidSchedulers.mainThread())
                     .doOnNext { viewState.showRateMessage(it, rateResourceProvider.getChangeRateStatusMessage(item.type, newStatus), item.id) }
                     .subscribe({ removeFromListAndRefresh(item) }, this::processErrors)
                     .addToDisposables()
@@ -393,6 +397,7 @@ class RatePresenter @Inject constructor(
                         .subscribeAndRefresh(id)
             }
             taskInteractor.newTask(task)
+                    .observeOn(AndroidSchedulers.mainThread())
                     .doOnNext { viewState.showRateMessage(it, rateResourceProvider.getDeleteRateMessage(item.type), item.id) }
                     .subscribe({ removeFromListAndRefresh(item) }, this::processErrors)
                     .addToDisposables()
@@ -405,6 +410,7 @@ class RatePresenter @Inject constructor(
 
     private fun Completable.subscribeAndRefresh(id: Long) {
         this.andThen(changesInteractor.sendRateChanges(id))
+                .observeOn(AndroidSchedulers.mainThread())
                 .doOnComplete { loadUserOrCategories() }
                 .subscribe(this@RatePresenter::onRefresh, this@RatePresenter::processErrors)
                 .addToDisposables()

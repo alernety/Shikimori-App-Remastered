@@ -23,7 +23,7 @@ class ScreenshotPagerAdapter(
     override fun instantiateItem(container: ViewGroup, position: Int): Any {
         val view = LayoutInflater.from(container.context).inflate(R.layout.item_screenshot_page, null)
         val photoView = view.findViewById<TouchImageView>(R.id.imageView)
-        val progressBar = view.findViewById<SpinKitView>(R.id.progressBar)
+        val progressBar = view.findViewById<SpinKitView>(R.id.included_layout_progress)
 
         val item = items[position]
         GlideApp.with(photoView)

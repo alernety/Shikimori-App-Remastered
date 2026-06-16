@@ -22,6 +22,7 @@ import com.gnoemes.shikimori.utils.clearAndAddAll
 import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.Single
+import io.reactivex.android.schedulers.AndroidSchedulers
 import javax.inject.Inject
 
 @InjectViewState
@@ -99,6 +100,7 @@ class SeriesPresenter @Inject constructor(
 
     private fun loadEpisodes() = interactor.getEpisodes(navigationData.animeId, navigationData.nameEng, isAlternative)
             .map { it.take(navigationData.episodesAired) }
+            .observeOn(AndroidSchedulers.mainThread())
             .doOnSubscribe { viewState.showEpisodeLoading(true) }
             .doOnSuccess { viewState.showEpisodeLoading(false) }
             .subscribe(this::openPriorityEpisode, this::processErrors)
@@ -166,6 +168,7 @@ class SeriesPresenter @Inject constructor(
 
     fun onNextEpisode() = interactor.getEpisodes(navigationData.animeId, navigationData.nameEng, isAlternative)
             .map { it.take(navigationData.episodesAired) }
+            .observeOn(AndroidSchedulers.mainThread())
             .doOnSubscribe { viewState.showEpisodeLoading(true) }
             .doOnSuccess { viewState.showEpisodeLoading(false) }
             .subscribe(this::loadNextEpisode, this::processErrors)
@@ -285,6 +288,7 @@ class SeriesPresenter @Inject constructor(
         if (episode != null) {
             logEvent(AnalyticEvent.ANIME_TRANSLATIONS_DISCUSSION)
             interactor.getTopic(navigationData.animeId, episode!!)
+                    .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(this::onTopicClicked, this::onDiscussionNotExist)
                     .addToDisposables()
         }

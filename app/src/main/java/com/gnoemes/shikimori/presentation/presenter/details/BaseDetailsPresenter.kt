@@ -22,6 +22,7 @@ import com.gnoemes.shikimori.presentation.presenter.common.provider.CommonResour
 import com.gnoemes.shikimori.presentation.view.details.BaseDetailsView
 import com.gnoemes.shikimori.utils.appendLightLoadingLogic
 import com.gnoemes.shikimori.utils.clearAndAddAll
+import io.reactivex.android.schedulers.AndroidSchedulers
 import com.gnoemes.shikimori.utils.firstUpperCase
 import io.reactivex.Completable
 import io.reactivex.Single
@@ -48,6 +49,7 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView>(
 
     override fun onViewReattached() {
         loadDetails()
+                .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ viewState.setHeadItem(it) }, this::processErrors)
                 .addToDisposables()
     }
@@ -77,12 +79,14 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView>(
                     .map { it.characters }
                     .doOnSuccess { characters.clearAndAddAll(it) }
                     .map(contentConverter)
+                    .observeOn(AndroidSchedulers.mainThread())
                     .subscribe({ viewState.setContentItem(DetailsContentType.CHARACTERS, it) }, this::processErrors)
                     .addToDisposables()
 
     protected open fun loadRelated() =
             relatedFactory.invoke(id)
                     .map(contentConverter)
+                    .observeOn(AndroidSchedulers.mainThread())
                     .subscribe({ viewState.setContentItem(DetailsContentType.RELATED, it) }, this::processErrors)
                     .addToDisposables()
 
@@ -239,6 +243,7 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView>(
 
     protected open fun Completable.updateContentData() {
         andThen(loadContent(false))
+                .observeOn(AndroidSchedulers.mainThread())
                 .doOnSuccess { viewState.setHeadItem(it) }
                 .subscribe({ }, this@BaseDetailsPresenter::processErrors)
                 .addToDisposables()

@@ -14,6 +14,7 @@ import com.gnoemes.shikimori.presentation.view.player.embedded.EmbeddedPlayerVie
 import com.gnoemes.shikimori.presentation.view.player.embedded.provider.EmbeddedPlayerResourceProvider
 import com.gnoemes.shikimori.utils.Utils
 import com.gnoemes.shikimori.utils.appendLoadingLogic
+import io.reactivex.android.schedulers.AndroidSchedulers
 import javax.inject.Inject
 
 @InjectViewState
@@ -104,6 +105,7 @@ class EmbeddedPlayerPresenter @Inject constructor(
         val rateId = navigationData.rateId ?: Constants.NO_ID
         interactor
             .sendEpisodeChanges(EpisodeChanges.Changes(rateId, animeId, currentEpisode, true))
+            .observeOn(AndroidSchedulers.mainThread())
             .subscribe({}, this::processErrors)
             .addToDisposables()
     }

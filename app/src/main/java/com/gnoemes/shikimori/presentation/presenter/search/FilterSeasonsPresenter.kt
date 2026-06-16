@@ -10,6 +10,7 @@ import com.gnoemes.shikimori.entity.search.presentation.FilterViewModel
 import com.gnoemes.shikimori.presentation.presenter.base.BaseFilterPresenter
 import com.gnoemes.shikimori.presentation.presenter.search.converter.FilterViewModelConverter
 import com.gnoemes.shikimori.presentation.view.search.filter.seasons.FilterSeasonsView
+import io.reactivex.android.schedulers.AndroidSchedulers
 import javax.inject.Inject
 
 @InjectViewState
@@ -27,6 +28,7 @@ class FilterSeasonsPresenter @Inject constructor(
                     .map { list -> list.first { it.filterType == FilterType.SEASON } }
                     .map { converter.convertSeasons(it, appliedFilters) }
                     .doOnSuccess { loadCustomFilters() }
+                    .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(this::setData, this::processErrors)
                     .addToDisposables()
 
