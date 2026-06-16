@@ -3,7 +3,6 @@ package com.gnoemes.shikimori
 import android.app.Application
 import android.content.Context
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.multidex.MultiDex
 import com.gnoemes.shikimori.di.app.component.DaggerAppComponent
 import dagger.android.*
 import net.danlew.android.joda.JodaTimeAndroid
@@ -19,11 +18,6 @@ class App : Application(), HasAndroidInjector {
         JodaTimeAndroid.init(this)
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true)
         DaggerAppComponent.builder().create(this).inject(this)
-    }
-
-    override fun attachBaseContext(base: Context?) {
-        super.attachBaseContext(base)
-        MultiDex.install(this)
     }
 
     override fun androidInjector(): AndroidInjector<Any> = androidInjector

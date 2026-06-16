@@ -39,8 +39,6 @@ ext.versions = [
         drawerBehavior    : '0.0.5',
         shimmer           : '0.5.0',
         circleImageView   : '3.1.0',
-        kotlinPermissions : '1.0.3',
-
         exoplayer         : '2.19.1',
 
         kefirBB           : '1.5',
