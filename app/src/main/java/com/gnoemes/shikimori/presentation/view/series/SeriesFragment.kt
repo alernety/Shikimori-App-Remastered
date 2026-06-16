@@ -328,8 +328,8 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
     }
 
     override fun changeSource(isAlternative: Boolean) {
-        seriesToolbarBinding.mainSource.setTextColor(context!!.getColor(if (isAlternative) R.attr.colorOnSurface else R.attr.colorSecondary))
-        seriesToolbarBinding.altSource.setTextColor(context!!.getColor(if (isAlternative) R.attr.colorSecondary else R.attr.colorOnSurface))
+        seriesToolbarBinding.mainSource.setTextColor(context!!.colorAttr(if (isAlternative) R.attr.colorOnSurface else R.attr.colorSecondary))
+        seriesToolbarBinding.altSource.setTextColor(context!!.colorAttr(if (isAlternative) R.attr.colorSecondary else R.attr.colorOnSurface))
     }
 
     override fun setTranslationType(type: TranslationType) {

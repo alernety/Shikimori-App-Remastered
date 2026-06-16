@@ -148,7 +148,7 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View>, View 
             })
             findViewById<SearchView.SearchAutoComplete>(searchSrcTextId)?.apply {
                 setPadding(context.dp(16), 0, context.dp(8), 0)
-                setHintTextColor(context.colorStateList(R.attr.colorOnPrimarySecondary))
+                setHintTextColor(context.colorStateList(context.attr(R.attr.colorOnPrimarySecondary).resourceId))
             }
             findViewById<LinearLayout>(searchEditFrameId)?.apply {
                 layoutParams = (layoutParams as? LinearLayout.LayoutParams)?.apply {

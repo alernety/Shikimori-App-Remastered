@@ -66,7 +66,7 @@ class EditRateFragment : BaseBottomSheetDialogFragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentEditRateBinding.inflate(inflater, container, false)
-        contentBinding = LayoutEditRateContentBinding.bind(binding!!.nestedScroll)
+        contentBinding = binding!!.includedLayoutEditRateContent
         progressBinding = LayoutEditRateProgressBinding.bind(contentBinding!!.progressInclude.root)
         statusBinding = LayoutEditRateStatusBinding.bind(contentBinding!!.rateInclude.root)
         return binding!!.root
@@ -95,10 +95,10 @@ class EditRateFragment : BaseBottomSheetDialogFragment() {
         val rating = rate?.score?.roundToInt() ?: 0
         contentBinding!!.ratingBar.rating = rating.div(2f)
         val emptyDrawable = context!!.drawable(R.drawable.ic_big_star_empty) ?: return@onViewCreated
-        emptyDrawable.setTintList(context!!.colorStateList(R.attr.colorOnPrimarySecondary))
+        emptyDrawable.setTintList(context!!.colorStateList(context!!.attr(R.attr.colorOnPrimarySecondary).resourceId))
         contentBinding!!.ratingBar.setEmptyDrawable(emptyDrawable)
         val filledDrawable = context!!.drawable(R.drawable.ic_big_star_filled) ?: return@onViewCreated
-        filledDrawable.setTintList(context!!.colorStateList(R.attr.colorSecondary))
+        filledDrawable.setTintList(context!!.colorStateList(context!!.attr(R.attr.colorSecondary).resourceId))
         contentBinding!!.ratingBar.setFilledDrawable(filledDrawable)
         contentBinding!!.ratingBar.setOnRatingChangeListener { _, fl, _ ->
             val newRating = (fl * 2).roundToInt()
