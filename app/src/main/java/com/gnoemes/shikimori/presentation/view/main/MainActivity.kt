@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
@@ -62,12 +63,9 @@ class MainActivity : BaseActivity<MainPresenter, MainView>(), MainView, RouterPr
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         
-        // Accessing the included bottom bar. 
-        // Based on activity_main.xml, the include tag doesn't have an ID, 
-        // so we bind it to its root view within the coordinator layout.
-        // Or we can find it by type if it's unique.
-        val bottomNavView = binding.root.findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(R.id.bottomNav)
-        bottomBinding = LayoutBottomBarBinding.bind(bottomNavView)
+        // The included layout has an ID in activity_main.xml, so ViewBinding
+        // auto-generates binding.includedLayoutBottomBar of type LayoutBottomBarBinding.
+        bottomBinding = binding.includedLayoutBottomBar
 
         initBottomNav()
         initContainer()
@@ -98,7 +96,6 @@ class MainActivity : BaseActivity<MainPresenter, MainView>(), MainView, RouterPr
                 fragment = BottomTabContainer.newInstance()
                 ta.add(R.id.activity_container, fragment, tab.screenKey)
                         .detach(fragment)
-                        .commitNow()
             }
         }
         ta.commitNow()
@@ -187,10 +184,11 @@ class MainActivity : BaseActivity<MainPresenter, MainView>(), MainView, RouterPr
 
         override fun replace(command: Replace) {
             val fm = fragmentManager
+            if (findViewById<View>(R.id.activity_container) == null) return
             val ta = fm.beginTransaction()
-        tabs.forEach { tab ->
-            val fragment = fm.findFragmentByTag(tab.screenKey)!!
-            if (tab.screenKey == command.screen.screenKey) {
+            tabs.forEach { tab ->
+                val fragment = fm.findFragmentByTag(tab.screenKey) ?: return@forEach
+                if (tab.screenKey == command.screen.screenKey) {
                     if (fragment.isDetached) {
                         ta.attach(fragment)
                     }

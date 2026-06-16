@@ -36,7 +36,6 @@ abstract class BaseActivity<Presenter : BasePresenter<View>, View : BaseView> : 
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
-        setContentView(getLayoutActivity())
     }
 
     override fun onResumeFragments() {
