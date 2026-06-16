@@ -6,6 +6,7 @@ import android.os.Build
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import androidx.appcompat.widget.SearchView
@@ -51,7 +52,7 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View>, View 
     private var detailsName: String? = null
 
     private var fragmentBinding: FragmentDetailsBinding? = null
-    private var collapsingToolbarBinding: LayoutCollapsingToolbarBinding? = null
+    protected var collapsingToolbarBinding: LayoutCollapsingToolbarBinding? = null
     private var charactersBinding: LayoutDetailsContentWithSearchBinding? = null
 
     protected open val onOffsetChangedListener = AppBarLayout.OnOffsetChangedListener { appbar, verticalOffset ->
@@ -66,14 +67,14 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View>, View 
     }
 
     protected open fun showToolbar() {
-        toolbarBinding?.toolbar?.apply {
+        collapsingToolbarBinding?.toolbar?.apply {
             detailsName?.let { title = it } ?: setTitle(titleRes)
             background = ColorDrawable(context.colorAttr(R.attr.colorPrimary))
         }
     }
 
     protected open fun hideToolbar() {
-        toolbarBinding?.toolbar?.apply {
+        collapsingToolbarBinding?.toolbar?.apply {
             title = null
             background = ColorDrawable(Color.TRANSPARENT)
         }
@@ -91,17 +92,19 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View>, View 
     protected open val actionAdapter by lazy { ActionAdapter(getPresenter()::onAction) }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): android.view.View {
+        initBaseBinding(inflater, container)
+
         fragmentBinding = FragmentDetailsBinding.inflate(inflater, container, false)
         val appBarLayout = fragmentBinding!!.root.findViewById<AppBarLayout>(R.id.included_layout_collapsing_toolbar)
         collapsingToolbarBinding = LayoutCollapsingToolbarBinding.bind(appBarLayout!!)
-        charactersBinding = LayoutDetailsContentWithSearchBinding.bind(fragmentBinding!!.charactersLayout as ViewGroup)
+        charactersBinding = fragmentBinding!!.charactersLayout
         return fragmentBinding!!.root
     }
 
     override fun onViewCreated(view: android.view.View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        toolbarBinding?.toolbar?.apply {
+        collapsingToolbarBinding?.toolbar?.apply {
             addBackButton { getPresenter().onBackPressed() }
             title = null
         }
@@ -211,7 +214,7 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View>, View 
     // GETTERS
     ///////////////////////////////////////////////////////////////////////////
 
-    override fun getFragmentLayout(): Int = R.layout.fragment_details
+    override fun getFragmentLayout(): Int = View.NO_ID
 
     abstract val titleRes: Int
 

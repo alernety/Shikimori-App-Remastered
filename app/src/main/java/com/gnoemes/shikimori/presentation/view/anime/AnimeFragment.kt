@@ -52,7 +52,7 @@ override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _detailsBinding = FragmentDetailsBinding.bind(view)
 
-        toolbarBinding?.toolbar?.apply {
+        collapsingToolbarBinding?.toolbar?.apply {
             inflateMenu(R.menu.menu_anime)
             onMenuClick {
                 when (it?.itemId) {

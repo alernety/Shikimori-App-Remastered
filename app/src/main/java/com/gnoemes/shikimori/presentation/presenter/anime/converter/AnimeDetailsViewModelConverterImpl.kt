@@ -141,7 +141,7 @@ class AnimeDetailsViewModelConverterImpl @Inject constructor(
         }
 
         //age rating
-        if (it.ageRating != AgeRating.NONE) {
+        if (it.ageRating != null && it.ageRating != AgeRating.NONE) {
             val description = convertRating(it.ageRating)
             if (description != null) {
                 val category = context.getString(R.string.common_age_rating)

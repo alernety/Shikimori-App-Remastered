@@ -58,6 +58,17 @@ abstract class BaseFragment<Presenter : BasePresenter<V>, V : BaseNetworkView>
         setHasOptionsMenu(true)
     }
 
+    /**
+     * Initialize base bindings without adding the base layout to the container.
+     * Used by subclasses that manage their own root view hierarchy (e.g. BaseDetailsFragment).
+     */
+    protected fun initBaseBinding(inflater: LayoutInflater, container: ViewGroup?) {
+        _baseBinding = FragmentBaseBinding.inflate(inflater, container, false)
+        _toolbarBinding = LayoutToolbarBinding.bind(baseBinding.root.findViewById(R.id.included_layout_toolbar))
+        _placeholdersBinding = LayoutDefaultPlaceholdersBinding.bind(baseBinding.root.findViewById(R.id.coordinator))
+        _progressBinding = LayoutProgressBinding.bind(baseBinding.root.findViewById(R.id.included_layout_progress))
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         _baseBinding = FragmentBaseBinding.inflate(inflater, container, false)
         

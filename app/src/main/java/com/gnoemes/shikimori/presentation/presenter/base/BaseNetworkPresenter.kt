@@ -29,7 +29,10 @@ abstract class BaseNetworkPresenter<View : BaseNetworkView> : BaseNavigationPres
         when ((throwable as? BaseException)?.tag) {
             NetworkException.TAG -> viewState.apply { showNetworkView(); showContent(false); showSystemMessage(throwable.localizedMessage) }
             ServiceCodeException.TAG -> viewState.apply { showNetworkView(); showContent(false); showSystemMessage("HTTP error ${(throwable as ServiceCodeException).serviceCode}") }
-            else -> Log.e("Error", throwable.toString())
+            else -> {
+                Log.e("Error", "Error processing request", throwable)
+                viewState.showSystemMessage("Something went wrong")
+            }
         }
     }
 }

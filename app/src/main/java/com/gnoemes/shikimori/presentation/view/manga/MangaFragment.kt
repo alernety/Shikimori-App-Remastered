@@ -55,7 +55,7 @@ class MangaFragment : BaseDetailsFragment<MangaPresenter, MangaView>(), MangaVie
         detailsBinding.videoLayout.root.gone()
         detailsBinding.screenshotsLayout.root.gone()
 
-        toolbarBinding?.toolbar?.apply {
+        collapsingToolbarBinding?.toolbar?.apply {
             inflateMenu(R.menu.menu_manga)
             onMenuClick {
                 when (it?.itemId) {

@@ -15,10 +15,10 @@ class DetailsActionViewHolder(
         private val actionAdapter: ActionAdapter
 ) {
 
-    private val placeholder: DetailsPlaceholderViewHolder by lazy { DetailsPlaceholderViewHolder(binding.actionContent.root, binding.actionPlaceholder as ShimmerFrameLayout) }
+    private val placeholder: DetailsPlaceholderViewHolder by lazy { DetailsPlaceholderViewHolder(binding.actionContent.root, binding.actionPlaceholder.root as ShimmerFrameLayout) }
 
     init {
-        with(binding.actionContent as RecyclerView) {
+        with(binding.actionContent.root as RecyclerView) {
             adapter = actionAdapter
             isNestedScrollingEnabled = false
             layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
