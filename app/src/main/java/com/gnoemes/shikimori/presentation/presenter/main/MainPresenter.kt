@@ -3,6 +3,7 @@ package com.gnoemes.shikimori.presentation.presenter.main
 import moxy.InjectViewState
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.gnoemes.shikimori.domain.series.SeriesSyncInteractor
+import com.gnoemes.shikimori.entity.common.domain.KeyScreen
 import com.gnoemes.shikimori.entity.main.BottomScreens
 import com.gnoemes.shikimori.presentation.presenter.base.BaseNavigationPresenter
 import com.gnoemes.shikimori.presentation.view.main.MainView
@@ -45,13 +46,13 @@ class MainPresenter @Inject constructor(
 
     fun onTabItemSelected(screenKey: String) {
         when (screenKey) {
-            BottomScreens.RATES -> router.replaceScreen(BottomScreens.RATES)
-            BottomScreens.CALENDAR -> router.replaceScreen(BottomScreens.CALENDAR)
-            BottomScreens.SEARCH -> router.replaceScreen(BottomScreens.SEARCH)
-            BottomScreens.MAIN -> router.replaceScreen(BottomScreens.MAIN)
+            BottomScreens.RATES -> router.replaceScreen(KeyScreen(BottomScreens.RATES))
+            BottomScreens.CALENDAR -> router.replaceScreen(KeyScreen(BottomScreens.CALENDAR))
+            BottomScreens.SEARCH -> router.replaceScreen(KeyScreen(BottomScreens.SEARCH))
+            BottomScreens.MAIN -> router.replaceScreen(KeyScreen(BottomScreens.MAIN))
             BottomScreens.MORE -> {
                 viewState.clearMoreBackStack()
-                router.replaceScreen(BottomScreens.MORE)
+                router.replaceScreen(KeyScreen(BottomScreens.MORE))
             }
         }
     }

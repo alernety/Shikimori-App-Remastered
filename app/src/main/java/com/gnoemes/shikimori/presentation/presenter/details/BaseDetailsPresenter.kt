@@ -3,6 +3,7 @@ package com.gnoemes.shikimori.presentation.presenter.details
 import com.gnoemes.shikimori.domain.rates.RatesInteractor
 import com.gnoemes.shikimori.domain.user.UserInteractor
 import com.gnoemes.shikimori.entity.app.domain.Constants
+import com.gnoemes.shikimori.entity.common.domain.KeyScreen
 import com.gnoemes.shikimori.entity.common.domain.*
 import com.gnoemes.shikimori.entity.common.presentation.DetailsAction
 import com.gnoemes.shikimori.entity.common.presentation.DetailsContentType
@@ -161,7 +162,7 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView>(
 
     private fun onLink(url: String, share: Boolean) {
         val screen = if (share) Screens.SHARE else Screens.WEB
-        router.navigateTo(screen, url)
+        router.navigateTo(KeyScreen(screen, url))
     }
 
     protected open fun onShareClicked() {
@@ -185,7 +186,7 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView>(
     }
 
     protected open fun onStudioClicked(id: Long) {
-        router.navigateTo(BottomScreens.SEARCH, SearchNavigationData(SearchPayload(studioId = id), Type.ANIME))
+        router.navigateTo(KeyScreen(BottomScreens.SEARCH, SearchNavigationData(SearchPayload(studioId = id), Type.ANIME)))
     }
 
     open fun onChangeRateStatus(newStatus: RateStatus) {
@@ -205,7 +206,7 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView>(
     }
 
     protected open fun onGenreClicked(genre: Genre) {
-        router.navigateTo(BottomScreens.SEARCH, SearchNavigationData(SearchPayload(genre), type))
+        router.navigateTo(KeyScreen(BottomScreens.SEARCH, SearchNavigationData(SearchPayload(genre), type)))
     }
 
     protected open fun onOpenDiscussion() {

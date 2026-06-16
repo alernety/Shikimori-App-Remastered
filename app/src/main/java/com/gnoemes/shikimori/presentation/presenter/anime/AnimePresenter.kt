@@ -12,6 +12,7 @@ import com.gnoemes.shikimori.entity.anime.domain.ScreenshotsNavigationData
 import com.gnoemes.shikimori.entity.app.domain.AnalyticEvent
 import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.chronology.ChronologyNavigationData
+import com.gnoemes.shikimori.entity.common.domain.KeyScreen
 import com.gnoemes.shikimori.entity.common.domain.*
 import com.gnoemes.shikimori.entity.common.presentation.DetailsContentType
 import com.gnoemes.shikimori.entity.common.presentation.DetailsHeadItem
@@ -133,13 +134,13 @@ open class AnimePresenter @Inject constructor(
     override fun onChronology() {
         super.onChronology()
         val data = ChronologyNavigationData(id, type, currentAnime.franchise)
-        router.navigateTo(Screens.CHRONOLOGY, data)
+        router.navigateTo(KeyScreen(Screens.CHRONOLOGY, data))
         logEvent(AnalyticEvent.ANIME_DETAILS_CHRONOLOGY)
     }
 
     override fun onSimilarClicked() {
         val data = CommonNavigationData(currentAnime.id, Type.ANIME)
-        router.navigateTo(Screens.SIMILAR, data)
+        router.navigateTo(KeyScreen(Screens.SIMILAR, data))
     }
 
     override fun onLinks() {
@@ -156,7 +157,7 @@ open class AnimePresenter @Inject constructor(
     override fun onShareClicked() {
         if (!::currentAnime.isInitialized) return
 
-        router.navigateTo(Screens.SHARE, currentAnime.url)
+        router.navigateTo(KeyScreen(Screens.SHARE, currentAnime.url))
     }
 
     override fun onWatchOnline() {
@@ -169,7 +170,7 @@ open class AnimePresenter @Inject constructor(
                 currentAnime.userRate?.id,
                 if (currentAnime.status == Status.RELEASED) currentAnime.episodes else currentAnime.episodesAired,
                 null)
-        router.navigateTo(Screens.SERIES, data)
+        router.navigateTo(KeyScreen(Screens.SERIES, data))
         logEvent(AnalyticEvent.NAVIGATION_ANIME_TRANSLATIONS)
     }
 
@@ -186,7 +187,7 @@ open class AnimePresenter @Inject constructor(
 
     override fun onScreenshotsClicked(pos: Int) {
         val data = ScreenshotsNavigationData(pos, screenshots)
-        router.navigateTo(Screens.SCREENSHOTS, data)
+        router.navigateTo(KeyScreen(Screens.SCREENSHOTS, data))
     }
 
     override fun onClearHistory() {

@@ -6,6 +6,7 @@ import com.gnoemes.shikimori.domain.download.DownloadInteractor
 import com.gnoemes.shikimori.domain.series.SeriesInteractor
 import com.gnoemes.shikimori.entity.app.domain.AnalyticEvent
 import com.gnoemes.shikimori.entity.app.domain.Constants
+import com.gnoemes.shikimori.entity.common.domain.KeyScreen
 import com.gnoemes.shikimori.entity.common.domain.Screens
 import com.gnoemes.shikimori.entity.download.DownloadVideoData
 import com.gnoemes.shikimori.entity.series.domain.*
@@ -230,7 +231,7 @@ class SeriesPresenter @Inject constructor(
         } else url
 
         val text = shareResourceProvider.getEpisodeShareFormattedMessage(navigationData.name, episode!!, videoUrl)
-        router.navigateTo(Screens.SHARE, text)
+        router.navigateTo(KeyScreen(Screens.SHARE, text))
     }
 
     private fun showAuthorDialog(author: String) {

@@ -10,6 +10,7 @@ import com.gnoemes.shikimori.domain.user.UserInteractor
 import com.gnoemes.shikimori.entity.app.domain.AnalyticEvent
 import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.chronology.ChronologyNavigationData
+import com.gnoemes.shikimori.entity.common.domain.KeyScreen
 import com.gnoemes.shikimori.entity.common.domain.*
 import com.gnoemes.shikimori.entity.common.presentation.DetailsHeadItem
 import com.gnoemes.shikimori.entity.manga.domain.MangaDetails
@@ -111,7 +112,7 @@ class MangaPresenter @Inject constructor(
     override fun onSimilarClicked() {
         super.onSimilarClicked()
         val data = CommonNavigationData(currentManga.id, Type.MANGA)
-        router.navigateTo(Screens.SIMILAR, data)
+        router.navigateTo(KeyScreen(Screens.SIMILAR, data))
     }
 
     override fun onEditRate() {
@@ -125,14 +126,14 @@ class MangaPresenter @Inject constructor(
     override fun onChronology() {
         super.onChronology()
         val data = ChronologyNavigationData(id, type, currentManga.franchise)
-        router.navigateTo(Screens.CHRONOLOGY, data)
+        router.navigateTo(KeyScreen(Screens.CHRONOLOGY, data))
         logEvent(AnalyticEvent.ANIME_DETAILS_CHRONOLOGY)
     }
 
     override fun onOpenInBrowser() = onOpenWeb(currentManga.url)
 
     override fun onShareClicked() {
-        router.navigateTo(Screens.SHARE, currentManga.url)
+        router.navigateTo(KeyScreen(Screens.SHARE, currentManga.url))
     }
 
     override fun onStatisticClicked() {

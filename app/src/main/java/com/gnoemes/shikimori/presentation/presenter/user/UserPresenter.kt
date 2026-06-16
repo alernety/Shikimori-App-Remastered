@@ -5,6 +5,7 @@ import com.gnoemes.shikimori.domain.user.UserInteractor
 import com.gnoemes.shikimori.entity.app.domain.AnalyticEvent
 import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.auth.AuthType
+import com.gnoemes.shikimori.entity.common.domain.KeyScreen
 import com.gnoemes.shikimori.entity.common.domain.Screens
 import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.main.BottomScreens
@@ -128,12 +129,12 @@ class UserPresenter @Inject constructor(
     }
 
     fun onSettingsClicked() {
-        router.navigateTo(Screens.SETTINGS)
+        router.navigateTo(KeyScreen(Screens.SETTINGS))
     }
 
     private fun onRateClicked(anime: Boolean, status: RateStatus) {
         val data = RateNavigationData(id, if (anime) Type.ANIME else Type.MANGA, status)
-        router.navigateTo(BottomScreens.RATES, data)
+        router.navigateTo(KeyScreen(BottomScreens.RATES, data))
     }
 
     private fun onFriendshipStatusChanged(newStatus: Boolean) {
@@ -158,15 +159,15 @@ class UserPresenter @Inject constructor(
     private fun onMoreClicked(type: UserContentType) {
         when (type) {
             UserContentType.FRIENDS -> {
-                router.navigateTo(Screens.USER_FRIENDS, id)
+                router.navigateTo(KeyScreen(Screens.USER_FRIENDS, id))
                 logEvent(AnalyticEvent.NAVIGATION_USER_FRIENDS)
             }
             UserContentType.CLUBS -> {
-                router.navigateTo(Screens.USER_CLUBS, id)
+                router.navigateTo(KeyScreen(Screens.USER_CLUBS, id))
                 logEvent(AnalyticEvent.NAVIGATION_USER_CLUBS)
             }
             UserContentType.FAVORITES -> {
-                router.navigateTo(Screens.USER_FAVORITES, id)
+                router.navigateTo(KeyScreen(Screens.USER_FAVORITES, id))
                 logEvent(AnalyticEvent.NAVIGATION_USER_FAVORITES)
             }
         }
@@ -187,12 +188,12 @@ class UserPresenter @Inject constructor(
     }
 
     private fun onBansClicked() {
-        router.navigateTo(Screens.USER_BANS, id)
+        router.navigateTo(KeyScreen(Screens.USER_BANS, id))
         logEvent(AnalyticEvent.NAVIGATION_USER_BANS)
     }
 
     private fun onHistoryClicked() {
-        router.navigateTo(Screens.USER_HISTORY, UserHistoryNavigationData(id, currentUser.nickname))
+        router.navigateTo(KeyScreen(Screens.USER_HISTORY, UserHistoryNavigationData(id, currentUser.nickname)))
         logEvent(AnalyticEvent.NAVIGATION_USER_HISTORY)
     }
 
@@ -219,7 +220,7 @@ class UserPresenter @Inject constructor(
     fun onSignUp() = openAuth(AuthType.SIGN_UP)
 
     private fun openAuth(type: AuthType) {
-        router.navigateTo(Screens.AUTHORIZATION, type)
+        router.navigateTo(KeyScreen(Screens.AUTHORIZATION, type))
         logEvent(AnalyticEvent.NAVIGATION_AUTHORIZATION)
     }
 }

@@ -15,6 +15,7 @@ import com.gnoemes.shikimori.entity.app.domain.Task
 import com.gnoemes.shikimori.entity.app.domain.exceptions.BaseException
 import com.gnoemes.shikimori.entity.app.domain.exceptions.ContentException
 import com.gnoemes.shikimori.entity.auth.AuthType
+import com.gnoemes.shikimori.entity.common.domain.KeyScreen
 import com.gnoemes.shikimori.entity.common.domain.Screens
 import com.gnoemes.shikimori.entity.common.domain.Status
 import com.gnoemes.shikimori.entity.common.domain.Type
@@ -169,7 +170,7 @@ class RatePresenter @Inject constructor(
     }
 
     fun onEmptyRateClicked(anime: Boolean) {
-        router.navigateTo(BottomScreens.SEARCH, SearchNavigationData(null, if (anime) Type.ANIME else Type.MANGA))
+        router.navigateTo(KeyScreen(BottomScreens.SEARCH, SearchNavigationData(null, if (anime) Type.ANIME else Type.MANGA)))
     }
 
     fun onTaskCanceled(taskId: Int, rateId: Long) {
@@ -360,7 +361,7 @@ class RatePresenter @Inject constructor(
                 else rate.anime?.name!!
         val episodesAired = if (rate.anime?.status == Status.RELEASED) rate.anime.episodes else rate.anime?.episodesAired
         val navigationData = SeriesNavigationData(settings.animeId, rate.anime?.image!!, name, rate.anime.name, rate.id, episodesAired!!, progress)
-        router.navigateTo(Screens.SERIES, navigationData)
+        router.navigateTo(KeyScreen(Screens.SERIES, navigationData))
         analyticInteractor.logEvent(AnalyticEvent.NAVIGATION_ANIME_TRANSLATIONS_FROM_RATES)
     }
 
@@ -557,7 +558,7 @@ class RatePresenter @Inject constructor(
     fun onSignUp() = openAuth(AuthType.SIGN_UP)
 
     private fun openAuth(type: AuthType) {
-        router.navigateTo(Screens.AUTHORIZATION, type)
+        router.navigateTo(KeyScreen(Screens.AUTHORIZATION, type))
         logEvent(AnalyticEvent.NAVIGATION_AUTHORIZATION)
     }
 }

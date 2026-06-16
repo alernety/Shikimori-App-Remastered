@@ -11,6 +11,7 @@ import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.chronology.ChronologyNavigationData
 import com.gnoemes.shikimori.entity.chronology.ChronologyType
 import com.gnoemes.shikimori.entity.chronology.ChronologyViewModel
+import com.gnoemes.shikimori.entity.common.domain.KeyScreen
 import com.gnoemes.shikimori.entity.common.domain.Screens
 import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.rates.domain.RateStatus
@@ -129,7 +130,7 @@ class ChronologyPresenter @Inject constructor(
     }
 
     fun onShareClicked() {
-        router.navigateTo(Screens.SHARE, getUrl())
+        router.navigateTo(KeyScreen(Screens.SHARE, getUrl()))
     }
 
     private fun processUserErrors(it: Throwable) {

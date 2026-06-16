@@ -4,6 +4,7 @@ import moxy.InjectViewState
 import com.gnoemes.shikimori.domain.user.UserInteractor
 import com.gnoemes.shikimori.entity.app.domain.AnalyticEvent
 import com.gnoemes.shikimori.entity.auth.AuthType
+import com.gnoemes.shikimori.entity.common.domain.KeyScreen
 import com.gnoemes.shikimori.entity.common.domain.Screens
 import com.gnoemes.shikimori.entity.more.MoreCategory
 import com.gnoemes.shikimori.entity.more.MoreProfileItem
@@ -61,7 +62,7 @@ class MorePresenter @Inject constructor(
     }
 
     private fun onSettingsClicked() {
-        router.navigateTo(Screens.SETTINGS)
+        router.navigateTo(KeyScreen(Screens.SETTINGS))
         logEvent(AnalyticEvent.NAVIGATION_SETTINGS)
     }
 
@@ -74,7 +75,7 @@ class MorePresenter @Inject constructor(
     fun onSignUp() = openAuth(AuthType.SIGN_UP)
 
     private fun openAuth(type: AuthType) {
-        router.navigateTo(Screens.AUTHORIZATION, type)
+        router.navigateTo(KeyScreen(Screens.AUTHORIZATION, type))
         logEvent(AnalyticEvent.NAVIGATION_AUTHORIZATION)
     }
 }
