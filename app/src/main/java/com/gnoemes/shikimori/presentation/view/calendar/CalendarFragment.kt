@@ -143,4 +143,15 @@ class CalendarFragment : BaseFragment<CalendarPresenter, CalendarView>(), Calend
         val item = SeriesPlaceholderItem(R.string.calendar_empty_title, R.string.calendar_empty_description)
         adapter.bindItems(mutableListOf(item))
     }
+
+    override fun showNetworkView() {
+        binding.placeholderOverlay.visible()
+        fragmentPlaceholdersBinding.networkErrorView.visible()
+    }
+
+    override fun hideNetworkView() {
+        binding.placeholderOverlay.gone()
+    }
+
+    override fun hideEmptyView() = fragmentPlaceholdersBinding.emptyContentView.gone()
 }
