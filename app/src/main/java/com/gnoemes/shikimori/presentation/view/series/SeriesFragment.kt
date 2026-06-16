@@ -174,7 +174,7 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
             }
             toolbarTransparentBinding.searchView.findViewById<ImageView>(androidx.appcompat.R.id.search_close_btn)?.apply {
                 setPadding(context!!.dp(12), 0, context!!.dp(12), 0)
-                tint(context.getColor(R.attr.colorOnPrimary))
+                tint(context.colorAttr(R.attr.colorOnPrimary))
             }
         }
 
