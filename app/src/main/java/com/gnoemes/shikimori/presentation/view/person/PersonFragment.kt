@@ -27,8 +27,8 @@ import javax.inject.Inject
 
 class PersonFragment : BaseFragment<PersonPresenter, PersonView>(), PersonView {
 
-    private var _binding: FragmentPersonBinding? = null
-    private val binding get() = _binding!!
+    private var _viewBinding: FragmentPersonBinding? = null
+    private val viewBinding get() = _viewBinding!!
 
     @Inject
     lateinit var imageLoader: ImageLoader
@@ -68,7 +68,7 @@ class PersonFragment : BaseFragment<PersonPresenter, PersonView>(), PersonView {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        _binding = FragmentPersonBinding.bind(view)
+        _viewBinding = FragmentPersonBinding.bind(view)
 
         toolbarBinding.toolbar.apply {
             addBackButton { getPresenter().onBackPressed() }
@@ -82,19 +82,19 @@ class PersonFragment : BaseFragment<PersonPresenter, PersonView>(), PersonView {
             }
         }
 
-        headHolder = DetailsHeadSimpleViewHolder(binding.headLayout, imageLoader)
-        descriptionHolder = DetailsDescriptionViewHolder(binding.descriptionLayout, getPresenter()::onContentClicked)
+        headHolder = DetailsHeadSimpleViewHolder(viewBinding.headLayout, imageLoader)
+        descriptionHolder = DetailsDescriptionViewHolder(viewBinding.descriptionLayout, getPresenter()::onContentClicked)
 
         contentHolders.apply {
-            put(DetailsContentType.CHARACTERS, DetailsContentViewHolder(binding.charactersLayout, charactersAdapter))
-            put(DetailsContentType.WORKS, DetailsContentViewHolder(binding.worksLayout, worksAdapter))
+            put(DetailsContentType.CHARACTERS, DetailsContentViewHolder(viewBinding.charactersLayout, charactersAdapter))
+            put(DetailsContentType.WORKS, DetailsContentViewHolder(viewBinding.worksLayout, worksAdapter))
         }
 
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        _binding = null
+        _viewBinding = null
     }
 
     ///////////////////////////////////////////////////////////////////////////

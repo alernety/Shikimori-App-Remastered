@@ -8,6 +8,11 @@ import androidx.core.graphics.ColorUtils
 import moxy.presenter.InjectPresenter
 import moxy.presenter.ProvidePresenter
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.FragmentUserProfileBinding
+import com.gnoemes.shikimori.databinding.LayoutDefaultPlaceholdersBinding
+import com.gnoemes.shikimori.databinding.LayoutProfileAuthBinding
+import com.gnoemes.shikimori.databinding.LayoutUserProfileInfoContentBinding
+import com.gnoemes.shikimori.databinding.LayoutUserProfileToolbarBinding
 import com.gnoemes.shikimori.entity.app.domain.AppExtras
 import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.user.presentation.UserContentViewModel
@@ -23,13 +28,9 @@ import com.gnoemes.shikimori.presentation.view.user.holders.UserContentViewHolde
 import com.gnoemes.shikimori.presentation.view.user.holders.UserInfoViewHolder
 import com.gnoemes.shikimori.presentation.view.user.holders.UserRateViewHolder
 import com.gnoemes.shikimori.utils.*
+import com.gnoemes.shikimori.utils.colorAttr
 import com.gnoemes.shikimori.utils.images.ImageLoader
 import com.google.android.material.appbar.AppBarLayout
-import kotlinx.android.synthetic.main.fragment_user_profile.*
-import kotlinx.android.synthetic.main.layout_default_placeholders.*
-import kotlinx.android.synthetic.main.layout_profile_auth.*
-import kotlinx.android.synthetic.main.layout_user_profile_info_content.*
-import kotlinx.android.synthetic.main.layout_user_profile_toolbar.*
 import javax.inject.Inject
 
 
@@ -54,8 +55,16 @@ class UserFragment : BaseFragment<UserPresenter, UserView>(), UserView {
         fun newInstance() = UserFragment()
     }
 
-    private val maxHeight by lazy { (appBarLayout.height - toolbar.height).toFloat() }
-    private val primaryColor by lazy { context?.colorAttr(R.attr.colorPrimary)!! }
+    private var _profileBinding: FragmentUserProfileBinding? = null
+    private val profileBinding get() = _profileBinding!!
+
+    private var userToolbarBinding: LayoutUserProfileToolbarBinding? = null
+    private var userPlaceholdersBinding: LayoutDefaultPlaceholdersBinding? = null
+    private var authBinding: LayoutProfileAuthBinding? = null
+    private var infoContentBinding: LayoutUserProfileInfoContentBinding? = null
+
+    private val maxHeight by lazy { (userToolbarBinding!!.appBarLayout.height - userToolbarBinding!!.toolbar.height).toFloat() }
+    private val primaryColor by lazy { requireContext().colorAttr(R.attr.colorPrimary) }
 
     private val favoritesAdapter by lazy { UserFavoriteContentAdapter(imageLoader, getPresenter()::onContentClicked, getPresenter()::onAction) }
     private val friendsAdapter by lazy { UserProfileContentAdapter(imageLoader, getPresenter()::onContentClicked, getPresenter()::onAction) }
@@ -69,46 +78,59 @@ class UserFragment : BaseFragment<UserPresenter, UserView>(), UserView {
     private var friendsHolder: UserContentViewHolder? = null
     private var clubsHolder: UserContentViewHolder? = null
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(getFragmentLayout(), container, false)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        _profileBinding = FragmentUserProfileBinding.inflate(inflater, container, false)
+
+        val appBarLayout = profileBinding.root.findViewById<AppBarLayout>(R.id.appBarLayout)
+        userToolbarBinding = LayoutUserProfileToolbarBinding.bind(appBarLayout)
+        userPlaceholdersBinding = LayoutDefaultPlaceholdersBinding.bind(profileBinding.coordinator)
+        authBinding = LayoutProfileAuthBinding.bind(profileBinding.authLayout.root)
+        infoContentBinding = LayoutUserProfileInfoContentBinding.bind(profileBinding.infoLayout.infoContent.root)
+
+        return profileBinding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        toolbar.apply {
+        userToolbarBinding!!.toolbar.apply {
             addBackButton { getPresenter().onBackPressed() }
         }
 
-        infoHolder = UserInfoViewHolder(infoLayout, getPresenter()::onAction)
-        animeRateHolder = UserRateViewHolder(animeRateLayout, true, getPresenter()::onAction, getPresenter()::onArrowClicked)
-        mangaRateHolder = UserRateViewHolder(mangaRateLayout, false, getPresenter()::onAction, getPresenter()::onArrowClicked)
+        infoHolder = UserInfoViewHolder.create(profileBinding.infoLayout.infoContent.root, getPresenter()::onAction)
+        animeRateHolder = UserRateViewHolder.create(profileBinding.animeRateLayout.root, true, getPresenter()::onAction, getPresenter()::onArrowClicked)
+        mangaRateHolder = UserRateViewHolder.create(profileBinding.mangaRateLayout.root, false, getPresenter()::onAction, getPresenter()::onArrowClicked)
 
-        appBarLayout.addOnOffsetChangedListener(appbarOffsetListener)
+        userToolbarBinding!!.appBarLayout.addOnOffsetChangedListener(appbarOffsetListener)
 
-        networkErrorView.callback = { getPresenter().onRefresh() }
-        networkErrorView.showButton()
+        userPlaceholdersBinding!!.networkErrorView.callback = { getPresenter().onRefresh() }
+        userPlaceholdersBinding!!.networkErrorView.showButton()
 
-        signUpBtn.onClick { getPresenter().onSignUp() }
-        signInBtn.onClick { getPresenter().onSignIn() }
-        authLayout.gone()
+        authBinding!!.signUpBtn.onClick { getPresenter().onSignUp() }
+        authBinding!!.signInBtn.onClick { getPresenter().onSignIn() }
+        authBinding!!.root.gone()
     }
 
     private val appbarOffsetListener = AppBarLayout.OnOffsetChangedListener { _, offset ->
         val percent = 1 - (-offset / maxHeight)
 
-        lastOnlineView.alpha = percent
-        nameView.alpha = percent
-        avatarView.alpha = percent
-        avatarCollapsedView.alpha = 1 - percent
-        nameCollapsedView.alpha = 1 - percent
+        infoContentBinding!!.lastOnlineView.alpha = percent
+        infoContentBinding!!.nameView.alpha = percent
+        infoContentBinding!!.avatarView.alpha = percent
+        userToolbarBinding!!.avatarCollapsedView.alpha = 1 - percent
+        userToolbarBinding!!.nameCollapsedView.alpha = 1 - percent
         val alpha = 255 - (255 * percent).toInt()
-        toolbar.setBackgroundColor(ColorUtils.setAlphaComponent(primaryColor, if (alpha < 0) 0 else if (alpha > 255) 255 else alpha))
+        userToolbarBinding!!.toolbar.setBackgroundColor(ColorUtils.setAlphaComponent(primaryColor, if (alpha < 0) 0 else if (alpha > 255) 255 else alpha))
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        appBarLayout.removeOnOffsetChangedListener(appbarOffsetListener)
+        userToolbarBinding!!.appBarLayout.removeOnOffsetChangedListener(appbarOffsetListener)
+        _profileBinding = null
+        userToolbarBinding = null
+        userPlaceholdersBinding = null
+        authBinding = null
+        infoContentBinding = null
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -124,12 +146,12 @@ class UserFragment : BaseFragment<UserPresenter, UserView>(), UserView {
     ///////////////////////////////////////////////////////////////////////////
 
     override fun setHead(data: UserHeadViewModel) {
-        lastOnlineView.text = data.lastOnline
-        nameView.text = data.name
-        nameCollapsedView.text = data.name
+        infoContentBinding!!.lastOnlineView.text = data.lastOnline
+        infoContentBinding!!.nameView.text = data.name
+        userToolbarBinding!!.nameCollapsedView.text = data.name
 
-        imageLoader.setCircleImage(avatarView, data.image.x160)
-        imageLoader.setCircleImage(avatarCollapsedView, data.image.x160)
+        imageLoader.setCircleImage(infoContentBinding!!.avatarView, data.image.x160)
+        imageLoader.setCircleImage(userToolbarBinding!!.avatarCollapsedView, data.image.x160)
     }
 
     override fun setInfo(data: UserInfoViewModel) {
@@ -145,27 +167,27 @@ class UserFragment : BaseFragment<UserPresenter, UserView>(), UserView {
     }
 
     override fun setFavorites(isMe: Boolean, it: UserContentViewModel) {
-        val layout = if (isMe) thirdContentLayout else firstContentLayout
-        favoritesHolder = UserContentViewHolder(layout, favoritesAdapter)
+        val layout = if (isMe) profileBinding.thirdContentLayout.root else profileBinding.firstContentLayout.root
+        favoritesHolder = UserContentViewHolder.create(layout, favoritesAdapter)
         favoritesHolder?.bind(it)
     }
 
     override fun setFriends(isMe: Boolean, it: UserContentViewModel) {
-        val layout = if (isMe) firstContentLayout else secondContentLayout
-        friendsHolder = UserContentViewHolder(layout, friendsAdapter)
+        val layout = if (isMe) profileBinding.firstContentLayout.root else profileBinding.secondContentLayout.root
+        friendsHolder = UserContentViewHolder.create(layout, friendsAdapter)
         friendsHolder?.bind(it)
     }
 
     override fun setClubs(isMe: Boolean, it: UserContentViewModel) {
-        val layout = if (isMe) secondContentLayout else thirdContentLayout
-        clubsHolder = UserContentViewHolder(layout, clubsAdapter)
+        val layout = if (isMe) profileBinding.secondContentLayout.root else profileBinding.thirdContentLayout.root
+        clubsHolder = UserContentViewHolder.create(layout, clubsAdapter)
         clubsHolder?.bind(it)
     }
 
     override fun showContent(show: Boolean) {
-        scrollView.visibleIf { show }
-        if (toolbar.navigationIcon == null) appBarLayout.visible()
-        else appBarLayout.visibleIf { show }
+        profileBinding.scrollView.visibleIf { show }
+        if (userToolbarBinding!!.toolbar.navigationIcon == null) userToolbarBinding!!.appBarLayout.visible()
+        else userToolbarBinding!!.appBarLayout.visibleIf { show }
     }
 
     override fun toggleAnimeRate(expanded: Boolean) {
@@ -177,7 +199,7 @@ class UserFragment : BaseFragment<UserPresenter, UserView>(), UserView {
     }
 
     override fun addSettings() {
-        with(toolbar) {
+        with(userToolbarBinding!!.toolbar) {
             navigationIcon = null
             inflateMenu(R.menu.menu_user)
             setOnMenuItemClickListener {
@@ -190,10 +212,10 @@ class UserFragment : BaseFragment<UserPresenter, UserView>(), UserView {
     }
 
     override fun showAuthView(show: Boolean) {
-        authLayout.visibleIf { show }
-        appBarLayout.visible()
+        authBinding!!.root.visibleIf { show }
+        userToolbarBinding!!.appBarLayout.visible()
     }
 
-    override fun showNetworkView() = networkErrorView.visible()
-    override fun hideNetworkView() = networkErrorView.gone()
+    override fun showNetworkView() = userPlaceholdersBinding!!.networkErrorView.visible()
+    override fun hideNetworkView() = userPlaceholdersBinding!!.networkErrorView.gone()
 }

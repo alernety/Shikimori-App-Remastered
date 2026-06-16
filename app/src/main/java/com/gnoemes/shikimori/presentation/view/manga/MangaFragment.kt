@@ -6,6 +6,7 @@ import moxy.presenter.InjectPresenter
 import moxy.presenter.ProvidePresenter
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.databinding.FragmentDetailsBinding
+import com.gnoemes.shikimori.databinding.LayoutDetailsContentBinding
 import com.gnoemes.shikimori.entity.app.domain.AppExtras
 import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.common.presentation.DetailsAction
@@ -25,8 +26,8 @@ import com.gnoemes.shikimori.utils.withArgs
 
 class MangaFragment : BaseDetailsFragment<MangaPresenter, MangaView>(), MangaView {
 
-    private var _binding: FragmentDetailsBinding? = null
-    private val binding get() = _binding!!
+    private var _detailsBinding: FragmentDetailsBinding? = null
+    private val detailsBinding get() = _detailsBinding!!
 
     @InjectPresenter
     lateinit var mangaPresenter: MangaPresenter
@@ -49,12 +50,12 @@ class MangaFragment : BaseDetailsFragment<MangaPresenter, MangaView>(), MangaVie
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        _binding = FragmentDetailsBinding.bind(view)
+        _detailsBinding = FragmentDetailsBinding.bind(view)
 
-        binding.videoLayout.gone()
-        binding.screenshotsLayout.gone()
+        detailsBinding.videoLayout.root.gone()
+        detailsBinding.screenshotsLayout.root.gone()
 
-        with(binding.toolbar) {
+        with(toolbarBinding.toolbar) {
             inflateMenu(R.menu.menu_manga)
             onMenuClick {
                 when (it?.itemId) {
@@ -67,16 +68,16 @@ class MangaFragment : BaseDetailsFragment<MangaPresenter, MangaView>(), MangaVie
         }
 
         contentHolders.apply {
-            put(DetailsContentType.CHARACTERS, DetailsContentViewHolder(binding.charactersLayout, charactersAdapter, true))
-            put(DetailsContentType.RELATED, DetailsContentViewHolder(binding.relatedLayout, relatedAdapter))
+            put(DetailsContentType.CHARACTERS, DetailsContentViewHolder(LayoutDetailsContentBinding.bind(detailsBinding.charactersLayout.root), charactersAdapter, true))
+            put(DetailsContentType.RELATED, DetailsContentViewHolder(detailsBinding.relatedLayout, relatedAdapter))
         }
 
-        binding.actionBtn.gone()
+        detailsBinding.actionBtn.gone()
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        _binding = null
+        _detailsBinding = null
     }
 
     override fun dialogItemIdCallback(tag: String?, id: Long) {

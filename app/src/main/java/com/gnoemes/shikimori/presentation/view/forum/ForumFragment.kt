@@ -20,8 +20,8 @@ import com.gnoemes.shikimori.utils.visibleIf
 
 class ForumFragment : BaseFragment<ForumPresenter, ForumView>(), ForumView {
 
-    private var _binding: FragmentForumBinding? = null
-    private val binding get() = _binding!!
+    private var _viewBinding: FragmentForumBinding? = null
+    private val viewBinding get() = _viewBinding!!
 
     @InjectPresenter
     lateinit var forumPresenter: ForumPresenter
@@ -41,23 +41,23 @@ class ForumFragment : BaseFragment<ForumPresenter, ForumView>(), ForumView {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        _binding = FragmentForumBinding.bind(view.findViewById(R.id.fragment_content))
+        _viewBinding = FragmentForumBinding.bind(view.findViewById(R.id.fragment_content))
 
         toolbarBinding.toolbar.gone()
 
-        with(binding.recyclerView) {
+        with(viewBinding.includedLayoutDefaultList.recyclerView) {
             adapter = this@ForumFragment.adapter
             layoutManager = LinearLayoutManager(context)
             setHasFixedSize(true)
             addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
         }
-        binding.refreshLayout.setOnRefreshListener { getPresenter().onRefresh() }
+        viewBinding.includedLayoutDefaultList.refreshLayout.setOnRefreshListener { getPresenter().onRefresh() }
         placeholdersBinding.networkErrorView.setText(R.string.common_error_message)
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        _binding = null
+        _viewBinding = null
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -77,9 +77,9 @@ class ForumFragment : BaseFragment<ForumPresenter, ForumView>(), ForumView {
     }
 
     override fun showContent(show: Boolean) {
-        binding.recyclerView.visibleIf { show }
+        viewBinding.includedLayoutDefaultList.recyclerView.visibleIf { show }
     }
 
-    override fun onShowLoading() = binding.refreshLayout.showRefresh()
-    override fun onHideLoading() = binding.refreshLayout.hideRefresh()
+    override fun onShowLoading() = viewBinding.includedLayoutDefaultList.refreshLayout.showRefresh()
+    override fun onHideLoading() = viewBinding.includedLayoutDefaultList.refreshLayout.hideRefresh()
 }

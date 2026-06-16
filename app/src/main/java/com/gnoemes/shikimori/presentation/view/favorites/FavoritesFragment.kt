@@ -22,8 +22,8 @@ import javax.inject.Inject
 
 class FavoritesFragment : BaseFragment<FavoritesPresenter, FavoritesView>(), FavoritesView {
 
-    private var _binding: FragmentFavoritesBinding? = null
-    private val binding get() = _binding!!
+    private var _viewBinding: FragmentFavoritesBinding? = null
+    private val viewBinding get() = _viewBinding!!
 
     @Inject
     lateinit var imageLoader: ImageLoader
@@ -47,7 +47,7 @@ class FavoritesFragment : BaseFragment<FavoritesPresenter, FavoritesView>(), Fav
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        _binding = FragmentFavoritesBinding.bind(view)
+        _viewBinding = FragmentFavoritesBinding.bind(view)
 
         toolbarBinding.toolbar.apply {
             setTitle(R.string.common_favorite)
@@ -55,19 +55,19 @@ class FavoritesFragment : BaseFragment<FavoritesPresenter, FavoritesView>(), Fav
         }
 
         contentHolders.apply {
-            put(FavoriteType.ANIME, FavoriteCategoryViewHolder(binding.animeLayout, defaultAdapter))
-            put(FavoriteType.MANGA, FavoriteCategoryViewHolder(binding.mangaLayout, defaultAdapter))
-            put(FavoriteType.CHARACTERS, FavoriteCategoryViewHolder(binding.charactersLayout, defaultAdapter))
-            put(FavoriteType.SEYU, FavoriteCategoryViewHolder(binding.seyuLayout, defaultAdapter))
-            put(FavoriteType.PRODUCERS, FavoriteCategoryViewHolder(binding.producersLayout, defaultAdapter))
-            put(FavoriteType.MANGAKAS, FavoriteCategoryViewHolder(binding.mangakasLayout, defaultAdapter))
-            put(FavoriteType.PEOPLE, FavoriteCategoryViewHolder(binding.otherLayout, defaultAdapter))
+            put(FavoriteType.ANIME, FavoriteCategoryViewHolder(viewBinding.animeLayout, defaultAdapter))
+            put(FavoriteType.MANGA, FavoriteCategoryViewHolder(viewBinding.mangaLayout, defaultAdapter))
+            put(FavoriteType.CHARACTERS, FavoriteCategoryViewHolder(viewBinding.charactersLayout, defaultAdapter))
+            put(FavoriteType.SEYU, FavoriteCategoryViewHolder(viewBinding.seyuLayout, defaultAdapter))
+            put(FavoriteType.PRODUCERS, FavoriteCategoryViewHolder(viewBinding.producersLayout, defaultAdapter))
+            put(FavoriteType.MANGAKAS, FavoriteCategoryViewHolder(viewBinding.mangakasLayout, defaultAdapter))
+            put(FavoriteType.PEOPLE, FavoriteCategoryViewHolder(viewBinding.otherLayout, defaultAdapter))
         }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        _binding = null
+        _viewBinding = null
     }
 
     ///////////////////////////////////////////////////////////////////////////

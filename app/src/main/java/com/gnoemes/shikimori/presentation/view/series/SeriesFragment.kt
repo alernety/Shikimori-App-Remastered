@@ -2,6 +2,7 @@ package com.gnoemes.shikimori.presentation.view.series
 
 import android.Manifest
 import android.os.Build
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -17,12 +18,16 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.transition.AutoTransition
 import androidx.transition.Fade
 import androidx.transition.TransitionManager
-import com.afollestad.materialdialogs.MaterialDialog
-import com.afollestad.materialdialogs.files.folderChooser
+import android.os.Environment
+import android.provider.DocumentsContract
 import moxy.presenter.InjectPresenter
 import moxy.presenter.ProvidePresenter
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.databinding.FragmentSeriesBinding
+import com.gnoemes.shikimori.databinding.LayoutDefaultPlaceholdersBinding
+import com.gnoemes.shikimori.databinding.LayoutSeriesEmptyAuthorsBinding
+import com.gnoemes.shikimori.databinding.LayoutSeriesToolbarBinding
+import com.gnoemes.shikimori.databinding.LayoutToolbarTransparentWithSearchBinding
 import com.gnoemes.shikimori.entity.app.domain.SettingsExtras
 import com.gnoemes.shikimori.entity.common.domain.Image
 import com.gnoemes.shikimori.entity.series.domain.PlayerType
@@ -40,7 +45,7 @@ import com.gnoemes.shikimori.presentation.view.series.translations.adapter.Trans
 import com.gnoemes.shikimori.utils.*
 import com.gnoemes.shikimori.utils.images.ImageLoader
 import com.gnoemes.shikimori.utils.widgets.VerticalSpaceItemDecorator
-import com.kotlinpermissions.KotlinPermissions
+import androidx.activity.result.contract.ActivityResultContracts
 import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
@@ -54,8 +59,40 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
         SeriesDownloadDialog.SeriesDownloadCallback,
         HasAndroidInjector {
 
-    private var _binding: FragmentSeriesBinding? = null
-    private val binding get() = _binding!!
+    private var _seriesBinding: FragmentSeriesBinding? = null
+    private val seriesBinding get() = _seriesBinding!!
+
+    private var _toolbarTransparentBinding: LayoutToolbarTransparentWithSearchBinding? = null
+    private val toolbarTransparentBinding get() = _toolbarTransparentBinding!!
+
+    private var _seriesToolbarBinding: LayoutSeriesToolbarBinding? = null
+    private val seriesToolbarBinding get() = _seriesToolbarBinding!!
+
+    private var _defaultPlaceholdersBinding: LayoutDefaultPlaceholdersBinding? = null
+    private val defaultPlaceholdersBinding get() = _defaultPlaceholdersBinding!!
+
+    private var _authorsLayoutBinding: LayoutSeriesEmptyAuthorsBinding? = null
+    private val authorsLayoutBinding get() = _authorsLayoutBinding!!
+
+    private val storagePermissionsLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        if (permissions.values.all { it }) {
+            getPresenter().onStoragePermissionsAccepted()
+        }
+    }
+
+    private val folderChooserLauncher = registerForActivityResult(
+        ActivityResultContracts.OpenDocumentTree()
+    ) { uri ->
+        if (uri != null) {
+            val path = getPathFromTreeUri(uri)
+            if (path != null) {
+                putSetting(SettingsExtras.DOWNLOAD_FOLDER, path)
+            }
+            getPresenter().onStoragePermissionsAccepted()
+        }
+    }
 
     @Inject
     lateinit var imageLoader: ImageLoader
@@ -84,22 +121,27 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
     private val adapter by lazy { TranslationsAdapter(getPresenter()::onHostingClicked, getPresenter()::onMenuClicked) }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        _binding = FragmentSeriesBinding.inflate(inflater, container, false)
-        return binding.root
+        _seriesBinding = FragmentSeriesBinding.inflate(inflater, container, false)
+        return seriesBinding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        with(binding.toolbar) {
+        _toolbarTransparentBinding = LayoutToolbarTransparentWithSearchBinding.bind(seriesBinding.root.findViewById(R.id.toolbarTransparentWithSearch))
+        _seriesToolbarBinding = LayoutSeriesToolbarBinding.bind(seriesBinding.root.findViewById(R.id.seriesToolbar))
+        _defaultPlaceholdersBinding = LayoutDefaultPlaceholdersBinding.bind(seriesBinding.root.findViewById(R.id.defaultPlaceholders))
+        _authorsLayoutBinding = LayoutSeriesEmptyAuthorsBinding.bind(seriesBinding.root.findViewById(R.id.authorsLayout))
+
+        with(toolbarTransparentBinding.toolbar) {
             inflateMenu(R.menu.menu_series)
             setOnMenuItemClickListener { getPresenter().onSearchClicked(); true }
             addBackButton { getPresenter().onBackPressed() }
         }
 
-        binding.searchToolbar.addBackButton { getPresenter().onSearchClose() }
+        toolbarTransparentBinding.searchToolbar.addBackButton { getPresenter().onSearchClose() }
 
-        with(binding.recyclerView) {
+        with(seriesBinding.recyclerView) {
             adapter = this@SeriesFragment.adapter
             layoutManager = LinearLayoutManager(context)
             addItemDecoration(VerticalSpaceItemDecorator(context.dimen(R.dimen.margin_normal).toInt(), false))
@@ -107,7 +149,7 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
             addOnScrollListener(shadowScrollListener)
         }
 
-        with(binding.searchView) {
+        with(toolbarTransparentBinding.searchView) {
             setOnQueryTextListener(object : SearchView.OnQueryTextListener {
                 override fun onQueryTextSubmit(query: String?): Boolean {
                     hideSoftInput()
@@ -119,45 +161,45 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
                     return true
                 }
             })
-            findViewById<SearchView.SearchAutoComplete>(R.id.search_src_text)?.apply {
+            toolbarTransparentBinding.searchView.findViewById<SearchView.SearchAutoComplete>(androidx.appcompat.R.id.search_src_text)?.apply {
                 setPadding(0, 0, context.dp(8), 0)
                 setHintTextColor(context.colorStateList(context.attr(R.attr.colorOnPrimarySecondary).resourceId))
             }
-            findViewById<LinearLayout>(R.id.search_edit_frame)?.apply {
+            toolbarTransparentBinding.searchView.findViewById<LinearLayout>(androidx.appcompat.R.id.search_edit_frame)?.apply {
                 layoutParams = (layoutParams as? LinearLayout.LayoutParams)?.apply {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
                         marginStart = 0
                     }; leftMargin = 0
                 }
             }
-            findViewById<ImageView>(R.id.search_close_btn)?.apply {
+            toolbarTransparentBinding.searchView.findViewById<ImageView>(androidx.appcompat.R.id.search_close_btn)?.apply {
                 setPadding(context!!.dp(12), 0, context!!.dp(12), 0)
-                tint(context.colorAttr(R.attr.colorOnPrimary))
+                tint(context.getColor(R.attr.colorOnPrimary))
             }
         }
 
-        binding.emptyContentView.setText(R.string.episodes_not_found)
-        binding.networkErrorView.callback = { getPresenter().onRefresh() }
-        binding.networkErrorView.showButton()
+        defaultPlaceholdersBinding.emptyContentView.setText(R.string.episodes_not_found)
+        defaultPlaceholdersBinding.networkErrorView.callback = { getPresenter().onRefresh() }
+        defaultPlaceholdersBinding.networkErrorView.showButton()
 
-        binding.authorsLayout.gone()
-        binding.translationBtn.gone()
-        binding.progress.visible()
+        authorsLayoutBinding.root.gone()
+        seriesToolbarBinding.translationBtn.gone()
+        seriesBinding.progress.visible()
 
-        binding.translationBtn.onClick { showTypes(true) }
-        binding.voiceBtn.onClick { onTypeSelected(TranslationType.VOICE_RU) }
-        binding.subtitlesBtn.onClick { onTypeSelected(TranslationType.SUB_RU) }
-        binding.originalBtn.onClick { onTypeSelected(TranslationType.RAW) }
+        seriesToolbarBinding.translationBtn.onClick { showTypes(true) }
+        seriesToolbarBinding.voiceBtn.onClick { onTypeSelected(TranslationType.VOICE_RU) }
+        seriesToolbarBinding.subtitlesBtn.onClick { onTypeSelected(TranslationType.SUB_RU) }
+        seriesToolbarBinding.originalBtn.onClick { onTypeSelected(TranslationType.RAW) }
 
-        binding.episodeChip.onClick { getPresenter().showEpisodes() }
-        binding.sourceChangeBtn.onClick { showSources(true) }
+        seriesToolbarBinding.episodeChip.onClick { getPresenter().showEpisodes() }
+        seriesToolbarBinding.sourceChangeBtn.onClick { showSources(true) }
 
-        binding.mainSource.onClick { onSourceSelected(false) }
-        binding.altSource.onClick { onSourceSelected(true) }
+        seriesToolbarBinding.mainSource.onClick { onSourceSelected(false) }
+        seriesToolbarBinding.altSource.onClick { onSourceSelected(true) }
 
-        binding.actionBtn.onClick { onSourceSelected(true) }
-        binding.fab.onClick { getPresenter().onDiscussionClicked() }
-        binding.nextEpisodeBtn.onClick { getPresenter().onNextEpisode() }
+        authorsLayoutBinding.actionBtn.onClick { onSourceSelected(true) }
+        seriesBinding.fab.onClick { getPresenter().onDiscussionClicked() }
+        seriesToolbarBinding.nextEpisodeBtn.onClick { getPresenter().onNextEpisode() }
     }
 
     private fun onTypeSelected(newType: TranslationType) {
@@ -171,22 +213,22 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
     }
 
     private fun showSources(show: Boolean) {
-        TransitionManager.beginDelayedTransition(binding.motionLayout, AutoTransition())
-        if (show && !binding.translationBtn.isVisible()) showTypes(false)
-        binding.sourceChangeBtn.visibleIf { !show }
-        if (binding.episodeChip.isEnabled) binding.episodeChip.visibleIf { !show }
-        if (binding.nextEpisodeBtn.isEnabled) binding.nextEpisodeBtn.visibleIf { !show }
-        binding.mainSource.visibleIf { show }
-        binding.altSource.visibleIf { show }
+        TransitionManager.beginDelayedTransition(seriesToolbarBinding.motionLayout, AutoTransition())
+        if (show && !seriesToolbarBinding.translationBtn.isVisible()) showTypes(false)
+        seriesToolbarBinding.sourceChangeBtn.visibleIf { !show }
+        if (seriesToolbarBinding.episodeChip.isEnabled) seriesToolbarBinding.episodeChip.visibleIf { !show }
+        if (seriesToolbarBinding.nextEpisodeBtn.isEnabled) seriesToolbarBinding.nextEpisodeBtn.visibleIf { !show }
+        seriesToolbarBinding.mainSource.visibleIf { show }
+        seriesToolbarBinding.altSource.visibleIf { show }
     }
 
     private fun showTypes(show: Boolean) {
-        TransitionManager.beginDelayedTransition(binding.motionLayout, AutoTransition())
-        if (show && !binding.sourceChangeBtn.isVisible()) showSources(false)
-        binding.translationBtn.visibleIf { !show }
-        binding.voiceBtn.visibleIf { show }
-        binding.subtitlesBtn.visibleIf { show }
-        binding.originalBtn.visibleIf { show }
+        TransitionManager.beginDelayedTransition(seriesToolbarBinding.motionLayout, AutoTransition())
+        if (show && !seriesToolbarBinding.sourceChangeBtn.isVisible()) showSources(false)
+        seriesToolbarBinding.translationBtn.visibleIf { !show }
+        seriesToolbarBinding.voiceBtn.visibleIf { show }
+        seriesToolbarBinding.subtitlesBtn.visibleIf { show }
+        seriesToolbarBinding.originalBtn.visibleIf { show }
     }
 
     private val shadowScrollListener = object : RecyclerView.OnScrollListener() {
@@ -197,16 +239,20 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
 
             if (recyclerView.layoutManager != null) {
 
-                if (recyclerView.canScrollVertically(-1)) ViewCompat.setElevation(binding.appbar, shadowDefault)
-                else ViewCompat.setElevation(binding.appbar, 0f)
+                if (recyclerView.canScrollVertically(-1)) ViewCompat.setElevation(seriesToolbarBinding.appbar, shadowDefault)
+                else ViewCompat.setElevation(seriesToolbarBinding.appbar, 0f)
             }
         }
     }
 
     override fun onDestroyView() {
-        binding.recyclerView.removeOnScrollListener(shadowScrollListener)
+        seriesBinding.recyclerView.removeOnScrollListener(shadowScrollListener)
         super.onDestroyView()
-        _binding = null
+        _seriesBinding = null
+        _toolbarTransparentBinding = null
+        _seriesToolbarBinding = null
+        _defaultPlaceholdersBinding = null
+        _authorsLayoutBinding = null
     }
 
     override fun onPlayerSelected(playerType: PlayerType) {
@@ -243,15 +289,15 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
     }
 
     override fun setTitle(title: String) {
-        binding.toolbar.title = title
+        toolbarTransparentBinding.toolbar.title = title
     }
 
     override fun showEmptyAuthorsView(show: Boolean, isAlternative: Boolean) {
-        binding.authorsLayout.visibleIf { show }
-        binding.titleView.setText(R.string.series_empty_authors_title)
-        binding.descriptionView.setText(R.string.series_empty_authors_description)
-        if (isAlternative) binding.actionBtn.gone()
-        else binding.actionBtn.visible()
+        authorsLayoutBinding.root.visibleIf { show }
+        authorsLayoutBinding.titleView.setText(R.string.series_empty_authors_title)
+        authorsLayoutBinding.descriptionView.setText(R.string.series_empty_authors_description)
+        if (isAlternative) authorsLayoutBinding.actionBtn.gone()
+        else authorsLayoutBinding.actionBtn.visible()
     }
 
     override fun showEmptySearchView() {
@@ -261,29 +307,29 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
 
     override fun setEpisodeName(index: Int) {
         val text = "# ".colorSpan(context!!.colorAttr(R.attr.colorSecondaryTransparent)).append("$index")
-        binding.episodeChip.text = text
+        seriesToolbarBinding.episodeChip.text = text
     }
 
     override fun showNextEpisode(show: Boolean) {
-        binding.nextEpisodeBtn.isEnabled = show
-        binding.nextEpisodeBtn.visibleIf { show }
+        seriesToolbarBinding.nextEpisodeBtn.isEnabled = show
+        seriesToolbarBinding.nextEpisodeBtn.visibleIf { show }
     }
 
     override fun hideEpisodeName() {
-        binding.episodeChip.isEnabled = false
-        binding.episodeChip.gone()
+        seriesToolbarBinding.episodeChip.isEnabled = false
+        seriesToolbarBinding.episodeChip.gone()
     }
 
     override fun showEpisodeLoading(show: Boolean) {
-        TransitionManager.beginDelayedTransition(binding.motionLayout, Fade())
-        if (binding.episodeChip.isEnabled) binding.episodeChip.visibleIf { !show }
-        if (binding.nextEpisodeBtn.isEnabled) binding.nextEpisodeBtn.visibleIf { !show }
-        binding.sourceChangeBtn.visibleIf { !show }
+        TransitionManager.beginDelayedTransition(seriesToolbarBinding.motionLayout, Fade())
+        if (seriesToolbarBinding.episodeChip.isEnabled) seriesToolbarBinding.episodeChip.visibleIf { !show }
+        if (seriesToolbarBinding.nextEpisodeBtn.isEnabled) seriesToolbarBinding.nextEpisodeBtn.visibleIf { !show }
+        seriesToolbarBinding.sourceChangeBtn.visibleIf { !show }
     }
 
     override fun changeSource(isAlternative: Boolean) {
-        binding.mainSource.setTextColor(context!!.colorAttr(if (isAlternative) R.attr.colorOnSurface else R.attr.colorSecondary))
-        binding.altSource.setTextColor(context!!.colorAttr(if (isAlternative) R.attr.colorSecondary else R.attr.colorOnSurface))
+        seriesToolbarBinding.mainSource.setTextColor(context!!.getColor(if (isAlternative) R.attr.colorOnSurface else R.attr.colorSecondary))
+        seriesToolbarBinding.altSource.setTextColor(context!!.getColor(if (isAlternative) R.attr.colorSecondary else R.attr.colorOnSurface))
     }
 
     override fun setTranslationType(type: TranslationType) {
@@ -295,26 +341,26 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
         }
 
         if (icon != 0) {
-            binding.translationBtn.setIconResource(icon)
+            seriesToolbarBinding.translationBtn.setIconResource(icon)
         }
 
-        if (!binding.translationBtn.isVisible()) binding.translationBtn.visible()
+        if (!seriesToolbarBinding.translationBtn.isVisible()) seriesToolbarBinding.translationBtn.visible()
     }
 
     override fun showSearchView() {
-        TransitionManager.beginDelayedTransition(binding.appBarLayout, Fade())
-        binding.searchToolbar.visible()
-        binding.toolbar.gone()
-        binding.motionLayout.gone()
-        binding.backdrop.radius = 0f
+        TransitionManager.beginDelayedTransition(toolbarTransparentBinding.appBarLayout, Fade())
+        toolbarTransparentBinding.searchToolbar.visible()
+        toolbarTransparentBinding.toolbar.gone()
+        seriesToolbarBinding.motionLayout.gone()
+        seriesBinding.backdrop.radius = 0f
     }
 
     override fun onSearchClosed() {
-        TransitionManager.beginDelayedTransition(binding.appBarLayout, Fade())
-        binding.motionLayout.visible()
-        binding.toolbar.visible()
-        binding.searchToolbar.gone()
-        binding.backdrop.radius = defaultCorners
+        TransitionManager.beginDelayedTransition(toolbarTransparentBinding.appBarLayout, Fade())
+        seriesToolbarBinding.motionLayout.visible()
+        toolbarTransparentBinding.toolbar.visible()
+        toolbarTransparentBinding.searchToolbar.gone()
+        seriesBinding.backdrop.radius = defaultCorners
     }
 
     override fun showPlayerDialog() {
@@ -342,23 +388,27 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
     }
 
     override fun checkPermissions() {
-        KotlinPermissions.with(activity!!)
-                .permissions(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE)
-                .onAccepted { getPresenter().onStoragePermissionsAccepted() }
-                .ask()
+        storagePermissionsLauncher.launch(
+            arrayOf(
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.READ_EXTERNAL_STORAGE
+            )
+        )
     }
 
     override fun showFolderChooserDialog() {
-        MaterialDialog(context!!).show {
-            folderChooser(
-                    allowFolderCreation = true,
-                    emptyTextRes = R.string.download_folder_empty,
-                    folderCreationLabel = R.string.download_new_folder)
-            { _, file ->
-                putSetting(SettingsExtras.DOWNLOAD_FOLDER, file.absolutePath)
+        folderChooserLauncher.launch(null)
+    }
+
+    private fun getPathFromTreeUri(uri: Uri): String? {
+        if (DocumentsContract.isTreeUri(uri)) {
+            val docId = DocumentsContract.getTreeDocumentId(uri)
+            val parts = docId.split(":")
+            if (parts.isNotEmpty() && parts[0] == "primary") {
+                return Environment.getExternalStorageDirectory().absolutePath + "/" + parts.drop(1).joinToString(":")
             }
-            positiveButton { getPresenter().onStoragePermissionsAccepted() }
         }
+        return null
     }
 
     override fun showQualityChooser(items: List<Pair<String, String>>) {
@@ -368,23 +418,22 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
         }.show(childFragmentManager, "QualityDialog")
     }
 
-    override fun showEmptyView() {
-        binding.authorsLayout.visible()
-        binding.actionBtn.gone()
-        binding.titleView.setText(R.string.series_empty_episode_title)
-        binding.descriptionView.setText(R.string.series_empty_episode_description)
-        binding.sourceChangeBtn.gone()
+override fun showEmptyView() {
+        authorsLayoutBinding.root.visible()
+        authorsLayoutBinding.actionBtn.gone()
+        authorsLayoutBinding.titleView.setText(R.string.series_empty_episode_title)
+        authorsLayoutBinding.descriptionView.setText(R.string.series_empty_episode_description)
+        seriesToolbarBinding.sourceChangeBtn.gone()
     }
-
-    override fun showContent(show: Boolean) = binding.recyclerView.visibleIf { show }
-    override fun hideEmptyView() = binding.emptyContentView.gone()
-    override fun showNetworkView() = binding.networkErrorView.visible()
-    override fun hideNetworkView() = binding.networkErrorView.gone()
-    override fun setBackground(image: Image) = imageLoader.setBlurredImage(binding.backgroundImage, image.original, sampling = 2)
-    override fun scrollToPosition(position: Int) = binding.recyclerView.scrollToPosition(position)
-    override fun showFab(show: Boolean) = if (show) binding.fab.show() else binding.fab.hide()
-    override fun onShowLoading() = binding.progress.visible()
-    override fun onHideLoading() = binding.progress.gone()
-    override fun onShowLightLoading() = binding.progress.visible()
-    override fun onHideLightLoading() = binding.progress.gone()
+    override fun showContent(show: Boolean) = seriesBinding.recyclerView.visibleIf { show }
+    override fun hideEmptyView() = defaultPlaceholdersBinding.emptyContentView.gone()
+    override fun showNetworkView() = defaultPlaceholdersBinding.networkErrorView.visible()
+    override fun hideNetworkView() = defaultPlaceholdersBinding.networkErrorView.gone()
+    override fun setBackground(image: Image) = imageLoader.setBlurredImage(seriesBinding.backgroundImage, image.original, sampling = 2)
+    override fun scrollToPosition(position: Int) = seriesBinding.recyclerView.scrollToPosition(position)
+    override fun showFab(show: Boolean) = if (show) seriesBinding.fab.show() else seriesBinding.fab.hide()
+    override fun onShowLoading() = seriesBinding.progress.visible()
+    override fun onHideLoading() = seriesBinding.progress.gone()
+    override fun onShowLightLoading() = seriesBinding.progress.visible()
+    override fun onHideLightLoading() = seriesBinding.progress.gone()
 }

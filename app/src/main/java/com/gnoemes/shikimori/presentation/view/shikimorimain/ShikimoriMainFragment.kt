@@ -28,8 +28,8 @@ import javax.inject.Inject
 
 class ShikimoriMainFragment : BaseFragment<ShikimoriMainPresenter, ShikimoriMainView>(), ShikimoriMainView, RouterProvider, HasAndroidInjector {
 
-    private var _binding: FragmentShikimoriMainBinding? = null
-    private val binding get() = _binding!!
+    private var _viewBinding: FragmentShikimoriMainBinding? = null
+    private val viewBinding get() = _viewBinding!!
 
     @Inject
     lateinit var childFragmentInjector: DispatchingAndroidInjector<Any>
@@ -57,8 +57,8 @@ class ShikimoriMainFragment : BaseFragment<ShikimoriMainPresenter, ShikimoriMain
     private val adapter by lazy { PagerAdapter(childFragmentManager) }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        _binding = FragmentShikimoriMainBinding.inflate(inflater, container, false)
-        return binding.root
+        _viewBinding = FragmentShikimoriMainBinding.inflate(inflater, container, false)
+        return viewBinding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -66,14 +66,14 @@ class ShikimoriMainFragment : BaseFragment<ShikimoriMainPresenter, ShikimoriMain
 
         toolbarBinding.toolbar.gone()
 
-        binding.pagesContainerView.adapter = adapter
-        binding.pagesContainerView.offscreenPageLimit = 3
-        binding.tabLayout.setupWithViewPager(binding.pagesContainerView)
+        viewBinding.pagesContainerView.adapter = adapter
+        viewBinding.pagesContainerView.offscreenPageLimit = 3
+        viewBinding.includedLayoutAppbarTabs.tabLayout.setupWithViewPager(viewBinding.pagesContainerView)
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        _binding = null
+        _viewBinding = null
     }
 
     ///////////////////////////////////////////////////////////////////////////

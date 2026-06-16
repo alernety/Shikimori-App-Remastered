@@ -20,8 +20,8 @@ import javax.inject.Inject
 
 class FriendsFragment : BaseFragment<FriendsPresenter, FriendsView>(), FriendsView {
 
-    private var _binding: FragmentDefaultListBinding? = null
-    private val binding get() = _binding!!
+    private var _viewBinding: FragmentDefaultListBinding? = null
+    private val viewBinding get() = _viewBinding!!
 
     @Inject
     lateinit var imageLoader: ImageLoader
@@ -45,24 +45,24 @@ class FriendsFragment : BaseFragment<FriendsPresenter, FriendsView>(), FriendsVi
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        _binding = FragmentDefaultListBinding.bind(view.findViewById(R.id.fragment_content))
+        _viewBinding = FragmentDefaultListBinding.bind(view.findViewById(R.id.fragment_content))
 
         toolbarBinding.toolbar.apply {
             addBackButton { getPresenter().onBackPressed() }
             setTitle(R.string.common_friends)
         }
 
-        with(binding.recyclerView) {
+        with(viewBinding.includedLayoutDefaultList.recyclerView) {
             adapter = this@FriendsFragment.adapter
             layoutManager = LinearLayoutManager(context)
         }
 
-        binding.refreshLayout.setOnRefreshListener { getPresenter().onRefresh() }
+        viewBinding.includedLayoutDefaultList.refreshLayout.setOnRefreshListener { getPresenter().onRefresh() }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        _binding = null
+        _viewBinding = null
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -90,10 +90,10 @@ class FriendsFragment : BaseFragment<FriendsPresenter, FriendsView>(), FriendsVi
     }
 
     override fun showContent(show: Boolean) {
-        binding.recyclerView.visibleIf { show }
+        viewBinding.includedLayoutDefaultList.recyclerView.visibleIf { show }
     }
 
-    override fun onShowLoading() = binding.refreshLayout.showRefresh()
+    override fun onShowLoading() = viewBinding.includedLayoutDefaultList.refreshLayout.showRefresh()
 
-    override fun onHideLoading() = binding.refreshLayout.hideRefresh()
+    override fun onHideLoading() = viewBinding.includedLayoutDefaultList.refreshLayout.hideRefresh()
 }

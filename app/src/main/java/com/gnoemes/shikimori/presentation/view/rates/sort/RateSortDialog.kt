@@ -9,13 +9,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.DialogMenuBinding
 import com.gnoemes.shikimori.entity.common.presentation.RateSort
 import com.gnoemes.shikimori.presentation.view.base.fragment.BaseBottomSheetDialogFragment
 import com.gnoemes.shikimori.utils.colorStateList
 import com.gnoemes.shikimori.utils.dimenAttr
 import com.gnoemes.shikimori.utils.withArgs
 import kotlinx.android.parcel.Parcelize
-import kotlinx.android.synthetic.main.dialog_menu.*
 
 class RateSortDialog : BaseBottomSheetDialogFragment() {
 
@@ -33,8 +33,12 @@ class RateSortDialog : BaseBottomSheetDialogFragment() {
         peekHeight = Point().let { activity?.windowManager?.defaultDisplay?.getSize(it);it }.x - context.dimenAttr(android.R.attr.actionBarSize)
     }
 
+    private var _binding: DialogMenuBinding? = null
+    private val binding get() = _binding!!
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(getDialogLayout(), container, false)
+        _binding = DialogMenuBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -42,11 +46,11 @@ class RateSortDialog : BaseBottomSheetDialogFragment() {
 
         val sorts = arguments?.getParcelableArray(SORTS_KEY)?.map { it as Sort }!!
 
-        with(toolbar) {
+        with(binding.toolbar) {
             setTitle(R.string.sort)
         }
 
-        navView.apply {
+        binding.navView.apply {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 setItemBackgroundResource(R.drawable.selector_item_menu_background_accent)
                 itemTextColor = context.colorStateList(R.color.selector_item_menu_text_color_accent)
@@ -63,6 +67,11 @@ class RateSortDialog : BaseBottomSheetDialogFragment() {
                 setCheckedItem(checkedId)
             }
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     ///////////////////////////////////////////////////////////////////////////

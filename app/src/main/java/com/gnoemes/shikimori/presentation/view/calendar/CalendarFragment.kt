@@ -58,20 +58,20 @@ class CalendarFragment : BaseFragment<CalendarPresenter, CalendarView>(), Calend
 
         binding.toolbar.setNavigationIcon(R.drawable.ic_search)
 
-        with(binding.recyclerView) {
+        with(binding.includedLayoutDefaultList.recyclerView) {
             adapter = this@CalendarFragment.adapter
             layoutManager = LinearLayoutManager(context).apply { initialPrefetchItemCount = 3 }
-            val customSpacing = context.dp(84)
-            addItemDecoration(VerticalSpaceItemDecorator(context.dp(20), true, firstCustomSpacing = customSpacing, lastCustomSpacing = context!!.dp(20)))
+            val customSpacing = context!!.dp(84)
+            addItemDecoration(VerticalSpaceItemDecorator(context!!.dp(20), true, firstCustomSpacing = customSpacing, lastCustomSpacing = context!!.dp(20)))
             setHasFixedSize(true)
         }
 
-        binding.refreshLayout.layoutParams = (binding.refreshLayout.layoutParams as? CoordinatorLayout.LayoutParams)?.apply {
+        binding.includedLayoutDefaultList.refreshLayout.layoutParams = (binding.includedLayoutDefaultList.refreshLayout.layoutParams as? CoordinatorLayout.LayoutParams)?.apply {
             behavior = OverlapHeaderScrollingBehavior()
         }
-        binding.refreshLayout.setProgressViewOffset(false, context!!.dp(24), context!!.dp(96))
+        binding.includedLayoutDefaultList.refreshLayout.setProgressViewOffset(false, context!!.dp(24), context!!.dp(96))
 
-        binding.networkErrorView.apply {
+        binding.includedLayoutDefaultPlaceholders.networkErrorView.apply {
             setText(R.string.common_error_message_without_pull)
             callback = { getPresenter().initData() }
             showButton()
@@ -89,24 +89,24 @@ class CalendarFragment : BaseFragment<CalendarPresenter, CalendarView>(), Calend
                     return true
                 }
             })
-            findViewById<SearchView.SearchAutoComplete>(R.id.search_src_text)?.apply {
+            findViewById<SearchView.SearchAutoComplete>(androidx.appcompat.R.id.search_src_text)?.apply {
                 setPadding(0, 0, context.dp(8), 0)
                 setHintTextColor(context.colorStateList(context.attr(R.attr.colorOnPrimarySecondary).resourceId))
             }
-            findViewById<LinearLayout>(R.id.search_edit_frame)?.apply {
+            findViewById<LinearLayout>(androidx.appcompat.R.id.search_edit_frame)?.apply {
                 layoutParams = (layoutParams as? LinearLayout.LayoutParams)?.apply {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
                         marginStart = 0
                     }; leftMargin = 0
                 }
             }
-            findViewById<ImageView>(R.id.search_close_btn)?.apply {
+            findViewById<ImageView>(androidx.appcompat.R.id.search_close_btn)?.apply {
                 setPadding(context!!.dp(12), 0, context!!.dp(12), 0)
                 tint(context.colorAttr(R.attr.colorOnPrimary))
             }
         }
 
-        binding.refreshLayout.setOnRefreshListener { calendarPresenter.onRefresh() }
+        binding.includedLayoutDefaultList.refreshLayout.setOnRefreshListener { calendarPresenter.onRefresh() }
     }
 
     override fun onDestroyView() {
@@ -130,9 +130,9 @@ class CalendarFragment : BaseFragment<CalendarPresenter, CalendarView>(), Calend
         adapter.bindItems(items)
     }
 
-    override fun showContent(show: Boolean) = binding.recyclerView.visibleIf { show }
-    override fun onShowLoading() = binding.refreshLayout.showRefresh()
-    override fun onHideLoading() = binding.refreshLayout.hideRefresh()
+    override fun showContent(show: Boolean) = binding.includedLayoutDefaultList.recyclerView.visibleIf { show }
+    override fun onShowLoading() = binding.includedLayoutDefaultList.refreshLayout.showRefresh()
+    override fun onHideLoading() = binding.includedLayoutDefaultList.refreshLayout.hideRefresh()
 
     override fun showEmptyView() {
         val item = SeriesPlaceholderItem(R.string.calendar_empty_title, R.string.calendar_empty_description)

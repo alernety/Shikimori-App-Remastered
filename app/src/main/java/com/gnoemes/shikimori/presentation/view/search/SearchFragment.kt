@@ -29,7 +29,7 @@ import com.gnoemes.shikimori.presentation.view.search.filter.FilterFragment
 import com.gnoemes.shikimori.utils.*
 import com.gnoemes.shikimori.utils.images.ImageLoader
 import com.gnoemes.shikimori.utils.widgets.GridItemDecorator
-import com.santalu.widget.ReSpinner
+import com.gnoemes.shikimori.presentation.view.common.widget.ReSpinner
 import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
@@ -37,8 +37,8 @@ import javax.inject.Inject
 
 class SearchFragment : BasePaginationFragment<SearchItem, SearchPresenter, SearchView>(), SearchView, FilterCallback, HasAndroidInjector, TabRootFragment {
 
-    private var _binding: FragmentSearchBinding? = null
-    private val binding get() = _binding!!
+    private var _viewBinding: FragmentSearchBinding? = null
+    private val viewBinding get() = _viewBinding!!
 
     @Inject
     lateinit var imageLoader: ImageLoader
@@ -84,7 +84,7 @@ class SearchFragment : BasePaginationFragment<SearchItem, SearchPresenter, Searc
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        _binding = FragmentSearchBinding.bind(view.findViewById(R.id.fragment_content))
+        _viewBinding = FragmentSearchBinding.bind(view.findViewById(R.id.fragment_content))
 
         progressBinding.progressBar.gone()
 
@@ -115,11 +115,11 @@ class SearchFragment : BasePaginationFragment<SearchItem, SearchPresenter, Searc
             setOnCloseListener {
                 return@setOnCloseListener true
             }
-            findViewById<androidx.appcompat.widget.SearchView.SearchAutoComplete>(R.id.search_src_text)?.apply {
+            findViewById<androidx.appcompat.widget.SearchView.SearchAutoComplete>(androidx.appcompat.R.id.search_src_text)?.apply {
                 setPadding(0, 0, context.dp(8), 0)
                 setHintTextColor(context.colorStateList(context.attr(R.attr.colorOnPrimarySecondary).resourceId))
             }
-            findViewById<LinearLayout>(R.id.search_edit_frame)?.apply {
+            findViewById<LinearLayout>(androidx.appcompat.R.id.search_edit_frame)?.apply {
                 layoutParams = (layoutParams as? LinearLayout.LayoutParams)?.apply {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
                         marginStart = 0
@@ -129,7 +129,7 @@ class SearchFragment : BasePaginationFragment<SearchItem, SearchPresenter, Searc
         }
 
 
-        with(binding.recyclerView) {
+        with(viewBinding.includedLayoutDefaultList.recyclerView) {
             val spanCount = context.calculateColumns(R.dimen.image_search_width)
             adapter = this@SearchFragment.adapter
             layoutManager = GridLayoutManager(context, spanCount)
@@ -138,12 +138,12 @@ class SearchFragment : BasePaginationFragment<SearchItem, SearchPresenter, Searc
             addOnScrollListener(nextPageListener)
         }
 
-        binding.fab.setOnClickListener { getPresenter().onFilterClicked() }
+        viewBinding.fab.setOnClickListener { getPresenter().onFilterClicked() }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        _binding = null
+        _viewBinding = null
     }
 
     override fun onTabRootAction() {
@@ -199,11 +199,11 @@ class SearchFragment : BasePaginationFragment<SearchItem, SearchPresenter, Searc
     }
 
     override fun updateFilterIcon(empty: Boolean) {
-        binding.fab.setImageResource(if (empty) R.drawable.ic_filter else R.drawable.ic_filter_edit)
+        viewBinding.fab.setImageResource(if (empty) R.drawable.ic_filter else R.drawable.ic_filter_edit)
     }
 
-    override fun showFilterButton() = binding.fab.show()
-    override fun hideFilterButton() = binding.fab.hide()
+    override fun showFilterButton() = viewBinding.fab.show()
+    override fun hideFilterButton() = viewBinding.fab.hide()
     override fun setSimpleEmptyText() = placeholdersBinding.emptyContentView.setText(R.string.search_need_query)
     override fun setDefaultEmptyText() = placeholdersBinding.emptyContentView.setText(R.string.search_nothing)
 }

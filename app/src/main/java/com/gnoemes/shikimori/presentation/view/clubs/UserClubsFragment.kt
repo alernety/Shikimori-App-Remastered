@@ -52,12 +52,12 @@ class UserClubsFragment : BaseFragment<UserClubsPresenter, UserClubsView>(), Use
             setTitle(R.string.common_clubs)
         }
 
-        with(binding.recyclerView) {
+        with(binding.includedLayoutDefaultList.recyclerView) {
             adapter = this@UserClubsFragment.adapter
             layoutManager = LinearLayoutManager(context)
         }
 
-        binding.refreshLayout.setOnRefreshListener { getPresenter().onRefresh() }
+        binding.includedLayoutDefaultList.refreshLayout.setOnRefreshListener { getPresenter().onRefresh() }
     }
 
     override fun onDestroyView() {
@@ -90,11 +90,11 @@ class UserClubsFragment : BaseFragment<UserClubsPresenter, UserClubsView>(), Use
     }
 
     override fun showContent(show: Boolean) {
-        binding.recyclerView.visibleIf { show }
+        binding.includedLayoutDefaultList.recyclerView.visibleIf { show }
     }
 
-    override fun onShowLoading() = binding.refreshLayout.showRefresh()
+    override fun onShowLoading() = binding.includedLayoutDefaultList.refreshLayout.showRefresh()
 
-    override fun onHideLoading() = binding.refreshLayout.hideRefresh()
+    override fun onHideLoading() = binding.includedLayoutDefaultList.refreshLayout.hideRefresh()
 
 }

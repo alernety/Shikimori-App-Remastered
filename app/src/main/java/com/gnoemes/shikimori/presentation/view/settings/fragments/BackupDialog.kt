@@ -12,8 +12,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.content.FileProvider
-import com.afollestad.materialdialogs.MaterialDialog
-import com.afollestad.materialdialogs.files.fileChooser
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.databinding.DialogBackupBinding
@@ -31,7 +30,7 @@ import com.google.firebase.storage.FirebaseStorage
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
-import com.kotlinpermissions.KotlinPermissions
+import androidx.activity.result.contract.ActivityResultContracts
 import org.joda.time.DateTime
 import org.joda.time.Days
 import java.io.BufferedWriter
@@ -49,6 +48,35 @@ class BackupDialog : BaseBottomSheetDialogFragment() {
 
     private val firebase by lazy { FirebaseStorage.getInstance() }
 
+    private var pendingPermissionsCallback: (() -> Unit)? = null
+
+    private val storagePermissionsLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        if (permissions.values.all { it }) {
+            pendingPermissionsCallback?.invoke()
+            pendingPermissionsCallback = null
+        }
+    }
+
+    private val backupFileLauncher = registerForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        if (uri != null) {
+            try {
+                val tempFile = File(requireContext().cacheDir, "backup_import.json")
+                requireContext().contentResolver.openInputStream(uri)?.use { input ->
+                    tempFile.outputStream().use { output -> input.copyTo(output) }
+                }
+                readBackup(tempFile)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                FirebaseCrashlytics.getInstance().recordException(e)
+                Toast.makeText(context, R.string.backup_read_error, Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
     override fun onAttach(context: Context) {
         super.onAttach(context)
         peekHeight = context.dimenAttr(android.R.attr.actionBarSize)
@@ -61,8 +89,8 @@ class BackupDialog : BaseBottomSheetDialogFragment() {
         _baseBinding = DialogBaseBottomSheetBinding.bind(view)
         _binding = DialogBackupBinding.bind((view.findViewById<ViewGroup>(R.id.fragment_content)).getChildAt(0))
 
-        val saveBinding = LayoutBackupSaveBinding.bind(binding.saveLayout)
-        val downloadBinding = LayoutBackupDownloadBinding.bind(binding.downloadLayout)
+        val saveBinding = LayoutBackupSaveBinding.bind(binding.saveLayout.root)
+        val downloadBinding = LayoutBackupDownloadBinding.bind(binding.downloadLayout.root)
 
         with(baseBinding.toolbar) {
             setTitle(R.string.settings_backup_title)
@@ -200,11 +228,11 @@ class BackupDialog : BaseBottomSheetDialogFragment() {
                 val read: (File?) -> Unit = { readBackup(it) }
 
                 if (downloadsFile.exists()) {
-                    context?.fileFoundDialog({ read.invoke(downloadsFile) }) { showFolderChooserDialog(read) }
+                    context?.fileFoundDialog({ read.invoke(downloadsFile) }) { openBackupFilePicker() }
                 } else if (!appFolder.isNullOrBlank() && folderFile.exists()) {
-                    context?.fileFoundDialog({ read.invoke(folderFile) }) { showFolderChooserDialog(read) }
+                    context?.fileFoundDialog({ read.invoke(folderFile) }) { openBackupFilePicker() }
                 } else {
-                    showFolderChooserDialog(read)
+                    openBackupFilePicker()
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -212,6 +240,10 @@ class BackupDialog : BaseBottomSheetDialogFragment() {
                 Toast.makeText(context, R.string.backup_read_error, Toast.LENGTH_LONG).show()
             }
         }
+    }
+
+    private fun openBackupFilePicker() {
+        backupFileLauncher.launch(arrayOf("*/*"))
     }
 
     private fun readBackup(file: File?) {
@@ -261,28 +293,22 @@ class BackupDialog : BaseBottomSheetDialogFragment() {
     }
 
     private fun Context.fileFoundDialog(onAccepted: () -> Unit, onCancel: () -> Unit) {
-        MaterialDialog(this).show {
-            title(res = R.string.backup_found_title)
-            message(res = R.string.backup_found_message)
-            positiveButton(res = R.string.common_apply) { onAccepted.invoke() }
-            negativeButton(res = R.string.filter_select) { onCancel.invoke() }
-        }
+        MaterialAlertDialogBuilder(this).apply {
+            setTitle(R.string.backup_found_title)
+            setMessage(R.string.backup_found_message)
+            setPositiveButton(R.string.common_apply) { _, _ -> onAccepted.invoke() }
+            setNegativeButton(R.string.filter_select) { _, _ -> onCancel.invoke() }
+        }.show()
     }
 
     private fun checkStoragePermissions(onAccepted: () -> Unit) {
-        KotlinPermissions.with(activity!!)
-                .permissions(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE)
-                .onAccepted { onAccepted.invoke() }
-                .ask()
-    }
-
-    private fun showFolderChooserDialog(onFileChosen: (File) -> Unit) {
-        MaterialDialog(context!!).show {
-            fileChooser(
-                    allowFolderCreation = false,
-                    emptyTextRes = R.string.download_folder_empty)
-            { _, file -> onFileChosen.invoke(file) }
-        }
+        pendingPermissionsCallback = onAccepted
+        storagePermissionsLauncher.launch(
+            arrayOf(
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.READ_EXTERNAL_STORAGE
+            )
+        )
     }
 
     private fun getData(field: Any, value: Any?): Any? =
@@ -326,7 +352,7 @@ class BackupDialog : BaseBottomSheetDialogFragment() {
         val days = Math.abs(Days.daysBetween(DateTime.now(), date).days)
         val text = if (days == 0) context!!.getString(R.string.common_today) else
             context!!.resources.getQuantityString(R.plurals.days_ago, days, days)
-        val downloadBinding = LayoutBackupDownloadBinding.bind(binding.downloadLayout)
+        val downloadBinding = LayoutBackupDownloadBinding.bind(binding.downloadLayout.root)
         downloadBinding.cloudLabel.text = text
     }
 

@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import moxy.presenter.InjectPresenter
 import moxy.presenter.ProvidePresenter
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.FragmentFilterGenresBinding
 import com.gnoemes.shikimori.entity.common.domain.FilterItem
 import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.presentation.presenter.search.FilterGenresPresenter
@@ -18,8 +19,6 @@ import com.gnoemes.shikimori.presentation.view.base.fragment.BaseBottomSheetInje
 import com.gnoemes.shikimori.presentation.view.search.filter.FilterCallback
 import com.gnoemes.shikimori.presentation.view.search.filter.genres.adapter.FilterGenreAdapter
 import com.gnoemes.shikimori.utils.*
-import kotlinx.android.synthetic.main.fragment_filter_genres.*
-import kotlinx.android.synthetic.main.layout_filter_nested_toolbar.*
 
 class FilterGenresFragment : BaseBottomSheetInjectionDialogFragment<FilterGenresPresenter, FilterGenresView>(), FilterGenresView {
 
@@ -45,32 +44,41 @@ class FilterGenresFragment : BaseBottomSheetInjectionDialogFragment<FilterGenres
 
     private val adapter by lazy { FilterGenreAdapter(presenter::onFilterInverted, presenter::onFilterSelected) }
 
+    private var _binding: FragmentFilterGenresBinding? = null
+    private val binding get() = _binding!!
+
     override fun onAttach(context: Context) {
         super.onAttach(context)
         peekHeight = Point().let { activity?.windowManager?.defaultDisplay?.getSize(it);it }.x - context.dimenAttr(android.R.attr.actionBarSize)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(getDialogLayout(), container, false)
+        _binding = FragmentFilterGenresBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        with(toolbar) {
+        with(binding.nestedToolbar.toolbar) {
             setTitle(R.string.filters_genres)
             addBackButton(R.drawable.ic_close) { onBackPressed() }
         }
 
-        with(recyclerView) {
+        with(binding.recyclerView) {
             adapter = this@FilterGenresFragment.adapter
             layoutManager = LinearLayoutManager(context)
             itemAnimator = null
             addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
         }
 
-        clearBtn.onClick { presenter.onResetClicked() }
-        acceptBtn.onClick { presenter.onAcceptClicked() }
+        binding.nestedToolbar.clearBtn.onClick { presenter.onResetClicked() }
+        binding.nestedToolbar.acceptBtn.onClick { presenter.onAcceptClicked() }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -90,7 +98,7 @@ class FilterGenresFragment : BaseBottomSheetInjectionDialogFragment<FilterGenres
         adapter.bindItems(items)
     }
 
-    override fun setResetEnabled(show: Boolean) = clearBtn.visibleIf { show }
+    override fun setResetEnabled(show: Boolean) = binding.nestedToolbar.clearBtn.visibleIf { show }
 
     override fun onFiltersAccepted(appliedFilters: HashMap<String, MutableList<FilterItem>>) {
         (targetFragment as? FilterCallback)?.onFiltersSelected(tag, appliedFilters)

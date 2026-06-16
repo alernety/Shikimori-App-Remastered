@@ -4,6 +4,7 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.LinearLayout
@@ -12,6 +13,10 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.transition.Fade
 import androidx.transition.TransitionManager
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.FragmentDetailsBinding
+import com.gnoemes.shikimori.databinding.LayoutCollapsingToolbarBinding
+import com.gnoemes.shikimori.databinding.LayoutDetailsContentWithSearchBinding
+import com.gnoemes.shikimori.utils.colorAttr
 import com.gnoemes.shikimori.entity.common.domain.Link
 import com.gnoemes.shikimori.entity.common.presentation.*
 import com.gnoemes.shikimori.entity.rates.domain.RateStatus
@@ -32,9 +37,6 @@ import com.gnoemes.shikimori.presentation.view.rates.status.RateStatusDialog
 import com.gnoemes.shikimori.utils.*
 import com.gnoemes.shikimori.utils.images.ImageLoader
 import com.google.android.material.appbar.AppBarLayout
-import kotlinx.android.synthetic.main.fragment_details.*
-import kotlinx.android.synthetic.main.layout_collapsing_toolbar.*
-import kotlinx.android.synthetic.main.layout_details_content_with_search.view.*
 import javax.inject.Inject
 
 abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View>, View : BaseDetailsView> : BaseFragment<Presenter, View>(),
@@ -48,6 +50,10 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View>, View 
 
     private var detailsName: String? = null
 
+    private var fragmentBinding: FragmentDetailsBinding? = null
+    private var collapsingToolbarBinding: LayoutCollapsingToolbarBinding? = null
+    private var charactersBinding: LayoutDetailsContentWithSearchBinding? = null
+
     protected open val onOffsetChangedListener = AppBarLayout.OnOffsetChangedListener { appbar, verticalOffset ->
 
         fun isCollapsed(): Boolean {
@@ -60,14 +66,14 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View>, View 
     }
 
     protected open fun showToolbar() {
-        toolbar?.apply {
+        toolbarBinding.toolbar.apply {
             detailsName?.let { title = it } ?: setTitle(titleRes)
             background = ColorDrawable(context.colorAttr(R.attr.colorPrimary))
         }
     }
 
     protected open fun hideToolbar() {
-        toolbar?.apply {
+        toolbarBinding.toolbar.apply {
             title = null
             background = ColorDrawable(Color.TRANSPARENT)
         }
@@ -84,19 +90,23 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View>, View 
     protected open val infoAdapter by lazy { InfoAdapter(getPresenter()::onContentClicked, imageLoader) }
     protected open val actionAdapter by lazy { ActionAdapter(getPresenter()::onAction) }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): android.view.View? {
-        return inflater.inflate(getFragmentLayout(), container, false)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): android.view.View {
+        fragmentBinding = FragmentDetailsBinding.inflate(inflater, container, false)
+        val appBarLayout = fragmentBinding!!.root.findViewById<AppBarLayout>(R.id.appBarLayout)
+        collapsingToolbarBinding = LayoutCollapsingToolbarBinding.bind(appBarLayout!!)
+        charactersBinding = LayoutDetailsContentWithSearchBinding.bind(fragmentBinding!!.charactersLayout as ViewGroup)
+        return fragmentBinding!!.root
     }
 
     override fun onViewCreated(view: android.view.View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        toolbar?.apply {
+        toolbarBinding.toolbar.apply {
             addBackButton { getPresenter().onBackPressed() }
             title = null
         }
 
-        val params = appBarLayout.layoutParams as CoordinatorLayout.LayoutParams
+        val params = collapsingToolbarBinding!!.appBarLayout.layoutParams as CoordinatorLayout.LayoutParams
         params.behavior = AppBarLayout.Behavior().apply {
             setDragCallback(object : AppBarLayout.Behavior.DragCallback() {
                 override fun canDrag(appBarLayout: AppBarLayout): Boolean {
@@ -105,15 +115,19 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View>, View 
             })
 
         }
-        appBarLayout.addOnOffsetChangedListener(onOffsetChangedListener)
+        collapsingToolbarBinding!!.appBarLayout.addOnOffsetChangedListener(onOffsetChangedListener)
 
-        headHolder = DetailsHeadViewHolder(headLayout, imageLoader, getPresenter()::onAction)
-        infoHolder = DetailsInfoViewHolder(infoLayout, tagAdapter, infoAdapter)
-        actionHolder = DetailsActionViewHolder(actionLayout, actionAdapter)
-        descriptionHolder = DetailsDescriptionViewHolder(descriptionLayout, getPresenter()::onContentClicked)
+        headHolder = DetailsHeadViewHolder(collapsingToolbarBinding!!.headLayout, imageLoader, getPresenter()::onAction)
+        infoHolder = DetailsInfoViewHolder(fragmentBinding!!.infoLayout, tagAdapter, infoAdapter)
+        actionHolder = DetailsActionViewHolder(fragmentBinding!!.actionLayout, actionAdapter)
+        descriptionHolder = DetailsDescriptionViewHolder(fragmentBinding!!.descriptionLayout, getPresenter()::onContentClicked)
 
-        with(charactersLayout.searchView) {
-            findViewById<LinearLayout>(R.id.search_bar)?.layoutTransition = null
+        with(charactersBinding!!.searchView) {
+            val searchBarId = context.resources.getIdentifier("search_bar", "id", "android")
+            val searchSrcTextId = context.resources.getIdentifier("search_src_text", "id", "android")
+            val searchEditFrameId = context.resources.getIdentifier("search_edit_frame", "id", "android")
+            
+            findViewById<LinearLayout>(searchBarId)?.layoutTransition = null
             setOnCloseListener {
                 getPresenter().onCharacterSearch(null)
                 true
@@ -129,11 +143,11 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View>, View 
                     return true
                 }
             })
-            findViewById<SearchView.SearchAutoComplete>(R.id.search_src_text)?.apply {
+            findViewById<SearchView.SearchAutoComplete>(searchSrcTextId)?.apply {
                 setPadding(context.dp(16), 0, context.dp(8), 0)
-                setHintTextColor(context.colorStateList(context.attr(R.attr.colorOnPrimarySecondary).resourceId))
+                setHintTextColor(context.colorStateList(R.attr.colorOnPrimarySecondary))
             }
-            findViewById<LinearLayout>(R.id.search_edit_frame)?.apply {
+            findViewById<LinearLayout>(searchEditFrameId)?.apply {
                 layoutParams = (layoutParams as? LinearLayout.LayoutParams)?.apply {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
                         marginStart = 0
@@ -142,11 +156,11 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View>, View 
             }
         }
 
-        with(charactersLayout) {
+        with(charactersBinding!!) {
             searchBtn.onClick {
                 searchView.isIconified = false
                 searchView.post {
-                    TransitionManager.beginDelayedTransition(this@with as ViewGroup, Fade())
+                    TransitionManager.beginDelayedTransition(this@with.root, Fade())
                     contentLabelView.gone()
                     searchBtn.gone()
                     searchView.visible()
@@ -154,7 +168,7 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View>, View 
                 }
             }
             closeBtn.onClick {
-                TransitionManager.beginDelayedTransition(this@with as ViewGroup, Fade())
+                TransitionManager.beginDelayedTransition(root, Fade())
                 contentLabelView.visible()
                 searchBtn.visible()
                 searchView.setQuery("", false)
@@ -186,8 +200,11 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View>, View 
     }
 
     override fun onDestroyView() {
-        appBarLayout.removeOnOffsetChangedListener(onOffsetChangedListener)
+        collapsingToolbarBinding!!.appBarLayout.removeOnOffsetChangedListener(onOffsetChangedListener)
         super.onDestroyView()
+        fragmentBinding = null
+        collapsingToolbarBinding = null
+        charactersBinding = null
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -206,8 +223,8 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View>, View 
         detailsName = item.name
         headHolder.bind(item)
 
-        if (!backgroundImage.hasImage()) {
-            imageLoader.setBlurredImage(backgroundImage, item.image.original, sampling = 2)
+        if (!fragmentBinding!!.backgroundImage.hasImage()) {
+            imageLoader.setBlurredImage(fragmentBinding!!.backgroundImage, item.image.original, sampling = 2)
         }
     }
 

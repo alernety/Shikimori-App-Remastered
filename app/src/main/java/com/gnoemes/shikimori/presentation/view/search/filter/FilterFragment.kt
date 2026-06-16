@@ -11,6 +11,8 @@ import androidx.transition.TransitionManager
 import moxy.presenter.InjectPresenter
 import moxy.presenter.ProvidePresenter
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.FragmentFilterBinding
+import com.gnoemes.shikimori.databinding.LayoutFilterBottomBinding
 import com.gnoemes.shikimori.entity.common.domain.FilterItem
 import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.search.domain.FilterType
@@ -22,8 +24,6 @@ import com.gnoemes.shikimori.presentation.view.search.filter.genres.FilterGenres
 import com.gnoemes.shikimori.presentation.view.search.filter.seasons.FilterSeasonsFragment
 import com.gnoemes.shikimori.utils.*
 import com.google.gson.Gson
-import kotlinx.android.synthetic.main.fragment_filter.*
-import kotlinx.android.synthetic.main.layout_filter_bottom.*
 
 class FilterFragment : BaseBottomSheetInjectionDialogFragment<FilterPresenter, FilterView>(), FilterView, FilterCallback, ListDialogFragment.DialogCallback {
 
@@ -51,38 +51,50 @@ class FilterFragment : BaseBottomSheetInjectionDialogFragment<FilterPresenter, F
     }
 
     private val adapter by lazy { FilterAdapter(presenter::onFilterAction, presenter::onFilterSelected, presenter::onFilterInverted) }
+    private var _binding: FragmentFilterBinding? = null
+    private val binding get() = _binding!!
+    private var _bottomBinding: LayoutFilterBottomBinding? = null
+    private val bottomBinding get() = _bottomBinding!!
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(getDialogLayout(), container, false)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        _binding = FragmentFilterBinding.inflate(inflater, container, false)
+        _bottomBinding = LayoutFilterBottomBinding.bind(_binding!!.root.findViewById(R.id.included_layout_filter_bottom))
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        if (context!!.getDefaultSharedPreferences().getBoolean(HINT_KEY, false)) hintContainer.gone()
+        if (context!!.getDefaultSharedPreferences().getBoolean(HINT_KEY, false)) binding.hintContainer.gone()
         else {
-            hintContainer.onClick {
+            binding.hintContainer.onClick {
                 putSetting(HINT_KEY, true)
-                TransitionManager.beginDelayedTransition(appBarLayout, ChangeBounds())
-                hintContainer.gone()
+                TransitionManager.beginDelayedTransition(binding.appBarLayout, ChangeBounds())
+                binding.hintContainer.gone()
             }
         }
 
-        with(toolbar) {
+        with(binding.toolbar) {
             setTitle(R.string.filters)
             addBackButton(R.drawable.ic_close) { onBackPressed() }
         }
 
-        resetBtn.onClick { presenter.onResetClicked() }
-        acceptBtn.onClick { presenter.onAcceptClicked() }
-        sortBtn.onClick { presenter.onSortClicked() }
+        binding.resetBtn.onClick { presenter.onResetClicked() }
+        bottomBinding.acceptBtn.onClick { presenter.onAcceptClicked() }
+        bottomBinding.sortBtn.onClick { presenter.onSortClicked() }
 
-        with(list) {
+        with(binding.list) {
             adapter = this@FilterFragment.adapter
             layoutManager = LinearLayoutManager(context)
             addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
             itemAnimator = null
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+        _bottomBinding = null
     }
 
     override fun onFiltersSelected(tag: String?, appliedFilters: HashMap<String, MutableList<FilterItem>>) {
@@ -135,7 +147,7 @@ class FilterFragment : BaseBottomSheetInjectionDialogFragment<FilterPresenter, F
     }
 
     override fun setResetEnabled(show: Boolean) {
-        resetBtn.isEnabled = show
+        binding.resetBtn.isEnabled = show
     }
 
     override fun showSortFilters(items: List<FilterItem>) {
@@ -147,7 +159,7 @@ class FilterFragment : BaseBottomSheetInjectionDialogFragment<FilterPresenter, F
     }
 
     override fun setSortFilterText(text: String) {
-        sortBtn.text = text
+        bottomBinding.sortBtn.text = text
     }
 
     override fun onFiltersAccepted(appliedFilters: HashMap<String, MutableList<FilterItem>>) {

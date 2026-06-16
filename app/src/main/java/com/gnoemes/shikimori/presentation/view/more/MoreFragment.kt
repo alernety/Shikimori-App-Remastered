@@ -19,8 +19,8 @@ import javax.inject.Inject
 
 class MoreFragment : BaseFragment<MorePresenter, MoreView>(), MoreView, AuthDialog.AuthCallback {
 
-    private var _binding: FragmentMoreBinding? = null
-    private val binding get() = _binding!!
+    private var _viewBinding: FragmentMoreBinding? = null
+    private val viewBinding get() = _viewBinding!!
 
     @Inject
     lateinit var imageLoader: ImageLoader
@@ -46,9 +46,9 @@ class MoreFragment : BaseFragment<MorePresenter, MoreView>(), MoreView, AuthDial
     private val moreAdapter by lazy { MoreAdapter(imageLoader) { getPresenter().onCategoryClicked(it) } }
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        _binding = FragmentMoreBinding.bind(view.findViewById(R.id.fragment_content))
+        _viewBinding = FragmentMoreBinding.bind(view.findViewById(R.id.fragment_content))
 
-        with(binding.recyclerView) {
+        with(viewBinding.recyclerView) {
             adapter = moreAdapter
             layoutManager = LinearLayoutManager(context)
         }
@@ -61,7 +61,7 @@ class MoreFragment : BaseFragment<MorePresenter, MoreView>(), MoreView, AuthDial
 
     override fun onDestroyView() {
         super.onDestroyView()
-        _binding = null
+        _viewBinding = null
     }
 
     ///////////////////////////////////////////////////////////////////////////
