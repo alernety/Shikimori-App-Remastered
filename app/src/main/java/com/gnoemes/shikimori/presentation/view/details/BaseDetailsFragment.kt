@@ -38,6 +38,8 @@ import com.gnoemes.shikimori.presentation.view.rates.status.RateStatusDialog
 import com.gnoemes.shikimori.utils.*
 import com.gnoemes.shikimori.utils.images.ImageLoader
 import com.google.android.material.appbar.AppBarLayout
+import android.content.Intent
+import android.net.Uri
 import javax.inject.Inject
 
 abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View>, View : BaseDetailsView> : BaseFragment<Presenter, View>(),
@@ -262,5 +264,12 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View>, View 
         hideSoftInput()
         val dialog = StatisticDialogFragment.newInstance(title, scores, rates)
         dialog.show(childFragmentManager, "StatisticDialog")
+    }
+
+    override fun openInBrowser(url: String) {
+        context?.let {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+            startActivity(intent)
+        }
     }
 }

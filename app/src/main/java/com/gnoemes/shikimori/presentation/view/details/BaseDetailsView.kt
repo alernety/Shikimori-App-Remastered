@@ -37,4 +37,7 @@ interface BaseDetailsView : BaseFragmentView {
 
     @StateStrategyType(SkipStrategy::class)
     fun showStatistic(title : String, scores : List<UserStatisticItem>, rates : List<UserStatisticItem>)
+
+    @StateStrategyType(SkipStrategy::class)
+    fun openInBrowser(url: String)
 }

@@ -151,7 +151,7 @@ open class AnimePresenter @Inject constructor(
 
     override fun onOpenInBrowser() {
         val url = "${BuildConfig.ShikimoriBaseUrl}/animes/$id"
-        onOpenWeb(url)
+        viewState.openInBrowser(url)
     }
 
     override fun onShareClicked() {

@@ -134,7 +134,7 @@ class MangaPresenter @Inject constructor(
     override fun onOpenInBrowser() {
         val typeSegment = if (isRanobe) "ranobes" else "mangas"
         val url = "${BuildConfig.ShikimoriBaseUrl}/$typeSegment/$id"
-        onOpenWeb(url)
+        viewState.openInBrowser(url)
     }
 
     override fun onShareClicked() {
