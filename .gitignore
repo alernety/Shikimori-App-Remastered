@@ -35,3 +35,8 @@ build_*.txt
 #*.jks
 
 
+
+
+
+# Hive bead tracking database
+.hive/
