@@ -9,6 +9,7 @@ import com.gnoemes.shikimori.domain.user.UserInteractor
 import com.gnoemes.shikimori.entity.anime.domain.AnimeDetails
 import com.gnoemes.shikimori.entity.anime.domain.Screenshot
 import com.gnoemes.shikimori.entity.anime.domain.ScreenshotsNavigationData
+import com.gnoemes.shikimori.BuildConfig
 import com.gnoemes.shikimori.entity.app.domain.AnalyticEvent
 import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.chronology.ChronologyNavigationData
@@ -149,9 +150,8 @@ open class AnimePresenter @Inject constructor(
     }
 
     override fun onOpenInBrowser() {
-        if (!::currentAnime.isInitialized) return
-
-        onOpenWeb(currentAnime.url)
+        val url = "${BuildConfig.ShikimoriBaseUrl}/animes/$id"
+        onOpenWeb(url)
     }
 
     override fun onShareClicked() {

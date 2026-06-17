@@ -7,6 +7,7 @@ import com.gnoemes.shikimori.domain.ranobe.RanobeInteractor
 import com.gnoemes.shikimori.domain.rates.RatesInteractor
 import com.gnoemes.shikimori.domain.related.RelatedInteractor
 import com.gnoemes.shikimori.domain.user.UserInteractor
+import com.gnoemes.shikimori.BuildConfig
 import com.gnoemes.shikimori.entity.app.domain.AnalyticEvent
 import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.chronology.ChronologyNavigationData
@@ -130,7 +131,11 @@ class MangaPresenter @Inject constructor(
         logEvent(AnalyticEvent.ANIME_DETAILS_CHRONOLOGY)
     }
 
-    override fun onOpenInBrowser() = onOpenWeb(currentManga.url)
+    override fun onOpenInBrowser() {
+        val typeSegment = if (isRanobe) "ranobes" else "mangas"
+        val url = "${BuildConfig.ShikimoriBaseUrl}/$typeSegment/$id"
+        onOpenWeb(url)
+    }
 
     override fun onShareClicked() {
         router.navigateTo(KeyScreen(Screens.SHARE, currentManga.url))
