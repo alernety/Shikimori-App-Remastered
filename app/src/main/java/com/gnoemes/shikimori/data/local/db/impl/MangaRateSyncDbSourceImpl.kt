@@ -17,8 +17,12 @@ class MangaRateSyncDbSourceImpl @Inject constructor(
                     .map { UserRate(it.rateId, targetId = it.mangaId, chapters = it.chapters) }
                     .toSingle()
 
-    override fun saveRate(userRate: UserRate): Completable =
-            mangaRateSyncDao.insert(MangaRateSyncDao(userRate.id!!, userRate.targetId!!, userRate.chapters!!))
+    override fun saveRate(userRate: UserRate): Completable {
+        val rateId = userRate.id ?: return Completable.complete()
+        val targetId = userRate.targetId ?: return Completable.complete()
+        val chapters = userRate.chapters ?: return Completable.complete()
+        return mangaRateSyncDao.insert(MangaRateSyncDao(rateId, targetId, chapters))
+    }
 
     override fun getChaptersCount(mangaId: Long): Single<Int> =
             mangaRateSyncDao.getChaptersCount(mangaId)

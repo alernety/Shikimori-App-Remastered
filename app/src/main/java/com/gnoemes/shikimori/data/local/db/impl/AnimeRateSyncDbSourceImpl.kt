@@ -18,9 +18,13 @@ class AnimeRateSyncDbSourceImpl @Inject constructor(
                     .toSingle()
 
 
-    override fun saveRate(userRate: UserRate): Completable =
-            animeRateSyncDao.insert(AnimeRateSyncDao(userRate.id!!, userRate.targetId!!, userRate.episodes!!))
-                    .onErrorResumeNext { it.printStackTrace();Completable.complete() }
+    override fun saveRate(userRate: UserRate): Completable {
+        val rateId = userRate.id ?: return Completable.complete()
+        val targetId = userRate.targetId ?: return Completable.complete()
+        val episodes = userRate.episodes ?: return Completable.complete()
+        return animeRateSyncDao.insert(AnimeRateSyncDao(rateId, targetId, episodes))
+                .onErrorResumeNext { it.printStackTrace(); Completable.complete() }
+    }
 
 
     override fun getEpisodeCount(animeId: Long): Single<Int> =
