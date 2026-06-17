@@ -144,6 +144,7 @@ class SeriesPresenter @Inject constructor(
             viewState.hideEpisodeName()
             viewState.showNextEpisode(false)
             viewState.showFab(false)
+            viewState.showContent(false)
         }
     }
 
@@ -199,6 +200,7 @@ class SeriesPresenter @Inject constructor(
             viewState.hideEpisodeName()
             viewState.showNextEpisode(false)
             viewState.showFab(false)
+            viewState.showContent(false)
         }
     }
 

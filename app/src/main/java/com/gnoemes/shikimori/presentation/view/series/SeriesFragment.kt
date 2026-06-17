@@ -424,6 +424,7 @@ override fun showEmptyView() {
         authorsLayoutBinding.titleView.setText(R.string.series_empty_episode_title)
         authorsLayoutBinding.descriptionView.setText(R.string.series_empty_episode_description)
         seriesToolbarBinding.sourceChangeBtn.gone()
+        defaultPlaceholdersBinding.emptyContentView.gone()
     }
     override fun showContent(show: Boolean) = seriesBinding.recyclerView.visibleIf { show }
     override fun hideEmptyView() = defaultPlaceholdersBinding.emptyContentView.gone()
