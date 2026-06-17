@@ -41,6 +41,7 @@ android {
         }
 
         debug {
+            applicationIdSuffix = ".debug"
             versionNameSuffix "-SNAPSHOT"
         }
     }
@@ -134,7 +135,7 @@ dependencies {
     implementation 'de.hdodenhof:circleimageview:3.1.0'
 
     implementation 'com.google.android.flexbox:flexbox:3.0.0'
-    
+
     implementation "com.google.android.exoplayer:exoplayer:" + versions.exoplayer
     implementation "com.google.android.exoplayer:extension-mediasession:" + versions.exoplayer
 
@@ -152,7 +153,7 @@ dependencies {
     implementation 'com.github.ome450901:SimpleRatingBar:1.5.1'
     implementation 'org.jsoup:jsoup:1.17.2'
 
-    
+
     // Replaced by source in com.infideap.drawerbehavior.AdvanceDrawerLayout
     // implementation files("../libs/drawer-behavior-0.0.5.aar")
 }

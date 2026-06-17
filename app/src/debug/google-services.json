@@ -10,7 +10,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:540823320880:android:c2555faae34dcc51",
         "android_client_info": {
-          "package_name": "com.gnoemes.shikimori"
+          "package_name": "com.gnoemes.shikimori.debug"
         }
       },
       "oauth_client": [
