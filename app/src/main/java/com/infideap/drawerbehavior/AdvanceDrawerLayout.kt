@@ -3,6 +3,7 @@ package com.infideap.drawerbehavior
 import android.content.Context
 import android.content.res.Configuration
 import android.util.AttributeSet
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
@@ -21,6 +22,8 @@ class AdvanceDrawerLayout : DrawerLayout {
     private var defaultDrawerElevation = 0f
 
     private var frameLayout: FrameLayout? = null
+
+    private var currentSlideOffset = 0f
 
     var drawerView: View? = null
         private set
@@ -46,17 +49,25 @@ class AdvanceDrawerLayout : DrawerLayout {
 
         addDrawerListener(object : DrawerLayout.DrawerListener {
             override fun onDrawerSlide(drawerView: View, slideOffset: Float) {
+                this@AdvanceDrawerLayout.drawerView = drawerView
+                currentSlideOffset = slideOffset
                 updateSlideOffset(drawerView, slideOffset)
             }
 
             override fun onDrawerOpened(drawerView: View) {
                 this@AdvanceDrawerLayout.drawerView = drawerView
-                setScrimColor(defaultScrimColor)
-                setDrawerElevation(defaultDrawerElevation)
+                setScrimColor(0)
+                setDrawerElevation(0f)
+                frameLayout?.let { frame ->
+                    for (i in 0 until frame.childCount) {
+                        (frame.getChildAt(i) as? CardView)?.cardElevation = 0f
+                    }
+                }
             }
 
             override fun onDrawerClosed(drawerView: View) {
                 this@AdvanceDrawerLayout.drawerView = null
+                setScrimColor(0)
             }
 
             override fun onDrawerStateChanged(newState: Int) {
@@ -169,11 +180,16 @@ class AdvanceDrawerLayout : DrawerLayout {
         }
     }
 
+    override fun onInterceptTouchEvent(ev: MotionEvent?): Boolean {
+        return super.onInterceptTouchEvent(ev)
+    }
+
     override fun openDrawer(view: View, animate: Boolean) {
         super.openDrawer(view, animate)
-        post {
-            openDrawer(view)
-        }
+    }
+
+    override fun closeDrawer(view: View, animate: Boolean) {
+        super.closeDrawer(view, animate)
     }
 
     private fun updateSlideOffset(view: View, slideOffset: Float) {
