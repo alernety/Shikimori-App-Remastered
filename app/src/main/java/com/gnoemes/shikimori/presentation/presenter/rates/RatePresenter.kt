@@ -328,7 +328,7 @@ class RatePresenter @Inject constructor(
     private fun onWatchOnline(rateId: Long) {
         val rateItem = items.find { it is Rate && it.id == rateId } as? Rate
         rateItem?.let { rate ->
-            val animeId = rate.anime?.id!!
+            val animeId = rate.anime?.id ?: return
             Single.zip(
                     seriesInteractor.getWatchedEpisodesCount(animeId),
                     seriesInteractor.getFirstNotWatchedEpisodeIndex(animeId),
@@ -350,20 +350,23 @@ class RatePresenter @Inject constructor(
     }
 
     //TODO add manga
-    private fun checkRateWatchProgress(anime: Boolean, rate: Rate, progress: Int) =
-            seriesInteractor.getTranslationSettings(rate.anime?.id!!)
-                    .flatMap { ratesInteractor.getRate(rate.id).ignoreElement().andThen(Single.just(it)) }
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe({ watchOnlineOrOpenList(rate, it, progress) }, this::processErrors)
-                    .addToDisposables()
+    private fun checkRateWatchProgress(anime: Boolean, rate: Rate, progress: Int) {
+        val animeId = rate.anime?.id ?: return
+        seriesInteractor.getTranslationSettings(animeId)
+                .flatMap { ratesInteractor.getRate(rate.id).ignoreElement().andThen(Single.just(it)) }
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({ watchOnlineOrOpenList(rate, it, progress) }, this::processErrors)
+                .addToDisposables()
+    }
 
     //TODO manga
     private fun watchOnlineOrOpenList(rate: Rate, settings: TranslationSetting, progress: Int) {
+        val anime = rate.anime ?: return
         val name =
-                if (settingsSource.isRussianNaming) rate.anime?.nameRu.nullIfEmpty() ?: rate.anime?.name!!
-                else rate.anime?.name!!
-        val episodesAired = if (rate.anime?.status == Status.RELEASED) rate.anime.episodes else rate.anime?.episodesAired
-        val navigationData = SeriesNavigationData(settings.animeId, rate.anime?.image!!, name, rate.anime.name, rate.id, episodesAired!!, progress)
+                if (settingsSource.isRussianNaming) anime.nameRu.nullIfEmpty() ?: anime.name
+                else anime.name
+        val episodesAired = if (anime.status == Status.RELEASED) anime.episodes else anime.episodesAired
+        val navigationData = SeriesNavigationData(settings.animeId, anime.image, name, anime.name, rate.id, episodesAired, progress)
         router.navigateTo(KeyScreen(Screens.SERIES, navigationData))
         analyticInteractor.logEvent(AnalyticEvent.NAVIGATION_ANIME_TRANSLATIONS_FROM_RATES)
     }

@@ -90,7 +90,7 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView>(
     protected open fun loadLinks() =
             linkFactory.invoke(id)
                     .appendLightLoadingLogic(viewState)
-                    .map { links -> links.map { it.copy(name = it.name!!.replace("_", " ").firstUpperCase()!!) } }
+                    .map { links -> links.map { it.copy(name = it.name?.replace("_", " ")?.firstUpperCase() ?: "") } }
                     .subscribe({
                         if (it.isNotEmpty()) viewState.showLinks(it)
                         else viewState.showSystemMessage(resourceProvider.emptyMessage)

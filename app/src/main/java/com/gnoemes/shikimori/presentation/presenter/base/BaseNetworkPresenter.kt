@@ -31,6 +31,8 @@ abstract class BaseNetworkPresenter<View : BaseNetworkView> : BaseNavigationPres
             ServiceCodeException.TAG -> viewState.apply { showNetworkView(); showContent(false); showSystemMessage("HTTP error ${(throwable as ServiceCodeException).serviceCode}") }
             else -> {
                 Log.e("Error", "Error processing request", throwable)
+                viewState.onHideLoading()
+                viewState.showContent(true)
                 viewState.showSystemMessage("Something went wrong")
             }
         }
