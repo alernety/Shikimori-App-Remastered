@@ -25,7 +25,6 @@ import com.gnoemes.shikimori.utils.appendLoadingLogic
 import io.reactivex.Completable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
-import java.net.URLEncoder
 import javax.inject.Inject
 
 @InjectViewState
@@ -191,7 +190,7 @@ class UserPresenter @Inject constructor(
 
     private fun onMessageBoxClicked() {
         if (checkUserStatus()) return
-        //TODO
+        viewState.openUrl("messages".appendHostIfNeed())
     }
 
     private fun onMessageClicked() {
@@ -200,7 +199,7 @@ class UserPresenter @Inject constructor(
     }
 
     private fun onAboutClicked() {
-        onOpenWeb(URLEncoder.encode(currentUser.nickname, "utf-8").appendHostIfNeed())
+        viewState.openUrl(currentUser.nickname.appendHostIfNeed())
     }
 
     private fun onBansClicked() {

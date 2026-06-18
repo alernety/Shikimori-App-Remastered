@@ -1,5 +1,7 @@
 package com.gnoemes.shikimori.presentation.view.user
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -210,6 +212,10 @@ class UserFragment : BaseFragment<UserPresenter, UserView>(), UserView {
                 true
             }
         }
+    }
+
+    override fun openUrl(url: String) {
+        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
     }
 
     override fun showAuthView(show: Boolean) {

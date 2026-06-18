@@ -31,4 +31,6 @@ interface UserView : BaseFragmentView {
 
     fun toggleAnimeRate(expanded: Boolean)
     fun toggleMangaRate(expanded: Boolean)
+
+    fun openUrl(url: String)
 }
