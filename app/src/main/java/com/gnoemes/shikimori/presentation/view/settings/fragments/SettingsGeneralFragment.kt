@@ -1,6 +1,5 @@
 package com.gnoemes.shikimori.presentation.view.settings.fragments
 
-import android.Manifest
 import android.content.Context
 import android.net.Uri
 import android.os.Bundle
@@ -20,17 +19,6 @@ import java.io.File
 
 class SettingsGeneralFragment : BaseSettingsFragment() {
 
-    private var pendingPermissionsCallback: (() -> Unit)? = null
-
-    private val storagePermissionsLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions()
-    ) { permissions ->
-        if (permissions.values.all { it }) {
-            pendingPermissionsCallback?.invoke()
-            pendingPermissionsCallback = null
-        }
-    }
-
     private val folderChooserLauncher = registerForActivityResult(
         ActivityResultContracts.OpenDocumentTree()
     ) { uri ->
@@ -48,7 +36,7 @@ class SettingsGeneralFragment : BaseSettingsFragment() {
 
         preference(R.string.settings_content_download_folder_key)?.apply {
             updateFolderSummary()
-            setOnPreferenceClickListener { checkStoragePermissions { showFolderChooserDialog() };true }
+            setOnPreferenceClickListener { showFolderChooserDialog(); true }
         }
 
         preference(SettingsExtras.RATE_SWIPE_TO_LEFT_ACTION)?.apply {
@@ -63,9 +51,7 @@ class SettingsGeneralFragment : BaseSettingsFragment() {
 
         preference(SettingsExtras.BACKUP_SETTINGS)?.apply {
             setOnPreferenceClickListener {
-                checkStoragePermissions {
-                    BackupDialog().show(childFragmentManager, "BackupDialog")
-                }
+                BackupDialog().show(childFragmentManager, "BackupDialog")
                 true
             }
         }
@@ -89,16 +75,6 @@ class SettingsGeneralFragment : BaseSettingsFragment() {
             RateSwipeAction.DISABLED.name -> getString(R.string.rate_swipe_disabled)
             else -> getString(R.string.rate_swipe_disabled)
         }
-    }
-
-    private fun checkStoragePermissions(onAccepted: () -> Unit) {
-        pendingPermissionsCallback = onAccepted
-        storagePermissionsLauncher.launch(
-            arrayOf(
-                Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                Manifest.permission.READ_EXTERNAL_STORAGE
-            )
-        )
     }
 
     override val preferenceScreen: Int

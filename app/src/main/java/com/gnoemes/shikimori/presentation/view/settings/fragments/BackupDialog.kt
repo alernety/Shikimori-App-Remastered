@@ -1,6 +1,5 @@
 package com.gnoemes.shikimori.presentation.view.settings.fragments
 
-import android.Manifest
 import android.content.ClipData
 import android.content.Context
 import android.content.Intent
@@ -48,17 +47,6 @@ class BackupDialog : BaseBottomSheetDialogFragment() {
 
     private val firebase by lazy { FirebaseStorage.getInstance() }
 
-    private var pendingPermissionsCallback: (() -> Unit)? = null
-
-    private val storagePermissionsLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions()
-    ) { permissions ->
-        if (permissions.values.all { it }) {
-            pendingPermissionsCallback?.invoke()
-            pendingPermissionsCallback = null
-        }
-    }
-
     private val backupFileLauncher = registerForActivityResult(
         ActivityResultContracts.OpenDocument()
     ) { uri ->
@@ -73,6 +61,24 @@ class BackupDialog : BaseBottomSheetDialogFragment() {
                 e.printStackTrace()
                 FirebaseCrashlytics.getInstance().recordException(e)
                 Toast.makeText(context, R.string.backup_read_error, Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    private val createBackupFileLauncher = registerForActivityResult(
+        ActivityResultContracts.CreateDocument("application/json")
+    ) { uri ->
+        if (uri != null) {
+            try {
+                val file = createBackupPrivate()
+                requireContext().contentResolver.openOutputStream(uri)?.use { output ->
+                    file.inputStream().use { input -> input.copyTo(output) }
+                }
+                Toast.makeText(context, R.string.backup_saved, Toast.LENGTH_LONG).show()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                FirebaseCrashlytics.getInstance().recordException(e)
+                Toast.makeText(context, R.string.backup_write_error, Toast.LENGTH_LONG).show()
             }
         }
     }
@@ -155,18 +161,7 @@ class BackupDialog : BaseBottomSheetDialogFragment() {
     }
 
     private fun writeFileToPublic(file: File) {
-        checkStoragePermissions {
-            try {
-                val androidDownloadFolder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).absolutePath
-                val path = context!!.getDefaultSharedPreferences().getString(SettingsExtras.DOWNLOAD_FOLDER, androidDownloadFolder)
-                file.copyTo(File(path, Constants.BACKUP_FILE_NAME), overwrite = true)
-                Toast.makeText(context, R.string.backup_saved, Toast.LENGTH_LONG).show()
-            } catch (e: IOException) {
-                e.printStackTrace()
-                FirebaseCrashlytics.getInstance().recordException(e)
-                Toast.makeText(context, R.string.backup_write_error, Toast.LENGTH_LONG).show()
-            }
-        }
+        createBackupFileLauncher.launch(Constants.BACKUP_FILE_NAME)
     }
 
     private fun uploadToCloud(userId: Long, file: File) {
@@ -213,32 +208,30 @@ class BackupDialog : BaseBottomSheetDialogFragment() {
     }
 
     private fun findBackupLocal() {
-        checkStoragePermissions {
-            try {
-                val filePart = "/${Constants.BACKUP_FILE_NAME}"
-                val androidDownloadFolder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).absolutePath + filePart
-                val appFolder = context!!.getDefaultSharedPreferences().getString(SettingsExtras.DOWNLOAD_FOLDER, "")?.let {
-                    if (it.isNotEmpty()) it + filePart
-                    else it
-                }
-
-                val downloadsFile = File(androidDownloadFolder)
-                val folderFile = File(appFolder)
-
-                val read: (File?) -> Unit = { readBackup(it) }
-
-                if (downloadsFile.exists()) {
-                    context?.fileFoundDialog({ read.invoke(downloadsFile) }) { openBackupFilePicker() }
-                } else if (!appFolder.isNullOrBlank() && folderFile.exists()) {
-                    context?.fileFoundDialog({ read.invoke(folderFile) }) { openBackupFilePicker() }
-                } else {
-                    openBackupFilePicker()
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                FirebaseCrashlytics.getInstance().recordException(e)
-                Toast.makeText(context, R.string.backup_read_error, Toast.LENGTH_LONG).show()
+        try {
+            val filePart = "/${Constants.BACKUP_FILE_NAME}"
+            val androidDownloadFolder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).absolutePath + filePart
+            val appFolder = context!!.getDefaultSharedPreferences().getString(SettingsExtras.DOWNLOAD_FOLDER, "")?.let {
+                if (it.isNotEmpty()) it + filePart
+                else it
             }
+
+            val downloadsFile = File(androidDownloadFolder)
+            val folderFile = File(appFolder)
+
+            val read: (File?) -> Unit = { readBackup(it) }
+
+            if (downloadsFile.exists()) {
+                context?.fileFoundDialog({ read.invoke(downloadsFile) }) { openBackupFilePicker() }
+            } else if (!appFolder.isNullOrBlank() && folderFile.exists()) {
+                context?.fileFoundDialog({ read.invoke(folderFile) }) { openBackupFilePicker() }
+            } else {
+                openBackupFilePicker()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            FirebaseCrashlytics.getInstance().recordException(e)
+            Toast.makeText(context, R.string.backup_read_error, Toast.LENGTH_LONG).show()
         }
     }
 
@@ -299,16 +292,6 @@ class BackupDialog : BaseBottomSheetDialogFragment() {
             setPositiveButton(R.string.common_apply) { _, _ -> onAccepted.invoke() }
             setNegativeButton(R.string.filter_select) { _, _ -> onCancel.invoke() }
         }.show()
-    }
-
-    private fun checkStoragePermissions(onAccepted: () -> Unit) {
-        pendingPermissionsCallback = onAccepted
-        storagePermissionsLauncher.launch(
-            arrayOf(
-                Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                Manifest.permission.READ_EXTERNAL_STORAGE
-            )
-        )
     }
 
     private fun getData(field: Any, value: Any?): Any? =
