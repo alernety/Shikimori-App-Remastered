@@ -6,12 +6,10 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
-import android.os.Environment
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.content.FileProvider
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.databinding.DialogBackupBinding
@@ -38,6 +36,8 @@ import java.io.FileWriter
 import java.io.IOException
 
 class BackupDialog : BaseBottomSheetDialogFragment() {
+
+    var onBackupRestored: (() -> Unit)? = null
 
     private var _binding: DialogBackupBinding? = null
     private val binding get() = _binding!!
@@ -208,31 +208,7 @@ class BackupDialog : BaseBottomSheetDialogFragment() {
     }
 
     private fun findBackupLocal() {
-        try {
-            val filePart = "/${Constants.BACKUP_FILE_NAME}"
-            val androidDownloadFolder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).absolutePath + filePart
-            val appFolder = context!!.getDefaultSharedPreferences().getString(SettingsExtras.DOWNLOAD_FOLDER, "")?.let {
-                if (it.isNotEmpty()) it + filePart
-                else it
-            }
-
-            val downloadsFile = File(androidDownloadFolder)
-            val folderFile = File(appFolder)
-
-            val read: (File?) -> Unit = { readBackup(it) }
-
-            if (downloadsFile.exists()) {
-                context?.fileFoundDialog({ read.invoke(downloadsFile) }) { openBackupFilePicker() }
-            } else if (!appFolder.isNullOrBlank() && folderFile.exists()) {
-                context?.fileFoundDialog({ read.invoke(folderFile) }) { openBackupFilePicker() }
-            } else {
-                openBackupFilePicker()
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            FirebaseCrashlytics.getInstance().recordException(e)
-            Toast.makeText(context, R.string.backup_read_error, Toast.LENGTH_LONG).show()
-        }
+        openBackupFilePicker()
     }
 
     private fun openBackupFilePicker() {
@@ -268,6 +244,10 @@ class BackupDialog : BaseBottomSheetDialogFragment() {
 
             val text = if (result == 0) R.string.backup_empty_file else R.string.backup_read_success
             Toast.makeText(context, text, Toast.LENGTH_LONG).show()
+
+            if (result > 0) {
+                onBackupRestored?.invoke()
+            }
         } catch (e: Exception) {
             e.printStackTrace()
             FirebaseCrashlytics.getInstance().recordException(e)
@@ -283,15 +263,6 @@ class BackupDialog : BaseBottomSheetDialogFragment() {
             FirebaseCrashlytics.getInstance().recordException(e)
             Toast.makeText(context, R.string.backup_write_error, Toast.LENGTH_LONG).show()
         }
-    }
-
-    private fun Context.fileFoundDialog(onAccepted: () -> Unit, onCancel: () -> Unit) {
-        MaterialAlertDialogBuilder(this).apply {
-            setTitle(R.string.backup_found_title)
-            setMessage(R.string.backup_found_message)
-            setPositiveButton(R.string.common_apply) { _, _ -> onAccepted.invoke() }
-            setNegativeButton(R.string.filter_select) { _, _ -> onCancel.invoke() }
-        }.show()
     }
 
     private fun getData(field: Any, value: Any?): Any? =

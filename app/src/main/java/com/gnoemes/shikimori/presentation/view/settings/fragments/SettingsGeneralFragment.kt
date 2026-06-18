@@ -5,6 +5,8 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.provider.DocumentsContract
+import androidx.preference.PreferenceGroup
+import androidx.preference.TwoStatePreference
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.entity.app.domain.Constants
@@ -51,7 +53,9 @@ class SettingsGeneralFragment : BaseSettingsFragment() {
 
         preference(SettingsExtras.BACKUP_SETTINGS)?.apply {
             setOnPreferenceClickListener {
-                BackupDialog().show(childFragmentManager, "BackupDialog")
+                BackupDialog().apply {
+                    onBackupRestored = { refreshPreferenceSummaries() }
+                }.show(childFragmentManager, "BackupDialog")
                 true
             }
         }
@@ -63,6 +67,31 @@ class SettingsGeneralFragment : BaseSettingsFragment() {
 
         preference(SettingsExtras.ALLOW_R18_CONTENT)?.apply {
             isVisible = authorized
+        }
+    }
+
+    fun refreshPreferenceSummaries() {
+        getPreferenceScreen()?.let { syncPreferenceTree(it) }
+        updateFolderSummary()
+        preference(SettingsExtras.RATE_SWIPE_TO_LEFT_ACTION)?.summary = getRateActionSummary(
+            prefs().getString(SettingsExtras.RATE_SWIPE_TO_LEFT_ACTION, RateSwipeAction.INCREMENT.name)!!
+        )
+        preference(SettingsExtras.RATE_SWIPE_TO_RIGHT_ACTION)?.summary = getRateActionSummary(
+            prefs().getString(SettingsExtras.RATE_SWIPE_TO_RIGHT_ACTION, RateSwipeAction.CHANGE.name)!!
+        )
+    }
+
+    private fun syncPreferenceTree(group: PreferenceGroup) {
+        for (i in 0 until group.preferenceCount) {
+            val pref = group.getPreference(i)
+            when (pref) {
+                is PreferenceGroup -> syncPreferenceTree(pref)
+                is TwoStatePreference -> {
+                    if (pref.key != null) {
+                        pref.isChecked = prefs().getBoolean(pref.key, pref.isChecked)
+                    }
+                }
+            }
         }
     }
 
