@@ -39,7 +39,6 @@ public class MvpDialogFragment extends AppCompatDialogFragment {
         mIsStateSaved = true;
 
         getMvpDelegate().onSaveInstanceState(outState);
-        getMvpDelegate().onDetach();
     }
 
     @Override

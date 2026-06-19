@@ -20,7 +20,7 @@ abstract class BaseDialogFragment : MvpDialogFragment(), BaseFragmentView {
 
     private val viewHandler = Handler()
     private var _binding: android.view.View? = null
-    protected val binding: View get() = _binding!!
+    protected val binding: View? get() = _binding
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(getDialogLayout(), container, false)

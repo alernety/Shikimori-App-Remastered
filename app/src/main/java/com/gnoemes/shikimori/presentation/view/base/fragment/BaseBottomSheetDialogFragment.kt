@@ -28,15 +28,15 @@ abstract class BaseBottomSheetDialogFragment : MvpDialogFragment() {
 
     private val viewHandler = Handler()
     private var _binding: DialogBaseBottomSheetBinding? = null
-    private val binding get() = _binding!!
+    private val binding: DialogBaseBottomSheetBinding? get() = _binding
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): android.view.View? {
         _binding = DialogBaseBottomSheetBinding.inflate(inflater, container, false)
-        val view = binding.root
+        val b = _binding ?: return null
         if (getDialogLayout() != android.view.View.NO_ID) {
-            inflater.inflate(getDialogLayout(), binding.fragmentContent, true)
+            inflater.inflate(getDialogLayout(), b.fragmentContent, true)
         }
-        return view
+        return b.root
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -47,6 +47,7 @@ abstract class BaseBottomSheetDialogFragment : MvpDialogFragment() {
                     setOnShowListener {
                         bottomSheet = (it as BottomSheetDialog).findViewById(com.google.android.material.R.id.design_bottom_sheet)!!
                         if (peekHeight != -1 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                            @Suppress("DEPRECATION")
                             it.window?.statusBarColor = Color.TRANSPARENT
                         }
 

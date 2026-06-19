@@ -34,7 +34,7 @@ abstract class BaseFragment<Presenter : BasePresenter<V>, V : BaseNetworkView>
     private val viewHandler = Handler(Looper.getMainLooper())
 
     private var _baseBinding: FragmentBaseBinding? = null
-    protected val baseBinding get() = _baseBinding!!
+    protected val baseBinding: FragmentBaseBinding? get() = _baseBinding
 
     private var _toolbarBinding: LayoutToolbarBinding? = null
     protected val toolbarBinding: LayoutToolbarBinding?
@@ -64,23 +64,25 @@ abstract class BaseFragment<Presenter : BasePresenter<V>, V : BaseNetworkView>
      */
     protected fun initBaseBinding(inflater: LayoutInflater, container: ViewGroup?) {
         _baseBinding = FragmentBaseBinding.inflate(inflater, container, false)
-        _toolbarBinding = LayoutToolbarBinding.bind(baseBinding.root.findViewById(R.id.included_layout_toolbar))
-        _placeholdersBinding = LayoutDefaultPlaceholdersBinding.bind(baseBinding.root.findViewById(R.id.coordinator))
-        _progressBinding = LayoutProgressBinding.bind(baseBinding.root.findViewById(R.id.included_layout_progress))
+        val b = _baseBinding ?: return
+        _toolbarBinding = LayoutToolbarBinding.bind(b.root.findViewById(R.id.included_layout_toolbar))
+        _placeholdersBinding = LayoutDefaultPlaceholdersBinding.bind(b.root.findViewById(R.id.coordinator))
+        _progressBinding = LayoutProgressBinding.bind(b.root.findViewById(R.id.included_layout_progress))
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         _baseBinding = FragmentBaseBinding.inflate(inflater, container, false)
+        val b = _baseBinding ?: return null
         
         if (getFragmentLayout() != View.NO_ID) {
-            inflater.inflate(getFragmentLayout(), baseBinding.fragmentContent, true)
+            inflater.inflate(getFragmentLayout(), b.fragmentContent, true)
         }
         
-        _toolbarBinding = LayoutToolbarBinding.bind(baseBinding.root.findViewById(R.id.included_layout_toolbar))
-        _placeholdersBinding = LayoutDefaultPlaceholdersBinding.bind(baseBinding.root.findViewById(R.id.coordinator))
-        _progressBinding = LayoutProgressBinding.bind(baseBinding.root.findViewById(R.id.included_layout_progress))
+        _toolbarBinding = LayoutToolbarBinding.bind(b.root.findViewById(R.id.included_layout_toolbar))
+        _placeholdersBinding = LayoutDefaultPlaceholdersBinding.bind(b.root.findViewById(R.id.coordinator))
+        _progressBinding = LayoutProgressBinding.bind(b.root.findViewById(R.id.included_layout_progress))
 
-        return baseBinding.root
+        return b.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -149,7 +151,7 @@ abstract class BaseFragment<Presenter : BasePresenter<V>, V : BaseNetworkView>
     }
 
     override fun showContent(show: Boolean) {
-        baseBinding.fragmentContent.visibleIf { show }
+        baseBinding?.fragmentContent?.visibleIf { show }
     }
 
     override fun onShowLoading() {

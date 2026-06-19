@@ -26,8 +26,6 @@ public abstract class MvpActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-
-        getMvpDelegate().onAttach();
     }
 
     @Override
@@ -35,7 +33,6 @@ public abstract class MvpActivity extends AppCompatActivity {
         super.onSaveInstanceState(outState);
 
         getMvpDelegate().onSaveInstanceState(outState);
-        getMvpDelegate().onDetach();
     }
 
     @Override
