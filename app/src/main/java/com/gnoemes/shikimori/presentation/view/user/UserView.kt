@@ -1,6 +1,7 @@
 package com.gnoemes.shikimori.presentation.view.user
 
 import moxy.viewstate.strategy.AddToEndSingleStrategy
+import moxy.viewstate.strategy.SkipStrategy
 import moxy.viewstate.strategy.StateStrategyType
 import com.gnoemes.shikimori.entity.user.presentation.UserContentViewModel
 import com.gnoemes.shikimori.entity.user.presentation.UserHeadViewModel
@@ -32,5 +33,6 @@ interface UserView : BaseFragmentView {
     fun toggleAnimeRate(expanded: Boolean)
     fun toggleMangaRate(expanded: Boolean)
 
+    @StateStrategyType(SkipStrategy::class)
     fun openUrl(url: String)
 }
