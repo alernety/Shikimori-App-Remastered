@@ -53,5 +53,8 @@ ext.versions = [
 
         multidex          : '2.0.1',
         slidr             : '2.1.0',
-        subscaleImage     : '3.10.0'
+        subscaleImage     : '3.10.0',
+        viewpager2        : '1.1.0',
+
+        ksp               : '2.3.9'
 ]
