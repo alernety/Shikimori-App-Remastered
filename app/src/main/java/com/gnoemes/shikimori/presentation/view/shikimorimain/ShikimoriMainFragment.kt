@@ -54,8 +54,6 @@ class ShikimoriMainFragment : BaseFragment<ShikimoriMainPresenter, ShikimoriMain
         fun newInstance() = ShikimoriMainFragment()
     }
 
-    private val adapter by lazy { PagerAdapter(this) }
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         _viewBinding = FragmentShikimoriMainBinding.inflate(inflater, container, false)
         return _viewBinding?.root
@@ -67,7 +65,7 @@ class ShikimoriMainFragment : BaseFragment<ShikimoriMainPresenter, ShikimoriMain
 
         // Base toolbar is not inflated (onCreateView overridden without super), no need to hide it
 
-        vb.pagesContainerView.adapter = adapter
+        vb.pagesContainerView.adapter = PagerAdapter(this)
         vb.pagesContainerView.offscreenPageLimit = 3
         TabLayoutMediator(vb.includedLayoutAppbarTabs.tabLayout, vb.pagesContainerView) { tab, position ->
             tab.text = when (position) {

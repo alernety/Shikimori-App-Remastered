@@ -446,7 +446,7 @@ class RatePresenter @Inject constructor(
     //TODO optimization?
     private fun MutableList<Any>.addSortItem(): MutableList<Any> {
         val sorts = if (isAnime) sortResourceProvider.getAnimeRateSorts() else sortResourceProvider.getMangaRateSorts()
-        add(0, RateSortViewModel(rateStatus!!, sort, sorts, isDescendingSort, isAnime))
+        add(0, RateSortViewModel(rateStatus ?: RateStatus.WATCHING, sort, sorts, isDescendingSort, isAnime))
         return this
     }
 
@@ -544,14 +544,14 @@ class RatePresenter @Inject constructor(
 
     private fun MutableList<Any>.typeSort(): MutableList<Any> =
             this.sortRateBySelectorAndAddItem {
-                if (it.type == Type.ANIME) it.anime?.type?.ordinal!!
-                else it.manga?.type?.ordinal!!
+                if (it.type == Type.ANIME) it.anime?.type?.ordinal
+                else it.manga?.type?.ordinal
             }
 
     private fun MutableList<Any>.statusSort(): MutableList<Any> =
             this.sortRateBySelectorAndAddItem {
                 if (it.type == Type.ANIME) it.anime?.status?.ordinal
-                else it.manga?.status?.ordinal!!
+                else it.manga?.status?.ordinal
             }
 
     private fun MutableList<Any>.nameSort(): MutableList<Any> =
