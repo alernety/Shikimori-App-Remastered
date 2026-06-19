@@ -9,7 +9,6 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.cardview.widget.CardView
 import androidx.core.view.GravityCompat
-import androidx.core.view.ViewCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import com.google.android.material.navigation.NavigationView
 
@@ -239,7 +238,7 @@ class AdvanceDrawerLayout : DrawerLayout {
         slideOffset: Float,
         isSameDirection: Boolean
     ) {
-        ViewCompat.setX(cardView, transX * slideOffset)
+        cardView.setX(transX * slideOffset)
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
@@ -250,7 +249,7 @@ class AdvanceDrawerLayout : DrawerLayout {
     }
 
     fun getDrawerViewAbsoluteGravity(gravity: Int): Int {
-        return GravityCompat.getAbsoluteGravity(gravity, ViewCompat.getLayoutDirection(this)) and 0x7
+        return GravityCompat.getAbsoluteGravity(gravity, layoutDirection) and 0x7
     }
 
     fun getDrawerViewAbsoluteGravity(view: View): Int {
