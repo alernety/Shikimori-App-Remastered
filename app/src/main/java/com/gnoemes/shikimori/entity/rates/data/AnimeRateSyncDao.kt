@@ -10,5 +10,5 @@ data class AnimeRateSyncDao(
         @PrimaryKey
         @ColumnInfo(name = AnimeRateSyncTable.COLUMN_RATE_ID) val rateId: Long,
         @ColumnInfo(name = AnimeRateSyncTable.COLUMN_ANIME_ID) val animeId: Long,
-        @ColumnInfo(name = AnimeRateSyncTable.COLUMN_EPISODES) val episodes: Int
+        @ColumnInfo(name = AnimeRateSyncTable.COLUMN_EPISODES) val episodes: Int = 0
 )

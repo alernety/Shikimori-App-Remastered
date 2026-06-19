@@ -24,7 +24,7 @@ public interface DbModule {
     @Singleton
     static AppDatabase provideDatabase(Context context) {
         return Room.databaseBuilder(context, AppDatabase.class, "shikimori_database")
-                .fallbackToDestructiveMigration()
+                .addMigrations(AppDatabase.MIGRATION_1_2, AppDatabase.MIGRATION_2_3)
                 .build();
     }
 
