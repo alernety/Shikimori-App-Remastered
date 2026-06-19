@@ -56,5 +56,13 @@ ext.versions = [
         subscaleImage     : '3.10.0',
         viewpager2        : '1.1.0',
 
-        ksp               : '2.3.9'
+        ksp               : '2.3.9',
+
+        // Test dependencies
+        junitJupiter      : '5.11.0',
+        mockk             : '1.13.12',
+        turbine           : '1.1.0',
+        archCoreTesting   : '2.2.0',
+        androidXTestJunit : '1.2.1',
+        espressoCore      : '3.6.1'
 ]

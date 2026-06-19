@@ -63,6 +63,12 @@ android {
         viewBinding = true
     }
 
+    testOptions {
+        unitTests.all {
+            useJUnitPlatform()
+        }
+    }
+
     packaging {
         resources {
             excludes += '/META-INF/{AL2.0,LGPL2.1}'
@@ -155,6 +161,20 @@ dependencies {
     implementation 'com.github.ome450901:SimpleRatingBar:1.5.1'
     implementation 'org.jsoup:jsoup:1.17.2'
 
+
+    // Test dependencies
+    testImplementation "org.junit.jupiter:junit-jupiter-api:" + versions.junitJupiter
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:" + versions.junitJupiter
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher:1.11.0"
+    testImplementation "io.mockk:mockk:" + versions.mockk
+    testImplementation "app.cash.turbine:turbine:" + versions.turbine
+    testImplementation "androidx.arch.core:core-testing:" + versions.archCoreTesting
+    testImplementation "androidx.room:room-testing:" + versions.room
+    testImplementation "com.squareup.okhttp3:mockwebserver:" + versions.okHttp
+    androidTestImplementation "androidx.room:room-testing:" + versions.room
+    androidTestImplementation "io.mockk:mockk-android:" + versions.mockk
+    androidTestImplementation "androidx.test.ext:junit:" + versions.androidXTestJunit
+    androidTestImplementation "androidx.test.espresso:espresso-core:" + versions.espressoCore
 
     // Replaced by source in com.infideap.drawerbehavior.AdvanceDrawerLayout
     // implementation files("../libs/drawer-behavior-0.0.5.aar")
