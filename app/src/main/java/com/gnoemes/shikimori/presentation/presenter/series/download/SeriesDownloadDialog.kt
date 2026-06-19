@@ -1,6 +1,7 @@
 package com.gnoemes.shikimori.presentation.presenter.series.download
 
 import android.content.Context
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -19,7 +20,7 @@ import com.gnoemes.shikimori.utils.withArgs
 class SeriesDownloadDialog : BaseBottomSheetDialogFragment() {
 
     private var _binding: DialogSeriesDownloadBinding? = null
-    private val binding get() = _binding!!
+    private val binding: DialogSeriesDownloadBinding? get() = _binding
 
     companion object {
         fun newInstance(title: String, items: List<SeriesDownloadItem>) = SeriesDownloadDialog().withArgs {
@@ -38,23 +39,28 @@ class SeriesDownloadDialog : BaseBottomSheetDialogFragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         _binding = DialogSeriesDownloadBinding.inflate(inflater, container, false)
-        return binding.root
+        return _binding!!.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val items = arguments?.getParcelableArray(ITEMS_KEY)
-                ?.map { it as SeriesDownloadItem }
-                ?.toList() ?: emptyList()
+        val b = _binding ?: return
 
-        // The toolbar is likely in the parent layout (BaseBottomSheetDialogFragment)
-        // or we need to access it via binding if it's in the XML.
-        // BaseBottomSheetDialogFragment uses dialog_base_bottom_sheet.xml which has @id/toolbar
-        
+        @Suppress("DEPRECATION")
+        val items = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            arguments?.getParcelableArray(ITEMS_KEY, SeriesDownloadItem::class.java)
+                    ?.map { it as SeriesDownloadItem }
+                    ?.toList() ?: emptyList()
+        } else {
+            arguments?.getParcelableArray(ITEMS_KEY)
+                    ?.map { it as SeriesDownloadItem }
+                    ?.toList() ?: emptyList()
+        }
+
         val seriesAdapter = SeriesDownloadAdapter(items, (parentFragment as? SeriesDownloadCallback)) { dismiss() }
 
-        with(binding.recyclerView) {
+        with(b.recyclerView) {
             adapter = seriesAdapter
             layoutManager = LinearLayoutManager(context)
             val margin = context.dp(16)

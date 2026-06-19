@@ -15,7 +15,7 @@ class DetailsActionViewHolder(
         private val actionAdapter: ActionAdapter
 ) {
 
-    private val placeholder: DetailsPlaceholderViewHolder by lazy { DetailsPlaceholderViewHolder(binding.actionContent.root, binding.actionPlaceholder.root as ShimmerFrameLayout) }
+    private val placeholder: DetailsPlaceholderViewHolder by lazy { DetailsPlaceholderViewHolder(binding.actionContent.root, binding.actionPlaceholder.root) }
 
     init {
         with(binding.actionContent.root as RecyclerView) {

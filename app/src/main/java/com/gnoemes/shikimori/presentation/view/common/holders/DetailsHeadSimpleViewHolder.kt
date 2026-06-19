@@ -12,7 +12,7 @@ class DetailsHeadSimpleViewHolder(
         private val imageLoader: ImageLoader
 ) {
 
-    private val placeholder: DetailsPlaceholderViewHolder by lazy { DetailsPlaceholderViewHolder(binding.headContent.root, binding.headPlaceholder.root as ShimmerFrameLayout) }
+    private val placeholder: DetailsPlaceholderViewHolder by lazy { DetailsPlaceholderViewHolder(binding.headContent.root, binding.headPlaceholder.root) }
 
     fun bind(item: DetailsHeadSimpleItem) {
         placeholder.showContent()

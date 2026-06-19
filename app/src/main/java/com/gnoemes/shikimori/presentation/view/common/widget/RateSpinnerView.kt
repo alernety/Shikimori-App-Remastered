@@ -1,6 +1,7 @@
 package com.gnoemes.shikimori.presentation.view.common.widget
 
 import android.content.Context
+import android.os.Build
 import android.os.Bundle
 import android.os.Parcelable
 import android.util.AttributeSet
@@ -154,11 +155,22 @@ class RateSpinnerView @JvmOverloads constructor(context: Context,
                 }
     }
 
+    @Suppress("DEPRECATION")
     override fun onRestoreInstanceState(state: Parcelable?) {
         when (state) {
             is Bundle -> {
-                this.status = state.getSerializable(AppExtras.ARGUMENT_RATE_STATUS) as? RateStatus
-                super.onRestoreInstanceState(state.getParcelable("superState"))
+                this.status = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    state.getSerializable(AppExtras.ARGUMENT_RATE_STATUS, RateStatus::class.java) as? RateStatus
+                } else {
+                    state.getSerializable(AppExtras.ARGUMENT_RATE_STATUS) as? RateStatus
+                }
+                super.onRestoreInstanceState(
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        state.getParcelable("superState", Parcelable::class.java)
+                    } else {
+                        state.getParcelable("superState")
+                    }
+                )
             }
             else -> super.onRestoreInstanceState(state)
         }

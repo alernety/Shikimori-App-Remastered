@@ -18,7 +18,7 @@ class UserInfoViewHolder(
         private val actionCallback: (UserProfileAction) -> Unit
 ) {
 
-    private val placeholder by lazy { DetailsPlaceholderViewHolder(contentBinding.root, infoBinding.infoPlaceholder.root as ShimmerFrameLayout) }
+    private val placeholder by lazy { DetailsPlaceholderViewHolder(contentBinding.root, infoBinding.infoPlaceholder.root) }
     private lateinit var item: UserInfoViewModel
 
     init {

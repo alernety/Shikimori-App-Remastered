@@ -12,7 +12,7 @@ class DetailsDescriptionViewHolder(
         navigationCallback: (Type, Long) -> Unit
 ) {
 
-    private val placeholder by lazy { DetailsPlaceholderViewHolder(binding.descriptionContent.root, binding.descriptionPlaceholder.root as ShimmerFrameLayout) }
+    private val placeholder by lazy { DetailsPlaceholderViewHolder(binding.descriptionContent.root, binding.descriptionPlaceholder.root) }
 
     init {
         binding.descriptionContent.descriptionTextView.linkCallback = navigationCallback

@@ -15,7 +15,7 @@ import com.gnoemes.shikimori.databinding.ItemUserHistoryBinding
 import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.user.presentation.UserHistoryViewModel
 import com.gnoemes.shikimori.utils.Utils
-import com.gnoemes.shikimori.utils.images.GlideApp
+import com.bumptech.glide.Glide
 import com.gnoemes.shikimori.utils.images.ImageLoader
 import com.gnoemes.shikimori.utils.onClick
 import com.hannesdorfmann.adapterdelegates4.AbsListItemAdapterDelegate
@@ -51,7 +51,7 @@ class UserHistoryAdapterDelegate(
                 actionView.text = Html.fromHtml(item.action)
                 dateView.text = item.actionDateString
 
-                GlideApp.with(root)
+                Glide.with(root)
                         .asBitmap()
                         .load(item.target?.imageUrl)
                         .into(object : BitmapImageViewTarget(targetImageView) {

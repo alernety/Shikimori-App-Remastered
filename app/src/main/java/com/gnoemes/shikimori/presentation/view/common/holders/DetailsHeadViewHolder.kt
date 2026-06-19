@@ -20,7 +20,7 @@ class DetailsHeadViewHolder(
         private val callback: (DetailsAction) -> Unit
 ) {
 
-    private val placeholder: DetailsPlaceholderViewHolder by lazy { DetailsPlaceholderViewHolder(binding.headContent.root, binding.headPlaceholder.root as ShimmerFrameLayout) }
+    private val placeholder: DetailsPlaceholderViewHolder by lazy { DetailsPlaceholderViewHolder(binding.headContent.root, binding.headPlaceholder.root) }
 
     init {
         with(binding.headContent) {
