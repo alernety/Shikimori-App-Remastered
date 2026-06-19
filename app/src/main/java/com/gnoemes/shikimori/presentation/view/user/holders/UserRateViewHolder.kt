@@ -77,7 +77,7 @@ class UserRateViewHolder(
     }
 
     fun bind(item: UserRateViewModel) {
-        if (item.rates.toList().sumBy { it.second } == 0) {
+        if (item.rates.toList().sumOf { it.second } == 0) {
             binding.root.gone()
             return
         }

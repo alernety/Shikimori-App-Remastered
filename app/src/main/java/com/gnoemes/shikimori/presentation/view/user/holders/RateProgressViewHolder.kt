@@ -53,7 +53,7 @@ class RateProgressViewHolder(
             val droppedCount = rates.getValue(RateProgressStatus.DROPPED)
             droppedCountView.text = "$droppedCount"
 
-            val sum = rates.toList().sumBy { it.second }
+            val sum = rates.toList().sumOf { it.second }
 
             if (sum != 0) {
                 val percents = rates.mapValues { it.value / sum.toDouble() }
