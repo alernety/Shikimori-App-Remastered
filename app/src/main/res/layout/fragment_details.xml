@@ -11,6 +11,7 @@
         android:id="@+id/backgroundImage"
         android:layout_width="match_parent"
         android:layout_height="517dp"
+        android:contentDescription="@null"
         android:fitsSystemWindows="true"
         android:scaleType="centerCrop"
         tools:srcCompat="@drawable/test_preview2" />
