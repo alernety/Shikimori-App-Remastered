@@ -7,7 +7,6 @@ import com.gnoemes.shikimori.entity.common.domain.KeyScreen
 import com.gnoemes.shikimori.entity.main.BottomScreens
 import com.gnoemes.shikimori.presentation.presenter.base.BaseNavigationPresenter
 import com.gnoemes.shikimori.presentation.view.main.MainView
-import io.reactivex.disposables.CompositeDisposable
 import ru.terrakok.cicerone.Router
 import javax.inject.Inject
 
@@ -16,8 +15,6 @@ class MainPresenter @Inject constructor(
         private val _router: Router,
         private val interactor: SeriesSyncInteractor
 ) : BaseNavigationPresenter<MainView>() {
-
-    private var disposable: CompositeDisposable = CompositeDisposable()
 
     override val router: Router
         get() = _router
@@ -28,10 +25,9 @@ class MainPresenter @Inject constructor(
     }
 
     private fun startEpisodesSync() {
-        val d =
-                interactor.startSync()
-                        .subscribe({}, { FirebaseCrashlytics.getInstance().recordException(it) })
-        disposable.add(d)
+        interactor.startSync()
+                .subscribe({}, { FirebaseCrashlytics.getInstance().recordException(it) })
+                .addToDisposables()
     }
 
     fun onTabItemReselected(screenKey: String) {
@@ -55,11 +51,5 @@ class MainPresenter @Inject constructor(
                 router.replaceScreen(KeyScreen(BottomScreens.MORE))
             }
         }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-
-        disposable.clear()
     }
 }

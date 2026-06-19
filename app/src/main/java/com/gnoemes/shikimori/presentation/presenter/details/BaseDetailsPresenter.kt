@@ -67,7 +67,7 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView>(
             loadContent()
                     .doOnSuccess { loadCharacters() }
                     .doOnSuccess { loadRelated() }
-                    .subscribe({ viewState.setHeadItem(it) }, this::processErrors)
+                    .subscribe({ if (!getAttachedViews().isEmpty()) viewState.setHeadItem(it) }, this::processErrors)
                     .addToDisposables()
 
     protected open fun loadCharacters() =
@@ -77,14 +77,18 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView>(
                     .doOnSuccess { characters.clearAndAddAll(it) }
                     .map(contentConverter)
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe({ viewState.setContentItem(DetailsContentType.CHARACTERS, it) }, this::processErrors)
+                    .subscribe({
+                        if (!getAttachedViews().isEmpty()) viewState.setContentItem(DetailsContentType.CHARACTERS, it)
+                    }, this::processErrors)
                     .addToDisposables()
 
     protected open fun loadRelated() =
             relatedFactory.invoke(id)
                     .map(contentConverter)
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe({ viewState.setContentItem(DetailsContentType.RELATED, it) }, this::processErrors)
+                    .subscribe({
+                        if (!getAttachedViews().isEmpty()) viewState.setContentItem(DetailsContentType.RELATED, it)
+                    }, this::processErrors)
                     .addToDisposables()
 
     protected open fun loadLinks() =
@@ -92,8 +96,10 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView>(
                     .appendLightLoadingLogic(viewState)
                     .map { links -> links.map { it.copy(name = it.name?.replace("_", " ")?.firstUpperCase() ?: "") } }
                     .subscribe({
-                        if (it.isNotEmpty()) viewState.showLinks(it)
-                        else viewState.showSystemMessage(resourceProvider.emptyMessage)
+                        if (!getAttachedViews().isEmpty()) {
+                            if (it.isNotEmpty()) viewState.showLinks(it)
+                            else viewState.showSystemMessage(resourceProvider.emptyMessage)
+                        }
                     }, this::processErrors)
                     .addToDisposables()
 
@@ -112,7 +118,7 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView>(
             ratesInteractor.createRate(id, type, rate ?: UserRate(status = newStatus), userId)
                     .updateContentData()
         } else {
-            viewState.showSystemMessage(resourceProvider.needAuth)
+            if (!getAttachedViews().isEmpty()) viewState.showSystemMessage(resourceProvider.needAuth)
         }
     }
 
@@ -198,6 +204,7 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView>(
     }
 
     open fun onCharacterSearch(newText: String?) {
+        if (getAttachedViews().isEmpty()) return
         if (newText.isNullOrBlank()) viewState.setContentItem(DetailsContentType.CHARACTERS, contentConverter.apply(characters))
         else {
             val searchItems: MutableList<Any> = characters.filter { it.name.contains(newText, true) || it.nameRu?.contains(newText, true) ?: false }.toMutableList()
@@ -241,7 +248,7 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView>(
     protected open fun Completable.updateContentData() {
         andThen(loadContent(false))
                 .observeOn(AndroidSchedulers.mainThread())
-                .doOnSuccess { viewState.setHeadItem(it) }
+                .doOnSuccess { if (!getAttachedViews().isEmpty()) viewState.setHeadItem(it) }
                 .subscribe({ }, this@BaseDetailsPresenter::processErrors)
                 .addToDisposables()
     }

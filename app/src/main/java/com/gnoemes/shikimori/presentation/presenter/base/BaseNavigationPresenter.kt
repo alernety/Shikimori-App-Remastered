@@ -7,15 +7,33 @@ import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.manga.presentation.MangaNavigationData
 import com.gnoemes.shikimori.entity.series.domain.PlayerType
 import com.gnoemes.shikimori.presentation.view.base.activity.BaseView
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.disposables.Disposable
 import ru.terrakok.cicerone.Router
 
 
 abstract class BaseNavigationPresenter<View : BaseView> : BaseAnalyticPresenter<View>() {
 
+    protected val compositeDisposable = CompositeDisposable()
+
+    fun Disposable.addToDisposables() {
+        compositeDisposable.add(this)
+    }
+
     lateinit var localRouter: Router
 
     override val router: Router
         get() = if (::localRouter.isInitialized) localRouter else Router()
+
+    override fun detachView(view: View) {
+        super.detachView(view)
+        compositeDisposable.clear()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        compositeDisposable.clear()
+    }
 
     override fun onBackPressed() = router.exit()
 

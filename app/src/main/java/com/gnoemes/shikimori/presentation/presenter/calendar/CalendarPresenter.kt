@@ -11,6 +11,7 @@ import com.gnoemes.shikimori.utils.appendLoadingLogic
 import com.gnoemes.shikimori.utils.applySingleSchedulers
 import com.gnoemes.shikimori.utils.clearAndAddAll
 import io.reactivex.Single
+import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import javax.inject.Inject
 
@@ -22,6 +23,7 @@ class CalendarPresenter @Inject constructor(
 
     private val items = mutableListOf<CalendarItem>()
     private var query: String? = null
+    private var queryDisposable: Disposable? = null
 
     override fun initData() {
         loadData()
@@ -36,11 +38,13 @@ class CalendarPresenter @Inject constructor(
     }
 
     private fun convertAndSet(items: List<CalendarItem>) {
-        Single.just(items)
+        queryDisposable?.dispose()
+        val disposable = Single.just(items)
                 .map(converter)
                 .applySingleSchedulers(Schedulers.single())
                 .subscribe(this::setData, this::processErrors)
-                .addToDisposables()
+        queryDisposable = disposable
+        compositeDisposable.add(disposable)
     }
 
     private fun setData(items: List<CalendarViewModel>) {
