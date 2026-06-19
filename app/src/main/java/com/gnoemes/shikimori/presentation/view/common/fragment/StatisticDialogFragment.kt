@@ -1,5 +1,6 @@
 package com.gnoemes.shikimori.presentation.view.common.fragment
 
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -40,15 +41,16 @@ class StatisticDialogFragment : BaseBottomSheetDialogFragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentTitleStatisticBinding.inflate(inflater, container, false)
-        scoresBinding = LayoutUserProfileStatisticBinding.bind(binding!!.scoresLayout.root)
-        statusesBinding = LayoutUserProfileStatisticBinding.bind(binding!!.statusesLayout.root)
-        return binding!!.root
+        val b = binding!!
+        scoresBinding = LayoutUserProfileStatisticBinding.bind(b.scoresLayout.root)
+        statusesBinding = LayoutUserProfileStatisticBinding.bind(b.statusesLayout.root)
+        return b.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        with(binding!!.toolbar) {
+        binding?.toolbar?.apply {
             val defaultTitle = getString(R.string.common_statistic)
             val titleText = arguments?.getString(TITLE_KEY)?.let { "$defaultTitle «$it»" }
                     ?: defaultTitle
@@ -56,35 +58,47 @@ class StatisticDialogFragment : BaseBottomSheetDialogFragment() {
             addBackButton(R.drawable.ic_close) { dismiss() }
         }
 
-        scoresBinding!!.headerView.setText(R.string.profile_score)
-        statusesBinding!!.headerView.setText(R.string.common_rates)
+        scoresBinding?.headerView?.setText(R.string.profile_score)
+        statusesBinding?.headerView?.setText(R.string.common_rates)
 
-        with(scoresBinding!!.recyclerView) {
+        scoresBinding?.recyclerView?.apply {
             adapter = scoresAdapter
             layoutManager = LinearLayoutManager(context)
             addItemDecoration(VerticalSpaceItemDecorator(context.dp(8), true, 0, 0))
         }
 
-        with(statusesBinding!!.recyclerView) {
+        statusesBinding?.recyclerView?.apply {
             adapter = statusesAdapter
             layoutManager = LinearLayoutManager(context)
             addItemDecoration(VerticalSpaceItemDecorator(context.dp(8), true, 0, 0))
         }
 
 
-        val scores = arguments?.getParcelableArray(SCORES_KEY)?.map { it as UserStatisticItem }
-                ?: emptyList()
-        val statuses = arguments?.getParcelableArray(STATUSES_KEY)?.map { it as UserStatisticItem }
-                ?: emptyList()
+        @Suppress("DEPRECATION")
+        val scores = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            arguments?.getParcelableArray(SCORES_KEY, UserStatisticItem::class.java)?.map { it as UserStatisticItem }
+                    ?: emptyList()
+        } else {
+            arguments?.getParcelableArray(SCORES_KEY)?.map { it as UserStatisticItem }
+                    ?: emptyList()
+        }
+        @Suppress("DEPRECATION")
+        val statuses = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            arguments?.getParcelableArray(STATUSES_KEY, UserStatisticItem::class.java)?.map { it as UserStatisticItem }
+                    ?: emptyList()
+        } else {
+            arguments?.getParcelableArray(STATUSES_KEY)?.map { it as UserStatisticItem }
+                    ?: emptyList()
+        }
 
-        scoresBinding!!.subHeaderView.text = scores.sumBy { it.count }.toString()
-        statusesBinding!!.subHeaderView.text = statuses.sumBy { it.count }.toString()
+        scoresBinding?.subHeaderView?.text = scores.sumOf { it.count }.toString()
+        statusesBinding?.subHeaderView?.text = statuses.sumOf { it.count }.toString()
 
         postViewAction { scoresAdapter.bindItems(scores) }
         postViewAction { statusesAdapter.bindItems(statuses) }
 
-        scoresBinding!!.root.visibleIf { scores.isNotEmpty() }
-        statusesBinding!!.root.visibleIf { statuses.isNotEmpty() }
+        scoresBinding?.root?.visibleIf { scores.isNotEmpty() }
+        statusesBinding?.root?.visibleIf { statuses.isNotEmpty() }
     }
 
     ///////////////////////////////////////////////////////////////////////////

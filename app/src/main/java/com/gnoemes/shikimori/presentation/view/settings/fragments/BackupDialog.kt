@@ -40,10 +40,10 @@ class BackupDialog : BaseBottomSheetDialogFragment() {
     var onBackupRestored: (() -> Unit)? = null
 
     private var _binding: DialogBackupBinding? = null
-    private val binding get() = _binding!!
+    private val binding: DialogBackupBinding? get() = _binding
 
     private var _baseBinding: DialogBaseBottomSheetBinding? = null
-    private val baseBinding get() = _baseBinding!!
+    private val baseBinding: DialogBaseBottomSheetBinding? get() = _baseBinding
 
     private val firebase by lazy { FirebaseStorage.getInstance() }
 
@@ -94,11 +94,13 @@ class BackupDialog : BaseBottomSheetDialogFragment() {
         super.onViewCreated(view, savedInstanceState)
         _baseBinding = DialogBaseBottomSheetBinding.bind(view)
         _binding = DialogBackupBinding.bind((view.findViewById<ViewGroup>(R.id.fragment_content)).getChildAt(0))
+        val b = _binding ?: return
+        val bb = _baseBinding ?: return
 
-        val saveBinding = LayoutBackupSaveBinding.bind(binding.saveLayout.root)
-        val downloadBinding = LayoutBackupDownloadBinding.bind(binding.downloadLayout.root)
+        val saveBinding = LayoutBackupSaveBinding.bind(b.saveLayout.root)
+        val downloadBinding = LayoutBackupDownloadBinding.bind(b.downloadLayout.root)
 
-        with(baseBinding.toolbar) {
+        with(bb.toolbar) {
             setTitle(R.string.settings_backup_title)
             inflateMenu(R.menu.menu_close)
             onMenuClick { dismiss(); true }
@@ -288,7 +290,7 @@ class BackupDialog : BaseBottomSheetDialogFragment() {
         val share = Intent(Intent.ACTION_SEND)
         share.type = "text/plain"
 
-        val media = File(path)
+        val media = File(path ?: "")
         val uri = FileProvider.getUriForFile(this, applicationContext.packageName + ".provider", media)
 
         share.putExtra(Intent.EXTRA_STREAM, uri)
@@ -306,7 +308,8 @@ class BackupDialog : BaseBottomSheetDialogFragment() {
         val days = Math.abs(Days.daysBetween(DateTime.now(), date).days)
         val text = if (days == 0) context!!.getString(R.string.common_today) else
             context!!.resources.getQuantityString(R.plurals.days_ago, days, days)
-        val downloadBinding = LayoutBackupDownloadBinding.bind(binding.downloadLayout.root)
+        val b = _binding ?: return
+        val downloadBinding = LayoutBackupDownloadBinding.bind(b.downloadLayout.root)
         downloadBinding.cloudLabel.text = text
     }
 

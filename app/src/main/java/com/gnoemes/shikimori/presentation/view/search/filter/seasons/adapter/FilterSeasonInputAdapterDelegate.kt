@@ -55,8 +55,7 @@ class FilterSeasonInputAdapterDelegate(
 
         private fun wrapText(value: String?) {
             if (!value.isNullOrBlank()) {
-                val nonNullValue = value!!
-                callback.invoke(nonNullValue.replace(Regex(" "), ""))
+                callback.invoke(value.replace(Regex(" "), ""))
                 binding.input.text = null
             }
         }

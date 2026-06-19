@@ -80,9 +80,9 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
         get() = _adapter
 
     private var _binding: FragmentRateBinding? = null
-    private val binding get() = _binding!!
+    private val binding: FragmentRateBinding? get() = _binding
     private var _fragmentPlaceholdersBinding: LayoutDefaultPlaceholdersBinding? = null
-    private val fragmentPlaceholdersBinding get() = _fragmentPlaceholdersBinding!!
+    private val fragmentPlaceholdersBinding: LayoutDefaultPlaceholdersBinding? get() = _fragmentPlaceholdersBinding
 
     companion object {
         private const val DRAWER_KEY = "DRAWER_KEY"
@@ -93,17 +93,17 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentRateBinding.inflate(inflater, container, false)
-        _fragmentPlaceholdersBinding = LayoutDefaultPlaceholdersBinding.bind(binding.coordinator)
-        return binding.root
+        _fragmentPlaceholdersBinding = LayoutDefaultPlaceholdersBinding.bind(_binding!!.coordinator)
+        return _binding!!.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        initDrawer()
-        initNav()
+        val b = _binding ?: return
+        val pb = _fragmentPlaceholdersBinding
 
-        with(binding.toolbar) {
+        b.toolbar.apply {
             title = null
             setNavigationOnClickListener { toggleDrawer() }
             inflateMenu(R.menu.menu_rates)
@@ -115,16 +115,16 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
             }
         }
 
-        with(binding.searchView) {
+        with(b.searchView) {
             setOnQueryTextListener(object : SearchView.OnQueryTextListener {
                 override fun onQueryTextSubmit(query: String?): Boolean {
-                    binding.toolbar.menuVisibleIf { query.isNullOrEmpty() }
+                    b.toolbar.menuVisibleIf { query.isNullOrEmpty() }
                     hideSoftInput()
                     return true
                 }
 
                 override fun onQueryTextChange(newText: String?): Boolean {
-                    binding.toolbar.menuVisibleIf { newText.isNullOrEmpty() }
+                    b.toolbar.menuVisibleIf { newText.isNullOrEmpty() }
                     getPresenter().onQueryChanged(newText)
                     return true
                 }
@@ -147,14 +147,14 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
         }
 
         savedInstanceState?.let {
-            binding.drawer.post {
+            b.drawer.post {
                 if (it.getBoolean(DRAWER_KEY)) openDrawer()
                 else closeDrawer()
             }
         }
 
-        val rvContext = binding.includedLayoutDefaultList.recyclerView.context
-        with(binding.includedLayoutDefaultList.recyclerView) {
+        val rvContext = b.includedLayoutDefaultList.recyclerView.context
+        with(b.includedLayoutDefaultList.recyclerView) {
             adapter = this@RateFragment.adapter
             layoutManager = LinearLayoutManager(rvContext).apply { initialPrefetchItemCount = 5 }
             itemAnimator = DefaultItemAnimator()
@@ -166,40 +166,43 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
             setHasFixedSize(true)
         }
 
-        binding.includedLayoutDefaultList.refreshLayout.layoutParams = (binding.includedLayoutDefaultList.refreshLayout.layoutParams as? CoordinatorLayout.LayoutParams)?.apply {
+        b.includedLayoutDefaultList.refreshLayout.layoutParams = (b.includedLayoutDefaultList.refreshLayout.layoutParams as? CoordinatorLayout.LayoutParams)?.apply {
             behavior = OverlapHeaderScrollingBehavior()
         }
-        binding.includedLayoutDefaultList.refreshLayout.setProgressViewOffset(false, context!!.dp(24), context!!.dp(96))
+        b.includedLayoutDefaultList.refreshLayout.setProgressViewOffset(false, context!!.dp(24), context!!.dp(96))
 
-        fragmentPlaceholdersBinding.emptyContentView.setText(R.string.rate_empty)
-        fragmentPlaceholdersBinding.networkErrorView.apply {
+        initDrawer()
+        initNav()
+
+        pb?.emptyContentView?.setText(R.string.rate_empty)
+        pb?.networkErrorView?.apply {
             setText(R.string.common_error_message_without_pull)
             callback = { getPresenter().initData() }
             showButton()
         }
-        binding.rateEmptyView.root.gone()
+        b.rateEmptyView.root.gone()
         progressBinding?.progressBar?.gone()
 
-        binding.authLayout.signInBtn.onClick { getPresenter().onSignIn() }
-        binding.authLayout.signUpBtn.onClick { getPresenter().onSignUp() }
+        b.authLayout.signInBtn.onClick { getPresenter().onSignIn() }
+        b.authLayout.signUpBtn.onClick { getPresenter().onSignUp() }
 
-        binding.rateEmptyView.rateTitleView.setText(R.string.rate_empty_list)
-        binding.authLayout.descriptionView.gone()
-        binding.authLayout.root.gone()
+        b.rateEmptyView.rateTitleView.setText(R.string.rate_empty_list)
+        b.authLayout.descriptionView.gone()
+        b.authLayout.root.gone()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         // View may be destroyed if fragment is in background (e.g., AuthActivity launched on top)
-        // Check _binding to avoid NullPointerException from the non-null binding getter
-        if (_binding == null) return
-        outState.putBoolean(DRAWER_KEY, binding.drawer?.isDrawerOpen(GravityCompat.START) ?: false)
+        val b = _binding ?: return
+        outState.putBoolean(DRAWER_KEY, b.drawer?.isDrawerOpen(GravityCompat.START) ?: false)
     }
 
     private fun initDrawer() {
-        binding.drawer.apply {
+        val b = _binding ?: return
+        b.drawer.apply {
             val toggle = ActionBarDrawerToggle(
-                    activity, binding.drawer, binding.toolbar, R.string.rate_drawer_open, R.string.rate_drawer_close)
+                    activity, b.drawer, b.toolbar, R.string.rate_drawer_open, R.string.rate_drawer_close)
 
             addDrawerListener(toggle)
             setViewScale(Gravity.START, 0.9f)
@@ -210,20 +213,22 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
     }
 
     private fun initNav() {
+        val b = _binding ?: return
         updateNavColors(RateStatus.WATCHING.ordinal)
-        binding.navView.setNavigationItemSelectedListener {
+        b.navView.setNavigationItemSelectedListener {
             getPresenter().onChangeStatus(RateStatus.values()[it.itemId])
-            binding.navView.menu.iterator().forEach { item -> item.actionView?.isSelected = false }
+            b.navView.menu.iterator().forEach { item -> item.actionView?.isSelected = false }
             it.actionView?.isSelected = true
             true
         }
 
-        val menuContainer = binding.navView.findViewById<NavigationMenuView>(com.google.android.material.R.id.design_navigation_view)
+        val menuContainer = b.navView.findViewById<NavigationMenuView>(com.google.android.material.R.id.design_navigation_view)
         menuContainer.layoutParams = FrameLayout.LayoutParams(menuContainer.layoutParams).apply { height = ViewGroup.LayoutParams.WRAP_CONTENT; gravity = Gravity.CENTER_VERTICAL }
     }
 
     private fun toggleDrawer() {
-        if (binding.drawer.isDrawerOpen(GravityCompat.START)) {
+        val b = _binding ?: return
+        if (b.drawer.isDrawerOpen(GravityCompat.START)) {
             closeDrawer()
         } else {
             openDrawer()
@@ -231,11 +236,11 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
     }
 
     private fun openDrawer() {
-        binding.drawer.openDrawer(GravityCompat.START)
+        _binding?.drawer?.openDrawer(GravityCompat.START)
     }
 
     private fun closeDrawer() {
-        binding.drawer.closeDrawer(GravityCompat.START)
+        _binding?.drawer?.closeDrawer(GravityCompat.START)
     }
 
     private fun getRateTextColor(ordinal: Int): Int = when (ordinal) {
@@ -265,7 +270,7 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
 
     private fun updateNavColors(rateIndex: Int) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            binding.navView.apply {
+            _binding?.navView?.apply {
                 setItemBackgroundResource(getRateBackground(rateIndex))
                 itemTextColor = context.colorStateList(getRateTextColor(rateIndex))
             }
@@ -289,9 +294,9 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
     }
 
     override fun onDestroyView() {
-        binding.includedLayoutDefaultList.recyclerView.adapter = null
-        _binding = null
+        _binding?.includedLayoutDefaultList?.recyclerView?.adapter = null
         super.onDestroyView()
+        _binding = null
     }
 
     override fun onSortClicked(sort: RateSort) {
@@ -313,15 +318,16 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
     override fun showData(data: List<Any>) {
         //fix auto scroll on sort
         closeDrawer()
-        val parcelable = binding.includedLayoutDefaultList.recyclerView.layoutManager?.onSaveInstanceState()
+        val b = _binding ?: return
+        val parcelable = b.includedLayoutDefaultList.recyclerView.layoutManager?.onSaveInstanceState()
         adapter.bindItems(data)
-        binding.includedLayoutDefaultList.recyclerView.visible()
-        binding.includedLayoutDefaultList.recyclerView.layoutManager?.onRestoreInstanceState(parcelable)
+        b.includedLayoutDefaultList.recyclerView.visible()
+        b.includedLayoutDefaultList.recyclerView.layoutManager?.onRestoreInstanceState(parcelable)
     }
 
     override fun scrollToTop() {
-        binding.appBarLayout.setExpanded(true)
-        binding.includedLayoutDefaultList.recyclerView.scrollToPosition(0)
+        _binding?.appBarLayout?.setExpanded(true)
+        _binding?.includedLayoutDefaultList?.recyclerView?.scrollToPosition(0)
     }
 
     override fun showRateDialog(title: String, userRate: UserRate) {
@@ -343,13 +349,15 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
     }
 
     override fun onBackPressed() {
-        if (binding.drawer.isDrawerOpen(GravityCompat.START)) closeDrawer()
+        val b = _binding
+        if (b?.drawer?.isDrawerOpen(GravityCompat.START) == true) closeDrawer()
         else super.onBackPressed()
     }
 
     override fun setNavigationItems(items: List<RateCategory>) {
-        binding.navView.menu.apply {
-            val checkedId = binding.navView.checkedItem?.itemId ?: 0
+        val b = _binding ?: return
+        b.navView.menu.apply {
+            val checkedId = b.navView.checkedItem?.itemId ?: 0
             clear()
             items.forEach {
                 add(0, it.status.ordinal, it.status.ordinal, it.localizedCategory)
@@ -360,12 +368,13 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
             }
 
             setGroupCheckable(0, true, true)
-            binding.navView.setCheckedItem(checkedId)
+            b.navView.setCheckedItem(checkedId)
         }
     }
 
     override fun selectRateStatus(rateStatus: RateStatus) {
-        binding.navView.apply {
+        val b = _binding ?: return
+        b.navView.apply {
             updateNavColors(rateStatus.ordinal)
             setCheckedItem(rateStatus.ordinal)
             (menu.findItem(rateStatus.ordinal)?.actionView as? TextView)?.isSelected = true
@@ -373,7 +382,7 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
     }
 
     override fun selectType(type: Type) {
-        binding.searchView?.let {
+        _binding?.searchView?.let {
             val hint = if (type == Type.ANIME) it.context.getString(R.string.common_anime)
             else it.context.getString(R.string.common_manga_and_ranobe)
             it.queryHint = hint
@@ -381,13 +390,13 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
     }
 
     override fun showContent(show: Boolean) {
-        binding.includedLayoutDefaultList.recyclerView.visibleIf { show }
-        if (show) fragmentPlaceholdersBinding.emptyContentView.gone()
+        _binding?.includedLayoutDefaultList?.recyclerView?.visibleIf { show }
+        if (show) _fragmentPlaceholdersBinding?.emptyContentView?.gone()
     }
 
-    override fun onShowLoading() = binding.includedLayoutDefaultList.refreshLayout.showRefresh()
+    override fun onShowLoading() { _binding?.includedLayoutDefaultList?.refreshLayout?.showRefresh() }
 
-    override fun onHideLoading() = binding.includedLayoutDefaultList.refreshLayout.hideRefresh()
+    override fun onHideLoading() { _binding?.includedLayoutDefaultList?.refreshLayout?.hideRefresh() }
 
     override fun showEmptySearchView(it: List<Any>) {
         //TODO create common placeholder
@@ -402,29 +411,32 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
     }
 
     override fun showEmptyRatesView(show: Boolean, isAnime: Boolean?) {
+        val b = _binding ?: return
         if (isAnime != null) {
-            binding.rateEmptyView.actionBtn.setText(if (isAnime) R.string.rate_empty_anime else R.string.rate_empty_manga)
-            binding.rateEmptyView.actionBtn.onClick {
+            b.rateEmptyView.actionBtn.setText(if (isAnime) R.string.rate_empty_anime else R.string.rate_empty_manga)
+            b.rateEmptyView.actionBtn.onClick {
                 getPresenter().onEmptyRateClicked(isAnime)
             }
         }
 
-        binding.rateEmptyView.root.visibility = if (show) View.VISIBLE else View.GONE
-        if (show) fragmentPlaceholdersBinding.emptyContentView.gone()
+        b.rateEmptyView.root.visibility = if (show) View.VISIBLE else View.GONE
+        if (show) _fragmentPlaceholdersBinding?.emptyContentView?.gone()
     }
 
     override fun showNeedAuthView(show: Boolean) {
-        binding.authLayout.root.visibility = if (show) View.VISIBLE else View.GONE
+        val b = _binding ?: return
+        b.authLayout.root.visibility = if (show) View.VISIBLE else View.GONE
         if (show) {
-            binding.includedLayoutDefaultList.refreshLayout.gone()
-            binding.rateEmptyView.root.gone()
-            fragmentPlaceholdersBinding.emptyContentView.gone()
-            fragmentPlaceholdersBinding.networkErrorView.gone()
+            b.includedLayoutDefaultList.refreshLayout.gone()
+            b.rateEmptyView.root.gone()
+            _fragmentPlaceholdersBinding?.emptyContentView?.gone()
+            _fragmentPlaceholdersBinding?.networkErrorView?.gone()
         }
     }
 
     override fun showRateMessage(taskId: Int, message: String, rateId: Long) {
-        Snackbar.make(binding.coordinator, message, Snackbar.LENGTH_LONG)
+        val b = _binding ?: return
+        Snackbar.make(b.coordinator, message, Snackbar.LENGTH_LONG)
                 .floatingStyle(context!!)
                 .setActionTextColor(context!!.colorAttr(R.attr.colorSecondary))
                 .setAction(R.string.common_cancel_variant) { getPresenter().onTaskCanceled(taskId, rateId) }
@@ -432,12 +444,12 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
     }
 
     override fun showNetworkView() {
-        fragmentPlaceholdersBinding.networkErrorView.visible()
-        fragmentPlaceholdersBinding.emptyContentView.gone()
+        _fragmentPlaceholdersBinding?.networkErrorView?.visible()
+        _fragmentPlaceholdersBinding?.emptyContentView?.gone()
     }
 
     override fun hideNetworkView() {
-        fragmentPlaceholdersBinding.networkErrorView.gone()
-        fragmentPlaceholdersBinding.emptyContentView.gone()
+        _fragmentPlaceholdersBinding?.networkErrorView?.gone()
+        _fragmentPlaceholdersBinding?.emptyContentView?.gone()
     }
 }

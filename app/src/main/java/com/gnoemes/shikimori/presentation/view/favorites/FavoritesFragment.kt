@@ -23,7 +23,7 @@ import javax.inject.Inject
 class FavoritesFragment : BaseFragment<FavoritesPresenter, FavoritesView>(), FavoritesView {
 
     private var _viewBinding: FragmentFavoritesBinding? = null
-    private val viewBinding get() = _viewBinding!!
+    private val viewBinding: FragmentFavoritesBinding? get() = _viewBinding
 
     @Inject
     lateinit var imageLoader: ImageLoader
@@ -55,13 +55,13 @@ class FavoritesFragment : BaseFragment<FavoritesPresenter, FavoritesView>(), Fav
         }
 
         contentHolders.apply {
-            put(FavoriteType.ANIME, FavoriteCategoryViewHolder(viewBinding.animeLayout, defaultAdapter))
-            put(FavoriteType.MANGA, FavoriteCategoryViewHolder(viewBinding.mangaLayout, defaultAdapter))
-            put(FavoriteType.CHARACTERS, FavoriteCategoryViewHolder(viewBinding.charactersLayout, defaultAdapter))
-            put(FavoriteType.SEYU, FavoriteCategoryViewHolder(viewBinding.seyuLayout, defaultAdapter))
-            put(FavoriteType.PRODUCERS, FavoriteCategoryViewHolder(viewBinding.producersLayout, defaultAdapter))
-            put(FavoriteType.MANGAKAS, FavoriteCategoryViewHolder(viewBinding.mangakasLayout, defaultAdapter))
-            put(FavoriteType.PEOPLE, FavoriteCategoryViewHolder(viewBinding.otherLayout, defaultAdapter))
+            put(FavoriteType.ANIME, FavoriteCategoryViewHolder(viewBinding!!.animeLayout, defaultAdapter))
+            put(FavoriteType.MANGA, FavoriteCategoryViewHolder(viewBinding!!.mangaLayout, defaultAdapter))
+            put(FavoriteType.CHARACTERS, FavoriteCategoryViewHolder(viewBinding!!.charactersLayout, defaultAdapter))
+            put(FavoriteType.SEYU, FavoriteCategoryViewHolder(viewBinding!!.seyuLayout, defaultAdapter))
+            put(FavoriteType.PRODUCERS, FavoriteCategoryViewHolder(viewBinding!!.producersLayout, defaultAdapter))
+            put(FavoriteType.MANGAKAS, FavoriteCategoryViewHolder(viewBinding!!.mangakasLayout, defaultAdapter))
+            put(FavoriteType.PEOPLE, FavoriteCategoryViewHolder(viewBinding!!.otherLayout, defaultAdapter))
         }
     }
 

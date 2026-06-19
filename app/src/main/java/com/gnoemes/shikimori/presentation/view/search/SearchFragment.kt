@@ -38,7 +38,7 @@ import javax.inject.Inject
 class SearchFragment : BasePaginationFragment<SearchItem, SearchPresenter, SearchView>(), SearchView, FilterCallback, HasAndroidInjector, TabRootFragment {
 
     private var _viewBinding: FragmentSearchBinding? = null
-    private val viewBinding get() = _viewBinding!!
+    private val viewBinding: FragmentSearchBinding? get() = _viewBinding
 
     @Inject
     lateinit var imageLoader: ImageLoader
@@ -129,7 +129,7 @@ class SearchFragment : BasePaginationFragment<SearchItem, SearchPresenter, Searc
         }
 
 
-        with(viewBinding.includedLayoutDefaultList.recyclerView) {
+        with(viewBinding!!.includedLayoutDefaultList.recyclerView) {
             val spanCount = context.calculateColumns(R.dimen.image_search_width)
             adapter = this@SearchFragment.adapter
             layoutManager = GridLayoutManager(context, spanCount)
@@ -138,7 +138,7 @@ class SearchFragment : BasePaginationFragment<SearchItem, SearchPresenter, Searc
             addOnScrollListener(nextPageListener)
         }
 
-        viewBinding.fab.setOnClickListener { getPresenter().onFilterClicked() }
+        viewBinding!!.fab.setOnClickListener { getPresenter().onFilterClicked() }
     }
 
     override fun onDestroyView() {
@@ -182,11 +182,17 @@ class SearchFragment : BasePaginationFragment<SearchItem, SearchPresenter, Searc
 
     override fun showFilter(type: Type, filters: HashMap<String, MutableList<FilterItem>>) {
         val tag = "filterDialog"
-        val fragment = fragmentManager?.findFragmentByTag(tag)
+        val fragment = parentFragmentManager.findFragmentByTag(tag)
         if (fragment == null) {
             val filter = FilterFragment.newInstance(type, filters)
-            filter.setTargetFragment(this, 42)
-            postViewAction { filter.show(fragmentManager!!, tag) }
+            parentFragmentManager.setFragmentResultListener(FilterFragment.FILTER_RESULT_KEY, this) { _, bundle ->
+                val filterTag = bundle.getString(FilterFragment.RESULT_TAG_KEY)
+                val filtersJson = bundle.getString(FilterFragment.RESULT_FILTERS_KEY)
+                val typeToken = object : com.google.gson.reflect.TypeToken<HashMap<String, MutableList<FilterItem>>>() {}.type
+                val appliedFilters: HashMap<String, MutableList<FilterItem>> = com.google.gson.Gson().fromJson(filtersJson, typeToken)
+                onFiltersSelected(filterTag, appliedFilters)
+            }
+            postViewAction { filter.show(parentFragmentManager, tag) }
         }
     }
 
@@ -199,11 +205,11 @@ class SearchFragment : BasePaginationFragment<SearchItem, SearchPresenter, Searc
     }
 
     override fun updateFilterIcon(empty: Boolean) {
-        viewBinding.fab.setImageResource(if (empty) R.drawable.ic_filter else R.drawable.ic_filter_edit)
+        viewBinding?.fab?.setImageResource(if (empty) R.drawable.ic_filter else R.drawable.ic_filter_edit)
     }
 
-    override fun showFilterButton() = viewBinding.fab.show()
-    override fun hideFilterButton() = viewBinding.fab.hide()
+    override fun showFilterButton() { viewBinding?.fab?.show() }
+    override fun hideFilterButton() { viewBinding?.fab?.hide() }
     override fun setSimpleEmptyText() { placeholdersBinding?.emptyContentView?.setText(R.string.search_need_query) }
     override fun setDefaultEmptyText() { placeholdersBinding?.emptyContentView?.setText(R.string.search_nothing) }
 }

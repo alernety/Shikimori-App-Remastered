@@ -67,7 +67,6 @@ class SettingsActivity : MvpActivity(), PreferenceFragmentCompat.OnPreferenceSta
         val fragment = supportFragmentManager.fragmentFactory.instantiate(
                 classLoader,
                 pref.fragment!!)
-                .apply { setTargetFragment(caller, 0) }
 
         toolbar.title = pref.title
         showVersion(false)

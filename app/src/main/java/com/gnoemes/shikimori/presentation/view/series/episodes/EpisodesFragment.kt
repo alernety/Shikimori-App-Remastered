@@ -37,7 +37,12 @@ class EpisodesFragment : BaseBottomSheetInjectionDialogFragment<EpisodesPresente
     @ProvidePresenter
     fun providePresenter(): EpisodesPresenter {
         return presenterProvider.get().apply {
-            navigationData = arguments?.getParcelable(AppExtras.ARGUMENT_EPISODES_DATA)!!
+            @Suppress("DEPRECATION")
+            navigationData = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                arguments?.getParcelable(AppExtras.ARGUMENT_EPISODES_DATA, EpisodesNavigationData::class.java)!!
+            } else {
+                arguments?.getParcelable(AppExtras.ARGUMENT_EPISODES_DATA)!!
+            }
         }
     }
 
@@ -49,12 +54,12 @@ class EpisodesFragment : BaseBottomSheetInjectionDialogFragment<EpisodesPresente
     private val adapter by lazy { EpisodeAdapter(presenter::onEpisodeClicked, presenter::onEpisodeStatusChanged, presenter::onEpisodeLongClick) }
     private var binding: FragmentEpisodesBinding? = null
 
-    private val getBinding: FragmentEpisodesBinding
-        get() = binding!!
+    private val getBinding: FragmentEpisodesBinding?
+        get() = binding
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentEpisodesBinding.inflate(inflater, container, false)
-        return binding!!.root
+        return requireNotNull(binding) { "binding was null after inflate" }.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -62,7 +67,7 @@ class EpisodesFragment : BaseBottomSheetInjectionDialogFragment<EpisodesPresente
 
         configureSearchView()
 
-        getBinding.toolbar?.apply {
+        getBinding?.toolbar?.apply {
             addBackButton(R.drawable.ic_close) { onBackPressed() }
             setTitle(R.string.common_episodes)
             inflateMenu(R.menu.menu_episodes)
@@ -75,25 +80,27 @@ class EpisodesFragment : BaseBottomSheetInjectionDialogFragment<EpisodesPresente
             }
         }
 
-        getBinding.searchToolbar.addBackButton { presenter.onSearchClosed() }
-        getBinding.episodesLayout.actionBtn.onClick { presenter.onAlternativeSourceClicked() }
+        getBinding?.searchToolbar?.addBackButton { presenter.onSearchClosed() }
+        getBinding?.episodesLayout?.actionBtn?.onClick { presenter.onAlternativeSourceClicked() }
 
-        with(getBinding.recyclerView) {
-            adapter = this@EpisodesFragment.adapter
-            layoutManager = LinearLayoutManager(context)
-            addItemDecoration(VerticalSpaceItemDecorator(context.dimen(R.dimen.margin_normal).toInt(), true))
-            setHasFixedSize(true)
+        getBinding?.let { b ->
+            with(b.recyclerView) {
+                adapter = this@EpisodesFragment.adapter
+                layoutManager = LinearLayoutManager(context)
+                addItemDecoration(VerticalSpaceItemDecorator(context.dimen(R.dimen.margin_normal).toInt(), true))
+                setHasFixedSize(true)
+            }
+
+            val rootView = b.root
+            val emptyContentView = rootView.findViewById<com.gnoemes.shikimori.presentation.view.common.widget.EmptyContentView>(R.id.emptyContentView)
+            val networkErrorView = rootView.findViewById<com.gnoemes.shikimori.presentation.view.common.widget.NetworkErrorView>(R.id.networkErrorView)
+            emptyContentView.setText(R.string.episodes_not_found)
+            networkErrorView.showButton()
+            networkErrorView.callback = { presenter.onRefresh() }
+            emptyContentView.gone()
+            networkErrorView.gone()
+            b.episodesLayout.root.gone()
         }
-
-        val rootView = getBinding.root
-        val emptyContentView = rootView.findViewById<com.gnoemes.shikimori.presentation.view.common.widget.EmptyContentView>(R.id.emptyContentView)
-        val networkErrorView = rootView.findViewById<com.gnoemes.shikimori.presentation.view.common.widget.NetworkErrorView>(R.id.networkErrorView)
-        emptyContentView.setText(R.string.episodes_not_found)
-        networkErrorView.showButton()
-        networkErrorView.callback = { presenter.onRefresh() }
-        emptyContentView.gone()
-        networkErrorView.gone()
-        getBinding.episodesLayout.root.gone()
     }
 
     override fun onDestroyView() {
@@ -102,7 +109,7 @@ class EpisodesFragment : BaseBottomSheetInjectionDialogFragment<EpisodesPresente
     }
 
     private fun configureSearchView() {
-        with(getBinding.searchView) {
+        getBinding?.searchView?.apply {
             setOnQueryTextListener(object : SearchView.OnQueryTextListener {
                 override fun onQueryTextSubmit(query: String?): Boolean {
                     hideSoftInput()
@@ -132,9 +139,9 @@ class EpisodesFragment : BaseBottomSheetInjectionDialogFragment<EpisodesPresente
         }
     }
 
-    override fun dialogItemCallback(tag: String?, action: String) {
+    override fun dialogItemCallback(tag: String?, url: String) {
         if (!tag.isNullOrBlank() && tag == "OptionsTag") {
-            if (action.contains(CHECK_ALL_PREVIOUS_ACTION)) presenter.onCheckAllPrevious(action.replace(CHECK_ALL_PREVIOUS_ACTION, "").toInt())
+            if (url.contains(CHECK_ALL_PREVIOUS_ACTION)) presenter.onCheckAllPrevious(url.replace(CHECK_ALL_PREVIOUS_ACTION, "").toInt())
         }
     }
     ///////////////////////////////////////////////////////////////////////////
@@ -155,21 +162,25 @@ class EpisodesFragment : BaseBottomSheetInjectionDialogFragment<EpisodesPresente
     }
 
     override fun scrollToPosition(pos: Int) {
-        (getBinding.recyclerView.layoutManager as? LinearLayoutManager)?.scrollToPositionWithOffset(pos, 0)
+        getBinding?.let { (it.recyclerView.layoutManager as? LinearLayoutManager)?.scrollToPositionWithOffset(pos, 0) }
     }
 
     override fun showSearchView() {
-        TransitionManager.beginDelayedTransition(getBinding.appBarLayout, Fade())
-        getBinding.searchToolbar.visible()
-        getBinding.toolbar.gone()
-        getBinding.searchView.isIconified = false
+        getBinding?.let { b ->
+            TransitionManager.beginDelayedTransition(b.appBarLayout, Fade())
+            b.searchToolbar.visible()
+            b.toolbar.gone()
+            b.searchView.isIconified = false
+        }
     }
 
     override fun hideSearchView() {
-        TransitionManager.beginDelayedTransition(getBinding.appBarLayout, Fade())
-        getBinding.searchToolbar.gone()
-        getBinding.toolbar.visible()
-        hideSoftInput()
+        getBinding?.let { b ->
+            TransitionManager.beginDelayedTransition(b.appBarLayout, Fade())
+            b.searchToolbar.gone()
+            b.toolbar.visible()
+            hideSoftInput()
+        }
     }
 
     override fun onShowLoading() {
@@ -180,16 +191,20 @@ class EpisodesFragment : BaseBottomSheetInjectionDialogFragment<EpisodesPresente
     override fun onHideLoading() = Unit
 
     override fun showEmptyEpisodesView(show: Boolean, isAlternative: Boolean) {
-        getBinding.episodesLayout.root.visibleIf { show }
-        getBinding.episodesLayout.titleView.setText(R.string.episodes_empty_title)
-        getBinding.episodesLayout.descriptionView.setText(R.string.episodes_empty_description)
-        getBinding.episodesLayout.actionBtn.visibleIf { !isAlternative }
+        getBinding?.episodesLayout?.let { b ->
+            b.root.visibleIf { show }
+            b.titleView.setText(R.string.episodes_empty_title)
+            b.descriptionView.setText(R.string.episodes_empty_description)
+            b.actionBtn.visibleIf { !isAlternative }
+        }
     }
 
     override fun showAlternativeLabel(show: Boolean) {
-        if (show) getBinding.toolbar.setSubtitle(R.string.series_alternative_source)
-        else getBinding.toolbar.subtitle = null
-        getBinding.toolbar.setTitleTextAppearance(context, if (show) R.style.ToolbarSmallTextAppearance else R.style.ToolbarTextAppearance)
+        getBinding?.toolbar?.apply {
+            if (show) setSubtitle(R.string.series_alternative_source)
+            else subtitle = null
+            setTitleTextAppearance(context, if (show) R.style.ToolbarSmallTextAppearance else R.style.ToolbarTextAppearance)
+        }
     }
 
     override fun showEpisodeOptionsDialog(index: Int) {
@@ -203,7 +218,7 @@ class EpisodesFragment : BaseBottomSheetInjectionDialogFragment<EpisodesPresente
         }.show(childFragmentManager, "OptionsTag")
     }
 
-    override fun showContent(show: Boolean) = getBinding.recyclerView.visibleIf { show }
+    override fun showContent(show: Boolean) { getBinding?.recyclerView?.visibleIf { show } }
 
     override fun showSearchEmpty() {
         val item = SeriesPlaceholderItem(R.string.episode_search_empty_title, R.string.episode_search_empty_desc)

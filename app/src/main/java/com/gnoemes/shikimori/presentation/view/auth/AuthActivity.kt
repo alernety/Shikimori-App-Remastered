@@ -44,7 +44,12 @@ class AuthActivity : BaseActivity<AuthPresenter, AuthView>(), AuthView {
     fun providePresenter(): AuthPresenter {
         authPresenter = presenterProvider.get()
         intent.ifNotNull {
-            authPresenter.authType = it.getSerializableExtra(AppExtras.ARGUMENT_AUTH_TYPE) as? AuthType
+            @Suppress("DEPRECATION")
+            authPresenter.authType = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                it.getSerializableExtra(AppExtras.ARGUMENT_AUTH_TYPE, AuthType::class.java) as? AuthType
+            } else {
+                it.getSerializableExtra(AppExtras.ARGUMENT_AUTH_TYPE) as? AuthType
+            }
         }
 
         return authPresenter
@@ -80,7 +85,12 @@ class AuthActivity : BaseActivity<AuthPresenter, AuthView>(), AuthView {
         binding = ActivityAuthBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val shikimori = intent?.getSerializableExtra(AppExtras.ARGUMENT_AUTH_TYPE) != null
+        @Suppress("DEPRECATION")
+        val shikimori = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            intent?.getSerializableExtra(AppExtras.ARGUMENT_AUTH_TYPE, AuthType::class.java) != null
+        } else {
+            intent?.getSerializableExtra(AppExtras.ARGUMENT_AUTH_TYPE) != null
+        }
         initWebView(shikimori)
     }
 
@@ -159,8 +169,8 @@ class AuthActivity : BaseActivity<AuthPresenter, AuthView>(), AuthView {
         }
 
         private fun interceptCode(url: String?) {
-            val matcherFixed = Pattern.compile(SHIKIMORI_PATTERN).matcher(url)
-            val matcherOld = Pattern.compile(SHIKIMORI_PATTERN_OLD).matcher(url)
+            val matcherFixed = Pattern.compile(SHIKIMORI_PATTERN).matcher(url.orEmpty())
+            val matcherOld = Pattern.compile(SHIKIMORI_PATTERN_OLD).matcher(url.orEmpty())
             val matcher = when {
                 matcherFixed.find() -> matcherFixed
                 matcherOld.find() -> matcherOld

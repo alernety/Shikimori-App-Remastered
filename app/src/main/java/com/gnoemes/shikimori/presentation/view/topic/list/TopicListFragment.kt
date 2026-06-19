@@ -1,5 +1,6 @@
 package com.gnoemes.shikimori.presentation.view.topic.list
 
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -50,7 +51,12 @@ class TopicListFragment : BasePaginationFragment<TopicViewModel, TopicListPresen
         }
 
         arguments?.let {
-            topicPresenter.type = it.getSerializable(AppExtras.ARGUMENT_FORUM_TYPE) as ForumType
+            @Suppress("DEPRECATION")
+            topicPresenter.type = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                it.getSerializable(AppExtras.ARGUMENT_FORUM_TYPE, ForumType::class.java) as ForumType
+            } else {
+                it.getSerializable(AppExtras.ARGUMENT_FORUM_TYPE) as ForumType
+            }
         }
 
         return topicPresenter

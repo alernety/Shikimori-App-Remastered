@@ -41,8 +41,9 @@ class DescriptionDialogFragment : BaseBottomSheetDialogFragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         baseBinding = DialogBaseBottomSheetBinding.inflate(inflater, container, false)
-        dialogBinding = DialogDescriptionBinding.inflate(inflater, baseBinding!!.fragmentContent, true)
-        return baseBinding!!.root
+        val bb = baseBinding ?: return null
+        dialogBinding = DialogDescriptionBinding.inflate(inflater, bb.fragmentContent, true)
+        return bb.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

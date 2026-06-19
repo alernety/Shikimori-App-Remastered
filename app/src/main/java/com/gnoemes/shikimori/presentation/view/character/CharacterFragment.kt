@@ -28,7 +28,7 @@ import javax.inject.Inject
 class CharacterFragment : BaseFragment<CharacterPresenter, CharacterView>(), CharacterView {
 
     private var _binding: FragmentCharacterBinding? = null
-    private val binding get() = _binding!!
+    private val binding: FragmentCharacterBinding? get() = _binding
 
     @Inject
     lateinit var imageLoader: ImageLoader
@@ -70,6 +70,7 @@ class CharacterFragment : BaseFragment<CharacterPresenter, CharacterView>(), Cha
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentCharacterBinding.bind(view.findViewById(R.id.nestedScroll))
+        val b = _binding ?: return
 
         toolbarBinding?.toolbar?.apply {
             addBackButton { getPresenter().onBackPressed() }
@@ -84,16 +85,14 @@ class CharacterFragment : BaseFragment<CharacterPresenter, CharacterView>(), Cha
             }
         }
 
-        headHolder = DetailsHeadSimpleViewHolder(binding.headLayout, imageLoader)
-        descriptionHolder = DetailsDescriptionViewHolder(binding.descriptionLayout, getPresenter()::onContentClicked)
+        headHolder = DetailsHeadSimpleViewHolder(b.headLayout, imageLoader)
+        descriptionHolder = DetailsDescriptionViewHolder(b.descriptionLayout, getPresenter()::onContentClicked)
 
         contentHolders.apply {
-            put(DetailsContentType.SEYUS, DetailsContentViewHolder(binding.seyuLayout, seyuAdapter))
-            put(DetailsContentType.ANIMES, DetailsContentViewHolder(binding.animeLayout, animeAdapter))
-            put(DetailsContentType.MANGAS, DetailsContentViewHolder(binding.mangaLayout, mangaAdapter))
+            put(DetailsContentType.SEYUS, DetailsContentViewHolder(b.seyuLayout, seyuAdapter))
+            put(DetailsContentType.ANIMES, DetailsContentViewHolder(b.animeLayout, animeAdapter))
+            put(DetailsContentType.MANGAS, DetailsContentViewHolder(b.mangaLayout, mangaAdapter))
         }
-
-
     }
 
     override fun onDestroyView() {

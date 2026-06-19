@@ -1,6 +1,7 @@
 package com.gnoemes.shikimori.presentation.view.common.fragment
 
 import android.app.Dialog
+import android.os.Build
 import android.os.Bundle
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.gnoemes.shikimori.entity.app.domain.Constants
@@ -46,7 +47,13 @@ class ListDialogFragment : MvpDialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
 
         if (savedInstanceState != null) {
-            items = (savedInstanceState.getSerializable(ARGUMENT_ITEMS) as Array<Pair<String, String>>).toList()
+            @Suppress("DEPRECATION")
+            val raw = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                savedInstanceState.getSerializable(ARGUMENT_ITEMS, Array::class.java)
+            } else {
+                savedInstanceState.getSerializable(ARGUMENT_ITEMS)
+            } as? Array<Pair<String, String>>
+            items = raw?.toList() ?: items
             titleRes = savedInstanceState.getInt(ARGUMENT_TITLE_ID, Constants.NO_ID.toInt())
             title = savedInstanceState.getString(ARGUMENT_TITLE, "").takeIf { !it.isNullOrBlank() }
         }

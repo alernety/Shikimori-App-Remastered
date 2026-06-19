@@ -7,7 +7,7 @@ import com.github.ybq.android.spinkit.SpinKitView
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.entity.anime.domain.Screenshot
 import com.gnoemes.shikimori.presentation.view.common.widget.TouchImageView
-import com.gnoemes.shikimori.utils.images.GlideApp
+import com.bumptech.glide.Glide
 import com.gnoemes.shikimori.utils.images.TouchImageTargetView
 
 class ScreenshotPagerAdapter(
@@ -26,7 +26,7 @@ class ScreenshotPagerAdapter(
         val progressBar = view.findViewById<SpinKitView>(R.id.included_layout_progress)
 
         val item = items[position]
-        GlideApp.with(photoView)
+        Glide.with(photoView)
                 .asBitmap()
                 .load(item.original)
                 .into(TouchImageTargetView(photoView, progressBar))

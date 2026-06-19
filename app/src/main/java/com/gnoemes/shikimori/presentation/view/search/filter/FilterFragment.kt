@@ -1,5 +1,6 @@
 package com.gnoemes.shikimori.presentation.view.search.filter
 
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -24,6 +25,7 @@ import com.gnoemes.shikimori.presentation.view.search.filter.genres.FilterGenres
 import com.gnoemes.shikimori.presentation.view.search.filter.seasons.FilterSeasonsFragment
 import com.gnoemes.shikimori.utils.*
 import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 
 class FilterFragment : BaseBottomSheetInjectionDialogFragment<FilterPresenter, FilterView>(), FilterView, FilterCallback, ListDialogFragment.DialogCallback {
 
@@ -34,7 +36,13 @@ class FilterFragment : BaseBottomSheetInjectionDialogFragment<FilterPresenter, F
     fun providePresenter(): FilterPresenter = presenterProvider.get().apply {
         type = arguments?.getSerializable(TYPE_KEY) as? Type ?: Type.ANIME
         //copy of filters
-        appliedFilters = HashMap(arguments?.getSerializable(FILTERS_KEY) as HashMap<String, MutableList<FilterItem>>)
+        @Suppress("DEPRECATION")
+        val raw = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            arguments?.getSerializable(FILTERS_KEY, HashMap::class.java)
+        } else {
+            arguments?.getSerializable(FILTERS_KEY)
+        } as? HashMap<String, MutableList<FilterItem>>
+        appliedFilters = HashMap(raw ?: HashMap())
     }
 
     companion object {
@@ -43,6 +51,11 @@ class FilterFragment : BaseBottomSheetInjectionDialogFragment<FilterPresenter, F
         private const val HINT_KEY = "HINT_KEY"
         private const val GENRES_TAG = "genresFilterDialog"
         private const val SEASONS_TAG = "seasonsFilterDialog"
+        const val GENRES_RESULT_KEY = "genres_result_key"
+        const val SEASONS_RESULT_KEY = "seasons_result_key"
+        const val FILTER_RESULT_KEY = "filter_result_key"
+        const val RESULT_TAG_KEY = "result_tag"
+        const val RESULT_FILTERS_KEY = "result_filters"
         fun newInstance(type: Type, filters: HashMap<String, MutableList<FilterItem>>?) = FilterFragment()
                 .withArgs {
                     putSerializable(TYPE_KEY, type)
@@ -52,38 +65,41 @@ class FilterFragment : BaseBottomSheetInjectionDialogFragment<FilterPresenter, F
 
     private val adapter by lazy { FilterAdapter(presenter::onFilterAction, presenter::onFilterSelected, presenter::onFilterInverted) }
     private var _binding: FragmentFilterBinding? = null
-    private val binding get() = _binding!!
+    private val binding: FragmentFilterBinding? get() = _binding
     private var _bottomBinding: LayoutFilterBottomBinding? = null
-    private val bottomBinding get() = _bottomBinding!!
+    private val bottomBinding: LayoutFilterBottomBinding? get() = _bottomBinding
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentFilterBinding.inflate(inflater, container, false)
         _bottomBinding = LayoutFilterBottomBinding.bind(_binding!!.root.findViewById(R.id.included_layout_filter_bottom))
-        return binding.root
+        return _binding!!.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        if (context!!.getDefaultSharedPreferences().getBoolean(HINT_KEY, false)) binding.hintContainer.gone()
+        val b = _binding ?: return
+        val bb = _bottomBinding ?: return
+
+        if (context!!.getDefaultSharedPreferences().getBoolean(HINT_KEY, false)) b.hintContainer.gone()
         else {
-            binding.hintContainer.onClick {
+            b.hintContainer.onClick {
                 putSetting(HINT_KEY, true)
-                TransitionManager.beginDelayedTransition(binding.appBarLayout, ChangeBounds())
-                binding.hintContainer.gone()
+                TransitionManager.beginDelayedTransition(b.appBarLayout, ChangeBounds())
+                b.hintContainer.gone()
             }
         }
 
-        with(binding.toolbar) {
+        with(b.toolbar) {
             setTitle(R.string.filters)
             addBackButton(R.drawable.ic_close) { onBackPressed() }
         }
 
-        binding.resetBtn.onClick { presenter.onResetClicked() }
-        bottomBinding.acceptBtn.onClick { presenter.onAcceptClicked() }
-        bottomBinding.sortBtn.onClick { presenter.onSortClicked() }
+        b.resetBtn.onClick { presenter.onResetClicked() }
+        bb.acceptBtn.onClick { presenter.onAcceptClicked() }
+        bb.sortBtn.onClick { presenter.onSortClicked() }
 
-        with(binding.list) {
+        with(b.list) {
             adapter = this@FilterFragment.adapter
             layoutManager = LinearLayoutManager(context)
             addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
@@ -129,25 +145,37 @@ class FilterFragment : BaseBottomSheetInjectionDialogFragment<FilterPresenter, F
     }
 
     override fun showGenresDialog(type: Type, filters: HashMap<String, MutableList<FilterItem>>) {
-        val fragment = fragmentManager?.findFragmentByTag(GENRES_TAG)
+        val fragment = parentFragmentManager.findFragmentByTag(GENRES_TAG)
         if (fragment == null) {
             val filter = FilterGenresFragment.newInstance(type, filters)
-            filter.setTargetFragment(this, 43)
-            postViewAction { filter.show(fragmentManager!!, GENRES_TAG) }
+            parentFragmentManager.setFragmentResultListener(GENRES_RESULT_KEY, this) { _, bundle ->
+                val filterTag = bundle.getString(RESULT_TAG_KEY)
+                val filtersJson = bundle.getString(RESULT_FILTERS_KEY)
+                val typeToken = object : TypeToken<HashMap<String, MutableList<FilterItem>>>() {}.type
+                val appliedFilters: HashMap<String, MutableList<FilterItem>> = Gson().fromJson(filtersJson, typeToken)
+                onFiltersSelected(filterTag, appliedFilters)
+            }
+            postViewAction { filter.show(parentFragmentManager, GENRES_TAG) }
         }
     }
 
     override fun showSeasonsDialog(type: Type, filters: HashMap<String, MutableList<FilterItem>>) {
-        val fragment = fragmentManager?.findFragmentByTag(SEASONS_TAG)
+        val fragment = parentFragmentManager.findFragmentByTag(SEASONS_TAG)
         if (fragment == null) {
             val filter = FilterSeasonsFragment.newInstance(type, filters)
-            filter.setTargetFragment(this, 44)
-            postViewAction { filter.show(fragmentManager!!, SEASONS_TAG) }
+            parentFragmentManager.setFragmentResultListener(SEASONS_RESULT_KEY, this) { _, bundle ->
+                val filterTag = bundle.getString(RESULT_TAG_KEY)
+                val filtersJson = bundle.getString(RESULT_FILTERS_KEY)
+                val typeToken = object : TypeToken<HashMap<String, MutableList<FilterItem>>>() {}.type
+                val appliedFilters: HashMap<String, MutableList<FilterItem>> = Gson().fromJson(filtersJson, typeToken)
+                onFiltersSelected(filterTag, appliedFilters)
+            }
+            postViewAction { filter.show(parentFragmentManager, SEASONS_TAG) }
         }
     }
 
     override fun setResetEnabled(show: Boolean) {
-        binding.resetBtn.isEnabled = show
+        _binding?.resetBtn?.isEnabled = show
     }
 
     override fun showSortFilters(items: List<FilterItem>) {
@@ -159,11 +187,15 @@ class FilterFragment : BaseBottomSheetInjectionDialogFragment<FilterPresenter, F
     }
 
     override fun setSortFilterText(text: String) {
-        bottomBinding.sortBtn.text = text
+        _bottomBinding?.sortBtn?.text = text
     }
 
     override fun onFiltersAccepted(appliedFilters: HashMap<String, MutableList<FilterItem>>) {
-        (targetFragment as? FilterCallback)?.onFiltersSelected(tag, appliedFilters)
+        val bundle = Bundle().apply {
+            putString(RESULT_TAG_KEY, tag)
+            putString(RESULT_FILTERS_KEY, Gson().toJson(appliedFilters))
+        }
+        parentFragmentManager.setFragmentResult(FILTER_RESULT_KEY, bundle)
         onBackPressed()
     }
 }

@@ -97,10 +97,11 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View>, View 
         initBaseBinding(inflater, container)
 
         fragmentBinding = FragmentDetailsBinding.inflate(inflater, container, false)
-        val appBarLayout = fragmentBinding!!.root.findViewById<AppBarLayout>(R.id.included_layout_collapsing_toolbar)
-        collapsingToolbarBinding = LayoutCollapsingToolbarBinding.bind(appBarLayout!!)
-        charactersBinding = fragmentBinding!!.charactersLayout
-        return fragmentBinding!!.root
+        val fb = requireNotNull(fragmentBinding) { "fragmentBinding was null after inflate" }
+        val appBarLayout = fb.root.findViewById<AppBarLayout>(R.id.included_layout_collapsing_toolbar)
+        collapsingToolbarBinding = LayoutCollapsingToolbarBinding.bind(requireNotNull(appBarLayout) { "appBarLayout was null" })
+        charactersBinding = fb.charactersLayout
+        return fb.root
     }
 
     override fun onViewCreated(view: android.view.View, savedInstanceState: Bundle?) {
@@ -111,7 +112,11 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View>, View 
             title = null
         }
 
-        val params = collapsingToolbarBinding!!.appBarLayout.layoutParams as CoordinatorLayout.LayoutParams
+        val ctb = requireNotNull(collapsingToolbarBinding) { "collapsingToolbarBinding was null in onViewCreated" }
+        val fb = requireNotNull(fragmentBinding) { "fragmentBinding was null in onViewCreated" }
+        val cb = requireNotNull(charactersBinding) { "charactersBinding was null in onViewCreated" }
+
+        val params = ctb.appBarLayout.layoutParams as CoordinatorLayout.LayoutParams
         params.behavior = AppBarLayout.Behavior().apply {
             setDragCallback(object : AppBarLayout.Behavior.DragCallback() {
                 override fun canDrag(appBarLayout: AppBarLayout): Boolean {
@@ -120,14 +125,14 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View>, View 
             })
 
         }
-        collapsingToolbarBinding!!.appBarLayout.addOnOffsetChangedListener(onOffsetChangedListener)
+        ctb.appBarLayout.addOnOffsetChangedListener(onOffsetChangedListener)
 
-        headHolder = DetailsHeadViewHolder(collapsingToolbarBinding!!.headLayout, imageLoader, getPresenter()::onAction)
-        infoHolder = DetailsInfoViewHolder(fragmentBinding!!.infoLayout, tagAdapter, infoAdapter)
-        actionHolder = DetailsActionViewHolder(fragmentBinding!!.actionLayout, actionAdapter)
-        descriptionHolder = DetailsDescriptionViewHolder(fragmentBinding!!.descriptionLayout, getPresenter()::onContentClicked)
+        headHolder = DetailsHeadViewHolder(ctb.headLayout, imageLoader, getPresenter()::onAction)
+        infoHolder = DetailsInfoViewHolder(fb.infoLayout, tagAdapter, infoAdapter)
+        actionHolder = DetailsActionViewHolder(fb.actionLayout, actionAdapter)
+        descriptionHolder = DetailsDescriptionViewHolder(fb.descriptionLayout, getPresenter()::onContentClicked)
 
-        with(charactersBinding!!.searchView) {
+        with(cb.searchView) {
             val searchBarId = context.resources.getIdentifier("search_bar", "id", "android")
             val searchSrcTextId = context.resources.getIdentifier("search_src_text", "id", "android")
             val searchEditFrameId = context.resources.getIdentifier("search_edit_frame", "id", "android")
@@ -161,7 +166,7 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View>, View 
             }
         }
 
-        with(charactersBinding!!) {
+        with(cb) {
             searchBtn.onClick {
                 searchView.isIconified = false
                 searchView.post {
@@ -205,7 +210,7 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View>, View 
     }
 
     override fun onDestroyView() {
-        collapsingToolbarBinding!!.appBarLayout.removeOnOffsetChangedListener(onOffsetChangedListener)
+        collapsingToolbarBinding?.appBarLayout?.removeOnOffsetChangedListener(onOffsetChangedListener)
         super.onDestroyView()
         fragmentBinding = null
         collapsingToolbarBinding = null
@@ -228,8 +233,10 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View>, View 
         detailsName = item.name
         headHolder.bind(item)
 
-        if (!fragmentBinding!!.backgroundImage.hasImage()) {
-            imageLoader.setBlurredImage(fragmentBinding!!.backgroundImage, item.image.original, sampling = 2)
+        fragmentBinding?.let { fb ->
+            if (!fb.backgroundImage.hasImage()) {
+                imageLoader.setBlurredImage(fb.backgroundImage, item.image.original, sampling = 2)
+            }
         }
     }
 

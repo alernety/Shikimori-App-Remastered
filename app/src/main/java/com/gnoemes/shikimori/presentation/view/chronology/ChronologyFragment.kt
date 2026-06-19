@@ -1,6 +1,7 @@
 package com.gnoemes.shikimori.presentation.view.chronology
 
 import android.graphics.drawable.ColorDrawable
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -32,7 +33,12 @@ class ChronologyFragment : BaseFragment<ChronologyPresenter, ChronologyView>(), 
     @ProvidePresenter
     fun provide() = presenterProvider.get().apply {
         localRouter = (parentFragment as RouterProvider).localRouter
-        data = arguments?.getParcelable(DATA_KEY)!!
+        @Suppress("DEPRECATION")
+        data = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            arguments?.getParcelable(DATA_KEY, ChronologyNavigationData::class.java)!!
+        } else {
+            arguments?.getParcelable(DATA_KEY)!!
+        }
     }
 
     companion object {
@@ -41,13 +47,14 @@ class ChronologyFragment : BaseFragment<ChronologyPresenter, ChronologyView>(), 
     }
 
     private var _binding: FragmentChronologyBinding? = null
-    private val binding get() = _binding!!
+    private val binding: FragmentChronologyBinding? get() = _binding
 
     private val adapter by lazy { ChronologyAdapter(imageLoader, getPresenter()::onContentClicked, getPresenter()::onShowStatusDialog) }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentChronologyBinding.bind(view.findViewById(R.id.fragment_content))
+        val b = _binding ?: return
 
         toolbarBinding?.toolbar?.apply {
             addBackButton { getPresenter().onBackPressed() }
@@ -62,17 +69,17 @@ class ChronologyFragment : BaseFragment<ChronologyPresenter, ChronologyView>(), 
             }
         }
 
-        with(binding.includedLayoutDefaultList.recyclerView) {
+        with(b.includedLayoutDefaultList.recyclerView) {
             adapter = this@ChronologyFragment.adapter
             layoutManager = LinearLayoutManager(context)
             addItemDecoration(VerticalSpaceItemDecorator(context!!.dp(8)))
         }
 
-        binding.includedLayoutDefaultList.refreshLayout.background = ColorDrawable(context!!.colorAttr(R.attr.colorSurface))
-        binding.includedLayoutDefaultList.refreshLayout.setOnRefreshListener { getPresenter().onRefresh() }
+        b.includedLayoutDefaultList.refreshLayout.background = ColorDrawable(context!!.colorAttr(R.attr.colorSurface))
+        b.includedLayoutDefaultList.refreshLayout.setOnRefreshListener { getPresenter().onRefresh() }
 
         placeholdersBinding?.emptyContentView?.setText(R.string.similar_empty_description)
-        binding.fab.onClick { getPresenter().onFabClicked() }
+        b.fab.onClick { getPresenter().onFabClicked() }
     }
 
     override fun onDestroyView() {
@@ -111,7 +118,10 @@ class ChronologyFragment : BaseFragment<ChronologyPresenter, ChronologyView>(), 
     }
 
     override fun scrollTo(pos: Int) {
-        postViewAction { (binding.includedLayoutDefaultList.recyclerView.layoutManager as? LinearLayoutManager)?.scrollToPositionWithOffset(pos, binding.includedLayoutDefaultList.recyclerView.dp(16)) }
+        postViewAction {
+            val b = _binding ?: return@postViewAction
+            (b.includedLayoutDefaultList.recyclerView.layoutManager as? LinearLayoutManager)?.scrollToPositionWithOffset(pos, b.includedLayoutDefaultList.recyclerView.dp(16))
+        }
     }
 
     override fun showTypeDialog(currentType: ChronologyType) {
@@ -119,7 +129,7 @@ class ChronologyFragment : BaseFragment<ChronologyPresenter, ChronologyView>(), 
         dialog.show(childFragmentManager, "ChronologyTypeDialog")
     }
 
-    override fun showContent(show: Boolean) = binding.includedLayoutDefaultList.recyclerView.visibleIf { show }
-    override fun onShowLoading() = binding.includedLayoutDefaultList.refreshLayout.showRefresh()
-    override fun onHideLoading() = binding.includedLayoutDefaultList.refreshLayout.hideRefresh()
+    override fun showContent(show: Boolean) { binding?.includedLayoutDefaultList?.recyclerView?.visibleIf { show } }
+    override fun onShowLoading() { binding?.includedLayoutDefaultList?.refreshLayout?.showRefresh() }
+    override fun onHideLoading() { binding?.includedLayoutDefaultList?.refreshLayout?.hideRefresh() }
 }

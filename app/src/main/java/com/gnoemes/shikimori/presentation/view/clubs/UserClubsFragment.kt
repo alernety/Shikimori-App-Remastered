@@ -21,7 +21,7 @@ import javax.inject.Inject
 class UserClubsFragment : BaseFragment<UserClubsPresenter, UserClubsView>(), UserClubsView {
 
     private var _binding: FragmentDefaultListBinding? = null
-    private val binding get() = _binding!!
+    private val binding: FragmentDefaultListBinding? get() = _binding
 
     @Inject
     lateinit var imageLoader: ImageLoader
@@ -46,18 +46,19 @@ class UserClubsFragment : BaseFragment<UserClubsPresenter, UserClubsView>(), Use
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentDefaultListBinding.bind(view.findViewById(R.id.fragment_content))
+        val b = _binding ?: return
 
         toolbarBinding?.toolbar?.apply {
             addBackButton { getPresenter().onBackPressed() }
             setTitle(R.string.common_clubs)
         }
 
-        with(binding.includedLayoutDefaultList.recyclerView) {
+        with(b.includedLayoutDefaultList.recyclerView) {
             adapter = this@UserClubsFragment.adapter
             layoutManager = LinearLayoutManager(context)
         }
 
-        binding.includedLayoutDefaultList.refreshLayout.setOnRefreshListener { getPresenter().onRefresh() }
+        b.includedLayoutDefaultList.refreshLayout.setOnRefreshListener { getPresenter().onRefresh() }
     }
 
     override fun onDestroyView() {
@@ -90,11 +91,11 @@ class UserClubsFragment : BaseFragment<UserClubsPresenter, UserClubsView>(), Use
     }
 
     override fun showContent(show: Boolean) {
-        binding.includedLayoutDefaultList.recyclerView.visibleIf { show }
+        binding?.includedLayoutDefaultList?.recyclerView?.visibleIf { show }
     }
 
-    override fun onShowLoading() = binding.includedLayoutDefaultList.refreshLayout.showRefresh()
+    override fun onShowLoading() { binding?.includedLayoutDefaultList?.refreshLayout?.showRefresh() }
 
-    override fun onHideLoading() = binding.includedLayoutDefaultList.refreshLayout.hideRefresh()
+    override fun onHideLoading() { binding?.includedLayoutDefaultList?.refreshLayout?.hideRefresh() }
 
 }

@@ -5,8 +5,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
-import androidx.fragment.app.FragmentStatePagerAdapter
+import androidx.viewpager2.adapter.FragmentStateAdapter
+import com.google.android.material.tabs.TabLayoutMediator
 import moxy.presenter.InjectPresenter
 import moxy.presenter.ProvidePresenter
 import com.gnoemes.shikimori.R
@@ -29,7 +29,7 @@ import javax.inject.Inject
 class ShikimoriMainFragment : BaseFragment<ShikimoriMainPresenter, ShikimoriMainView>(), ShikimoriMainView, RouterProvider, HasAndroidInjector {
 
     private var _viewBinding: FragmentShikimoriMainBinding? = null
-    private val viewBinding get() = _viewBinding!!
+    private val viewBinding: FragmentShikimoriMainBinding? get() = _viewBinding
 
     @Inject
     lateinit var childFragmentInjector: DispatchingAndroidInjector<Any>
@@ -54,21 +54,28 @@ class ShikimoriMainFragment : BaseFragment<ShikimoriMainPresenter, ShikimoriMain
         fun newInstance() = ShikimoriMainFragment()
     }
 
-    private val adapter by lazy { PagerAdapter(childFragmentManager) }
+    private val adapter by lazy { PagerAdapter(this) }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         _viewBinding = FragmentShikimoriMainBinding.inflate(inflater, container, false)
-        return viewBinding.root
+        return _viewBinding?.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val vb = _viewBinding ?: return
 
         // Base toolbar is not inflated (onCreateView overridden without super), no need to hide it
 
-        viewBinding.pagesContainerView.adapter = adapter
-        viewBinding.pagesContainerView.offscreenPageLimit = 3
-        viewBinding.includedLayoutAppbarTabs.tabLayout.setupWithViewPager(viewBinding.pagesContainerView)
+        vb.pagesContainerView.adapter = adapter
+        vb.pagesContainerView.offscreenPageLimit = 3
+        TabLayoutMediator(vb.includedLayoutAppbarTabs.tabLayout, vb.pagesContainerView) { tab, position ->
+            tab.text = when (position) {
+                0 -> getString(R.string.topic_news)
+                1 -> getString(R.string.topic_my_feed)
+                else -> getString(R.string.topic_forum)
+            }
+        }.attach()
     }
 
     override fun onDestroyView() {
@@ -95,10 +102,10 @@ class ShikimoriMainFragment : BaseFragment<ShikimoriMainPresenter, ShikimoriMain
     ///////////////////////////////////////////////////////////////////////////
 
     inner class PagerAdapter(
-            fm: FragmentManager
-    ) : FragmentStatePagerAdapter(fm) {
+            fragment: Fragment
+    ) : FragmentStateAdapter(fragment) {
 
-        override fun getItem(position: Int): Fragment {
+        override fun createFragment(position: Int): Fragment {
             return when (position) {
                 0 -> TopicListFragment.newInstance(ForumType.NEWS)
                 1 -> TopicListFragment.newInstance(ForumType.MY_CLUBS)
@@ -106,14 +113,6 @@ class ShikimoriMainFragment : BaseFragment<ShikimoriMainPresenter, ShikimoriMain
             }
         }
 
-        override fun getCount(): Int = 3
-
-        override fun getPageTitle(position: Int): CharSequence? {
-            return when (position) {
-                0 -> context?.getString(R.string.topic_news)
-                1 -> context?.getString(R.string.topic_my_feed)
-                else -> context?.getString(R.string.topic_forum)
-            }
-        }
+        override fun getItemCount(): Int = 3
     }
 }

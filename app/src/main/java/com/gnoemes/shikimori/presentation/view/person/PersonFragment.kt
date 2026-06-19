@@ -28,7 +28,7 @@ import javax.inject.Inject
 class PersonFragment : BaseFragment<PersonPresenter, PersonView>(), PersonView {
 
     private var _viewBinding: FragmentPersonBinding? = null
-    private val viewBinding get() = _viewBinding!!
+    private val viewBinding: FragmentPersonBinding? get() = _viewBinding
 
     @Inject
     lateinit var imageLoader: ImageLoader
@@ -69,6 +69,7 @@ class PersonFragment : BaseFragment<PersonPresenter, PersonView>(), PersonView {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _viewBinding = FragmentPersonBinding.bind(view.findViewById(R.id.nestedScroll))
+        val vb = _viewBinding ?: return
 
         toolbarBinding?.toolbar?.apply {
             addBackButton { getPresenter().onBackPressed() }
@@ -82,14 +83,13 @@ class PersonFragment : BaseFragment<PersonPresenter, PersonView>(), PersonView {
             }
         }
 
-        headHolder = DetailsHeadSimpleViewHolder(viewBinding.headLayout, imageLoader)
-        descriptionHolder = DetailsDescriptionViewHolder(viewBinding.descriptionLayout, getPresenter()::onContentClicked)
+        headHolder = DetailsHeadSimpleViewHolder(vb.headLayout, imageLoader)
+        descriptionHolder = DetailsDescriptionViewHolder(vb.descriptionLayout, getPresenter()::onContentClicked)
 
         contentHolders.apply {
-            put(DetailsContentType.CHARACTERS, DetailsContentViewHolder(viewBinding.charactersLayout, charactersAdapter))
-            put(DetailsContentType.WORKS, DetailsContentViewHolder(viewBinding.worksLayout, worksAdapter))
+            put(DetailsContentType.CHARACTERS, DetailsContentViewHolder(vb.charactersLayout, charactersAdapter))
+            put(DetailsContentType.WORKS, DetailsContentViewHolder(vb.worksLayout, worksAdapter))
         }
-
     }
 
     override fun onDestroyView() {

@@ -20,7 +20,7 @@ import javax.inject.Inject
 class MoreFragment : BaseFragment<MorePresenter, MoreView>(), MoreView, AuthDialog.AuthCallback {
 
     private var _viewBinding: FragmentMoreBinding? = null
-    private val viewBinding get() = _viewBinding!!
+    private val viewBinding: FragmentMoreBinding? get() = _viewBinding
 
     @Inject
     lateinit var imageLoader: ImageLoader
@@ -47,8 +47,9 @@ class MoreFragment : BaseFragment<MorePresenter, MoreView>(), MoreView, AuthDial
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _viewBinding = FragmentMoreBinding.bind(view.findViewById(R.id.fragment_content))
+        val vb = _viewBinding ?: return
 
-        with(viewBinding.recyclerView) {
+        with(vb.recyclerView) {
             adapter = moreAdapter
             layoutManager = LinearLayoutManager(context)
         }
@@ -93,11 +94,15 @@ class MoreFragment : BaseFragment<MorePresenter, MoreView>(), MoreView, AuthDial
 
     override fun showAuthDialog() {
         val tag = "AuthDialog"
-        val dialog = fragmentManager?.findFragmentByTag(tag)
+        val dialog = parentFragmentManager.findFragmentByTag(tag)
         if (dialog == null) {
-            AuthDialog().apply {
-                setTargetFragment(this@MoreFragment, 42)
-            }.show(fragmentManager!!, tag)
+            parentFragmentManager.setFragmentResultListener(AuthDialog.AUTH_REQUEST_KEY, this) { _, bundle ->
+                when (bundle.getString(AuthDialog.AUTH_ACTION_KEY)) {
+                    AuthDialog.ACTION_SIGN_IN -> onSignIn()
+                    AuthDialog.ACTION_SIGN_UP -> onSignUp()
+                }
+            }
+            AuthDialog().show(parentFragmentManager, tag)
         }
     }
 }

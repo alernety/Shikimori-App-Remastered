@@ -54,16 +54,16 @@ class BottomTabContainer : MvpFragment(), RouterProvider, BackButtonListener, Ha
         super.onAttach(context)
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        return inflater.inflate(R.layout.fragment_tab, container, false)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
         if (childFM.findFragmentById(R.id.fragment_container) == null) {
             getCicerone().router.replaceScreen(KeyScreen(getContainerName()))
         }
-    }
-
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.fragment_tab, container, false)
     }
 
     override fun onResume() {

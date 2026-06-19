@@ -17,7 +17,7 @@ import com.gnoemes.shikimori.utils.withArgs
 class ChronologyTypeDialog : BaseBottomSheetDialogFragment() {
 
     private var _binding: DialogMenuBinding? = null
-    private val binding get() = _binding!!
+    private val binding: DialogMenuBinding? get() = _binding
 
     companion object {
         fun newInstance(type: ChronologyType) = ChronologyTypeDialog().withArgs {
@@ -34,19 +34,25 @@ class ChronologyTypeDialog : BaseBottomSheetDialogFragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         _binding = DialogMenuBinding.inflate(inflater, container, false)
-        return binding.root
+        return _binding?.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val b = _binding ?: return
 
-        binding.toolbar.setTitle(R.string.chronology_type)
+        b.toolbar.setTitle(R.string.chronology_type)
 
-        val current = arguments?.getSerializable(TYPE_KEY) as? ChronologyType ?: ChronologyType.MAIN
+        @Suppress("DEPRECATION")
+        val current = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            arguments?.getSerializable(TYPE_KEY, ChronologyType::class.java) as? ChronologyType ?: ChronologyType.MAIN
+        } else {
+            arguments?.getSerializable(TYPE_KEY) as? ChronologyType ?: ChronologyType.MAIN
+        }
 
         val items = ChronologyType.values().toMutableList()
 
-        binding.navView.apply {
+        b.navView.apply {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 setItemBackgroundResource(R.drawable.selector_item_menu_background_accent)
                 itemTextColor = context.colorStateList(R.color.selector_item_menu_text_color_accent)

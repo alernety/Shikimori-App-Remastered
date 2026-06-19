@@ -1,6 +1,7 @@
 package com.gnoemes.shikimori.presentation.view.similar
 
 import android.graphics.drawable.ColorDrawable
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -23,7 +24,7 @@ import javax.inject.Inject
 class SimilarFragment : BaseFragment<SimilarPresenter, SimilarView>(), SimilarView, RateStatusDialog.RateStatusCallback {
 
     private var _viewBinding: FragmentDefaultListBinding? = null
-    private val viewBinding get() = _viewBinding!!
+    private val viewBinding: FragmentDefaultListBinding? get() = _viewBinding
 
     @Inject
     lateinit var imageLoader: ImageLoader
@@ -34,7 +35,12 @@ class SimilarFragment : BaseFragment<SimilarPresenter, SimilarView>(), SimilarVi
     @ProvidePresenter
     fun provide() = presenterProvider.get().apply {
         localRouter = (parentFragment as RouterProvider).localRouter
-        navigationData = arguments?.getParcelable(DATA_KEY)!!
+        @Suppress("DEPRECATION")
+        navigationData = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            arguments?.getParcelable(DATA_KEY, CommonNavigationData::class.java)!!
+        } else {
+            arguments?.getParcelable(DATA_KEY)!!
+        }
     }
 
     companion object {
@@ -47,20 +53,21 @@ class SimilarFragment : BaseFragment<SimilarPresenter, SimilarView>(), SimilarVi
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _viewBinding = FragmentDefaultListBinding.bind(view.findViewById(R.id.fragment_content))
+        val vb = _viewBinding ?: return
 
         toolbarBinding?.toolbar?.apply {
             addBackButton { getPresenter().onBackPressed() }
             setTitle(R.string.common_similar)
         }
 
-        with(viewBinding.includedLayoutDefaultList.recyclerView) {
+        with(vb.includedLayoutDefaultList.recyclerView) {
             adapter = this@SimilarFragment.adapter
             layoutManager = LinearLayoutManager(context)
             addItemDecoration(VerticalSpaceItemDecorator(context.dp(8)))
         }
 
-        viewBinding.includedLayoutDefaultList.refreshLayout.background = ColorDrawable(context!!.colorAttr(R.attr.colorSurface))
-        viewBinding.includedLayoutDefaultList.refreshLayout.setOnRefreshListener { getPresenter().onRefresh() }
+        vb.includedLayoutDefaultList.refreshLayout.background = ColorDrawable(context!!.colorAttr(R.attr.colorSurface))
+        vb.includedLayoutDefaultList.refreshLayout.setOnRefreshListener { getPresenter().onRefresh() }
 
         placeholdersBinding?.emptyContentView?.setText(R.string.similar_empty_description)
     }
@@ -96,8 +103,8 @@ class SimilarFragment : BaseFragment<SimilarPresenter, SimilarView>(), SimilarVi
         dialog.show(childFragmentManager, "StatusDialog")
     }
 
-    override fun showContent(show: Boolean) = viewBinding.includedLayoutDefaultList.recyclerView.visibleIf { show }
-    override fun onShowLoading() = viewBinding.includedLayoutDefaultList.refreshLayout.showRefresh()
-    override fun onHideLoading() = viewBinding.includedLayoutDefaultList.refreshLayout.hideRefresh()
+    override fun showContent(show: Boolean) { viewBinding?.includedLayoutDefaultList?.recyclerView?.visibleIf { show } }
+    override fun onShowLoading() { viewBinding?.includedLayoutDefaultList?.refreshLayout?.showRefresh() }
+    override fun onHideLoading() { viewBinding?.includedLayoutDefaultList?.refreshLayout?.hideRefresh() }
 
 }

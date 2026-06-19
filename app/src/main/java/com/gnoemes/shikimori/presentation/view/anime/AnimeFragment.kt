@@ -27,7 +27,7 @@ import com.gnoemes.shikimori.utils.withArgs
 class AnimeFragment : BaseDetailsFragment<AnimePresenter, AnimeView>(), AnimeView {
 
     private var _detailsBinding: FragmentDetailsBinding? = null
-    private val detailsBinding get() = _detailsBinding!!
+    private val detailsBinding: FragmentDetailsBinding? get() = _detailsBinding
 
     @InjectPresenter
     lateinit var animePresenter: AnimePresenter
@@ -65,13 +65,13 @@ override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         }
 
         contentHolders.apply {
-            put(DetailsContentType.VIDEO, DetailsContentViewHolder(detailsBinding.videoLayout, videoAdapter))
-            put(DetailsContentType.CHARACTERS, DetailsContentViewHolder(LayoutDetailsContentBinding.bind(detailsBinding.charactersLayout.root), charactersAdapter, true))
-            put(DetailsContentType.SCREENSHOTS, DetailsContentViewHolder(detailsBinding.screenshotsLayout, screenshotsAdapter))
-            put(DetailsContentType.RELATED, DetailsContentViewHolder(detailsBinding.relatedLayout, relatedAdapter))
+            put(DetailsContentType.VIDEO, DetailsContentViewHolder(detailsBinding!!.videoLayout, videoAdapter))
+            put(DetailsContentType.CHARACTERS, DetailsContentViewHolder(LayoutDetailsContentBinding.bind(detailsBinding!!.charactersLayout.root), charactersAdapter, true))
+            put(DetailsContentType.SCREENSHOTS, DetailsContentViewHolder(detailsBinding!!.screenshotsLayout, screenshotsAdapter))
+            put(DetailsContentType.RELATED, DetailsContentViewHolder(detailsBinding!!.relatedLayout, relatedAdapter))
         }
 
-        with(detailsBinding.actionBtn) {
+        with(detailsBinding!!.actionBtn) {
             setImageResource(R.drawable.ic_play_arrow_filled)
             onClick { getPresenter().onAction(DetailsAction.WatchOnline()) }
         }

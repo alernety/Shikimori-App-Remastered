@@ -27,7 +27,7 @@ import com.gnoemes.shikimori.utils.withArgs
 class MangaFragment : BaseDetailsFragment<MangaPresenter, MangaView>(), MangaView {
 
     private var _detailsBinding: FragmentDetailsBinding? = null
-    private val detailsBinding get() = _detailsBinding!!
+    private val detailsBinding: FragmentDetailsBinding? get() = _detailsBinding
 
     @InjectPresenter
     lateinit var mangaPresenter: MangaPresenter
@@ -52,8 +52,8 @@ class MangaFragment : BaseDetailsFragment<MangaPresenter, MangaView>(), MangaVie
         super.onViewCreated(view, savedInstanceState)
         _detailsBinding = FragmentDetailsBinding.bind(view)
 
-        detailsBinding.videoLayout.root.gone()
-        detailsBinding.screenshotsLayout.root.gone()
+        detailsBinding!!.videoLayout.root.gone()
+        detailsBinding!!.screenshotsLayout.root.gone()
 
         collapsingToolbarBinding?.toolbar?.apply {
             inflateMenu(R.menu.menu_manga)
@@ -68,11 +68,11 @@ class MangaFragment : BaseDetailsFragment<MangaPresenter, MangaView>(), MangaVie
         }
 
         contentHolders.apply {
-            put(DetailsContentType.CHARACTERS, DetailsContentViewHolder(LayoutDetailsContentBinding.bind(detailsBinding.charactersLayout.root), charactersAdapter, true))
-            put(DetailsContentType.RELATED, DetailsContentViewHolder(detailsBinding.relatedLayout, relatedAdapter))
+            put(DetailsContentType.CHARACTERS, DetailsContentViewHolder(LayoutDetailsContentBinding.bind(detailsBinding!!.charactersLayout.root), charactersAdapter, true))
+            put(DetailsContentType.RELATED, DetailsContentViewHolder(detailsBinding!!.relatedLayout, relatedAdapter))
         }
 
-        detailsBinding.actionBtn.gone()
+        detailsBinding!!.actionBtn.gone()
     }
 
     override fun onDestroyView() {

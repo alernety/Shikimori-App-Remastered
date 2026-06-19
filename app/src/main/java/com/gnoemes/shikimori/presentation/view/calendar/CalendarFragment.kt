@@ -30,9 +30,9 @@ import javax.inject.Inject
 class CalendarFragment : BaseFragment<CalendarPresenter, CalendarView>(), CalendarView {
 
     private var _binding: FragmentCalendarBinding? = null
-    private val binding get() = _binding!!
+    private val binding: FragmentCalendarBinding? get() = _binding
     private var _fragmentPlaceholdersBinding: LayoutDefaultPlaceholdersBinding? = null
-    private val fragmentPlaceholdersBinding get() = _fragmentPlaceholdersBinding!!
+    private val fragmentPlaceholdersBinding: LayoutDefaultPlaceholdersBinding? get() = _fragmentPlaceholdersBinding
 
     @Inject
     lateinit var imageLoader: ImageLoader
@@ -53,16 +53,19 @@ class CalendarFragment : BaseFragment<CalendarPresenter, CalendarView>(), Calend
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         _binding = FragmentCalendarBinding.inflate(inflater, container, false)
-        _fragmentPlaceholdersBinding = LayoutDefaultPlaceholdersBinding.bind(binding.coordinator)
-        return binding.root
+        _fragmentPlaceholdersBinding = LayoutDefaultPlaceholdersBinding.bind(_binding!!.coordinator)
+        return _binding!!.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.toolbar.setNavigationIcon(R.drawable.ic_search)
+        val b = _binding ?: return
+        val pb = _fragmentPlaceholdersBinding
 
-        with(binding.includedLayoutDefaultList.recyclerView) {
+        b.toolbar.setNavigationIcon(R.drawable.ic_search)
+
+        with(b.includedLayoutDefaultList.recyclerView) {
             adapter = this@CalendarFragment.adapter
             layoutManager = LinearLayoutManager(context).apply { initialPrefetchItemCount = 3 }
             val customSpacing = context!!.dp(84)
@@ -70,18 +73,18 @@ class CalendarFragment : BaseFragment<CalendarPresenter, CalendarView>(), Calend
             setHasFixedSize(true)
         }
 
-        binding.includedLayoutDefaultList.refreshLayout.layoutParams = (binding.includedLayoutDefaultList.refreshLayout.layoutParams as? CoordinatorLayout.LayoutParams)?.apply {
+        b.includedLayoutDefaultList.refreshLayout.layoutParams = (b.includedLayoutDefaultList.refreshLayout.layoutParams as? CoordinatorLayout.LayoutParams)?.apply {
             behavior = OverlapHeaderScrollingBehavior()
         }
-        binding.includedLayoutDefaultList.refreshLayout.setProgressViewOffset(false, context!!.dp(24), context!!.dp(96))
+        b.includedLayoutDefaultList.refreshLayout.setProgressViewOffset(false, context!!.dp(24), context!!.dp(96))
 
-        fragmentPlaceholdersBinding.networkErrorView.apply {
+        pb?.networkErrorView?.apply {
             setText(R.string.common_error_message_without_pull)
             callback = { getPresenter().initData() }
             showButton()
         }
 
-        with(binding.searchView) {
+        with(b.searchView) {
             setOnQueryTextListener(object : SearchView.OnQueryTextListener {
                 override fun onQueryTextSubmit(query: String?): Boolean {
                     hideSoftInput()
@@ -110,7 +113,7 @@ class CalendarFragment : BaseFragment<CalendarPresenter, CalendarView>(), Calend
             }
         }
 
-        binding.includedLayoutDefaultList.refreshLayout.setOnRefreshListener { calendarPresenter.onRefresh() }
+        b.includedLayoutDefaultList.refreshLayout.setOnRefreshListener { calendarPresenter.onRefresh() }
     }
 
     override fun onDestroyView() {
@@ -135,9 +138,9 @@ class CalendarFragment : BaseFragment<CalendarPresenter, CalendarView>(), Calend
         adapter.bindItems(items)
     }
 
-    override fun showContent(show: Boolean) = binding.includedLayoutDefaultList.recyclerView.visibleIf { show }
-    override fun onShowLoading() = binding.includedLayoutDefaultList.refreshLayout.showRefresh()
-    override fun onHideLoading() = binding.includedLayoutDefaultList.refreshLayout.hideRefresh()
+    override fun showContent(show: Boolean) { _binding?.includedLayoutDefaultList?.recyclerView?.visibleIf { show } }
+    override fun onShowLoading() { _binding?.includedLayoutDefaultList?.refreshLayout?.showRefresh() }
+    override fun onHideLoading() { _binding?.includedLayoutDefaultList?.refreshLayout?.hideRefresh() }
 
     override fun showEmptyView() {
         val item = SeriesPlaceholderItem(R.string.calendar_empty_title, R.string.calendar_empty_description)
@@ -145,13 +148,13 @@ class CalendarFragment : BaseFragment<CalendarPresenter, CalendarView>(), Calend
     }
 
     override fun showNetworkView() {
-        binding.placeholderOverlay.visible()
-        fragmentPlaceholdersBinding.networkErrorView.visible()
+        _binding?.placeholderOverlay?.visible()
+        _fragmentPlaceholdersBinding?.networkErrorView?.visible()
     }
 
     override fun hideNetworkView() {
-        binding.placeholderOverlay.gone()
+        _binding?.placeholderOverlay?.gone()
     }
 
-    override fun hideEmptyView() = fragmentPlaceholdersBinding.emptyContentView.gone()
+    override fun hideEmptyView() { _fragmentPlaceholdersBinding?.emptyContentView?.gone() }
 }

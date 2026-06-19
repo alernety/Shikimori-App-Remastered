@@ -1,5 +1,6 @@
 package com.gnoemes.shikimori.presentation.view.common.fragment
 
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -27,27 +28,32 @@ class LinkDialogFragment : BaseBottomSheetDialogFragment() {
 
     private val adapter by lazy { LinkAdapter(this::onClick) }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         binding = FragmentLinksBinding.inflate(inflater, container, false)
-        return binding!!.root
+        return binding?.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding!!.toolbar.apply {
+        binding?.toolbar?.apply {
             addBackButton(R.drawable.ic_close) { dismiss() }
             setTitle(R.string.common_links)
         }
 
-        with(binding!!.recyclerView) {
+        binding?.recyclerView?.apply {
             adapter = this@LinkDialogFragment.adapter
             layoutManager = LinearLayoutManager(context)
             val margin = dp(16)
             addItemDecoration(VerticalSpaceItemDecorator(dp(10), true, margin, margin))
         }
 
-        val items = (arguments?.getParcelableArray(LINKS_KEY) ?: emptyArray()).filterIsInstance(Link::class.java)
+        @Suppress("DEPRECATION")
+        val items = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            (arguments?.getParcelableArray(LINKS_KEY, Link::class.java) ?: emptyArray()).filterIsInstance(Link::class.java)
+        } else {
+            (arguments?.getParcelableArray(LINKS_KEY) ?: emptyArray()).filterIsInstance(Link::class.java)
+        }
         adapter.bindItems(items)
     }
 

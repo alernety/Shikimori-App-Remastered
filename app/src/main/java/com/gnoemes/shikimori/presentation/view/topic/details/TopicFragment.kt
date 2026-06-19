@@ -72,11 +72,7 @@ class TopicFragment : BasePaginationFragment<CommentViewModel, TopicPresenter, T
     private var isPrevious: Boolean = false
 
     private var _fragmentBinding: FragmentTopicBinding? = null
-    private val fragmentBinding get() = _fragmentBinding!!
-    private val userBinding get() = fragmentBinding.userLayout
-    private val topicBinding get() = fragmentBinding.topicLayout
-    private val linkedBinding get() = fragmentBinding.linkedLayout
-    private val commentsBinding get() = fragmentBinding.commentsLayout
+    private val fragmentBinding: FragmentTopicBinding? get() = _fragmentBinding
 
     override val adapter: BasePaginationAdapter
         get() = commentsAdapter
@@ -90,22 +86,24 @@ class TopicFragment : BasePaginationFragment<CommentViewModel, TopicPresenter, T
 
         _fragmentBinding = FragmentTopicBinding.bind(view)
 
-        ViewCompat.setNestedScrollingEnabled(fragmentBinding.scrollView, false)
-        userHolder = TopicUserViewHolder(userBinding, imageLoader, getPresenter()::onContentClicked)
-        contentHolder = TopicContentViewHolder(topicBinding, getPresenter()::onContentClicked)
+        fragmentBinding?.let { b ->
+            ViewCompat.setNestedScrollingEnabled(b.scrollView, false)
+            userHolder = TopicUserViewHolder(b.userLayout, imageLoader, getPresenter()::onContentClicked)
+            contentHolder = TopicContentViewHolder(b.topicLayout, getPresenter()::onContentClicked)
+
+            with(b.commentsLayout.recyclerView) {
+                adapter = this@TopicFragment.adapter
+                layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, true)
+                itemAnimator = null
+                addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
+            }
+
+            b.commentsLayout.commentsMore.setOnClickListener { isPrevious = false; getPresenter().loadNextPage() }
+            b.commentsLayout.commentsBefore.setOnClickListener { isPrevious = true; getPresenter().onPreviousClicked() }
+        }
 
         toolbarBinding?.toolbar?.addBackButton { getPresenter().onBackPressed() }
         toolbarBinding?.toolbar?.title = null
-
-        with(commentsBinding.recyclerView) {
-            adapter = this@TopicFragment.adapter
-            layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, true)
-            itemAnimator = null
-            addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
-        }
-
-        commentsBinding.commentsMore.setOnClickListener { isPrevious = false; getPresenter().loadNextPage() }
-        commentsBinding.commentsBefore.setOnClickListener { isPrevious = true; getPresenter().onPreviousClicked() }
 
         placeholdersBinding?.networkErrorView?.apply {
             setText(R.string.common_error_message_without_pull)
@@ -149,17 +147,18 @@ class TopicFragment : BasePaginationFragment<CommentViewModel, TopicPresenter, T
     }
 
     override fun setCommentsText(text: String?) {
-        commentsBinding.commentsMore.text = text
+        fragmentBinding?.commentsLayout?.commentsMore?.text = text
     }
 
     //TODO holder and implementation for manga
     override fun setLinkedContent(linked: LinkedContent?) {
+        val b = fragmentBinding ?: return
         context?.let { context ->
-            linkedBinding.root.visibleIf { linked != null }
+            b.linkedLayout.root.visibleIf { linked != null }
             if (linked != null) {
-                linkedBinding.root.setOnClickListener { getPresenter().onContentClicked(linked.linkedType, linked.linkedId) }
-                imageLoader.setImageWithPlaceHolder(linkedBinding.imageView, linked.imageUrl)
-                linkedBinding.linkedTitleView.text = linked.linkedName
+                b.linkedLayout.root.setOnClickListener { getPresenter().onContentClicked(linked.linkedType, linked.linkedId) }
+                imageLoader.setImageWithPlaceHolder(b.linkedLayout.imageView, linked.imageUrl)
+                b.linkedLayout.linkedTitleView.text = linked.linkedName
 
                 if (linked is Anime) {
                     fun convertStatus(status: Status): String {
@@ -184,9 +183,9 @@ class TopicFragment : BasePaginationFragment<CommentViewModel, TopicPresenter, T
                     val seasonText = context.getString(R.string.details_season).toBold().append(" ").append(season)
                     val statusText = context.getString(R.string.details_status).toBold().append(" ").append(status)
 
-                    linkedBinding.typeView.text = typeText
-                    linkedBinding.seasonView.text = seasonText
-                    linkedBinding.statusView.text = statusText
+                    b.linkedLayout.typeView.text = typeText
+                    b.linkedLayout.seasonView.text = seasonText
+                    b.linkedLayout.statusView.text = statusText
                 } else if (linked is Manga) {
                     fun getLocalizedType(type: MangaType): String {
                         return when (type) {
@@ -226,9 +225,9 @@ class TopicFragment : BasePaginationFragment<CommentViewModel, TopicPresenter, T
                     val seasonText = context.getString(R.string.details_season).toBold().append(" ").append(season)
                     val statusText = context.getString(R.string.details_status).toBold().append(" ").append(status)
 
-                    linkedBinding.typeView.text = typeText
-                    linkedBinding.seasonView.text = seasonText
-                    linkedBinding.statusView.text = statusText
+                    b.linkedLayout.typeView.text = typeText
+                    b.linkedLayout.seasonView.text = seasonText
+                    b.linkedLayout.statusView.text = statusText
 
                 }
             }
@@ -236,8 +235,9 @@ class TopicFragment : BasePaginationFragment<CommentViewModel, TopicPresenter, T
     }
 
     override fun showCommentsLoading(show: Boolean) {
-        commentsBinding.commentProgress.root.visibleIf { show }
-        commentsBinding.recyclerView.visibleIf { !show }
+        val b = fragmentBinding ?: return
+        b.commentsLayout.commentProgress.root.visibleIf { show }
+        b.commentsLayout.recyclerView.visibleIf { !show }
     }
 
     override fun onShowLoading() {
@@ -249,9 +249,10 @@ class TopicFragment : BasePaginationFragment<CommentViewModel, TopicPresenter, T
     }
 
     override fun setCommentsCount(count: Long) {
+        val b = fragmentBinding ?: return
         context?.let {
             val text = it.getString(R.string.common_comments) + " ($count):"
-            commentsBinding.commentTitleView.text = text
+            b.commentsLayout.commentTitleView.text = text
         }
     }
 
@@ -264,15 +265,15 @@ class TopicFragment : BasePaginationFragment<CommentViewModel, TopicPresenter, T
     }
 
     override fun showContent(show: Boolean) {
-        fragmentBinding.scrollView.visibleIf { show }
+        fragmentBinding?.scrollView?.visibleIf { show }
     }
 
     override fun showCommentsMore(show: Boolean) {
-        commentsBinding.commentsMore.visibleIf { show }
+        fragmentBinding?.commentsLayout?.commentsMore?.visibleIf { show }
     }
 
     override fun showPreviousComments(show: Boolean) {
-        commentsBinding.commentsBefore.visibleIf { show }
+        fragmentBinding?.commentsLayout?.commentsBefore?.visibleIf { show }
     }
 
 }

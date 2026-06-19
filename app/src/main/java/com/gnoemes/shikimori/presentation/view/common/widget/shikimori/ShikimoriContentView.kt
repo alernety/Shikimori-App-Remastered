@@ -41,7 +41,7 @@ class ShikimoriContentView @JvmOverloads constructor(
     var linkCallback: ((Type, Long) -> Unit)? = null
     var expandable: Boolean = true
 
-    private lateinit var binding: ViewShikimoriCollapsedBinding
+    private var binding: ViewShikimoriCollapsedBinding
 
     init {
         binding = ViewShikimoriCollapsedBinding.inflate(android.view.LayoutInflater.from(context), this, true)

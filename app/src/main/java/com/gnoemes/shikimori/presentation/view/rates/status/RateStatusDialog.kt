@@ -39,22 +39,22 @@ class RateStatusDialog : BaseBottomSheetDialogFragment() {
     }
 
     private var _binding: DialogMenuBinding? = null
-    private val binding get() = _binding!!
+    private val binding: DialogMenuBinding? get() = _binding
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         _binding = DialogMenuBinding.inflate(inflater, container, false)
-        return binding.root
+        return _binding!!.root
     }
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val b = _binding ?: return
+
         val isAnime = arguments?.getBoolean(IS_ANIME) != false
 
-        with(binding.toolbar) {
-            title = arguments?.getString(TITLE)
-        }
+        b.toolbar.title = arguments?.getString(TITLE)
 
         val index = arguments?.getInt(CURRENT_STATUS) ?: -1
 
@@ -64,7 +64,7 @@ class RateStatusDialog : BaseBottomSheetDialogFragment() {
                 .zip(RateStatus.values())
                 .map { Rate(it.second.ordinal, it.second, it.first, currentStatus == it.second, getIcon(it.second), getTintColor(it.second), getSelector(it.second)) }
 
-        binding.navView.apply {
+        b.navView.apply {
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 val item = items.firstOrNull { it.isSelected }
