@@ -51,11 +51,13 @@ class EpisodesPresenter @Inject constructor(
         loadData()
     }
 
-    private fun loadData() =
-            loadEpisodes()
-                    .appendLoadingLogic(viewState)
-                    .subscribe(this::setData, this::processErrors)
-                    .addToDisposables()
+    private fun loadData() {
+        compositeDisposable.clear()
+        loadEpisodes()
+                .appendLoadingLogic(viewState)
+                .subscribe(this::setData, this::processErrors)
+                .addToDisposables()
+    }
 
     private fun loadEpisodes(): Single<List<EpisodeViewModel>> =
             interactor.getEpisodes(navigationData.animeId, navigationData.name, isAlternativeSource)
@@ -64,6 +66,8 @@ class EpisodesPresenter @Inject constructor(
     private fun setData(items: List<EpisodeViewModel>) {
         val first = this.items.isEmpty()
         this.items.clearAndAddAll(items)
+
+        if (items.isNotEmpty()) viewState.showContent(true)
         showData(items)
 
         if (first) scrollToPenultimate()
@@ -182,8 +186,8 @@ class EpisodesPresenter @Inject constructor(
                     .doOnSubscribe { viewState.onShowLoading() }
                     .doOnSubscribe { viewState.showEmptyEpisodesView(false) }
                     .doOnSubscribe { viewState.hideNetworkView() }
-                    .doOnSubscribe { viewState.showContent(true) }
+                    .doOnSubscribe { viewState.showContent(false) }
                     .doAfterTerminate { viewState.onHideLoading() }
                     .doOnEvent { _, _ -> viewState.onHideLoading() }
-                    .doOnSuccess { viewState.showContent(true) }
+
 }

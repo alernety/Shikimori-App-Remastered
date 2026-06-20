@@ -188,7 +188,9 @@ class EpisodesFragment : BaseBottomSheetInjectionDialogFragment<EpisodesPresente
         adapter.bindItems(items)
     }
 
-    override fun onHideLoading() = Unit
+    override fun onHideLoading() {
+        adapter.bindItems(emptyList())
+    }
 
     override fun showEmptyEpisodesView(show: Boolean, isAlternative: Boolean) {
         getBinding?.episodesLayout?.let { b ->
