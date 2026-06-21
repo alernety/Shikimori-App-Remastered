@@ -187,7 +187,6 @@ class EpisodesPresenter @Inject constructor(
                     .doOnSubscribe { viewState.showEmptyEpisodesView(false) }
                     .doOnSubscribe { viewState.hideNetworkView() }
                     .doOnSubscribe { viewState.showContent(false) }
-                    .doAfterTerminate { viewState.onHideLoading() }
-                    .doOnEvent { _, _ -> viewState.onHideLoading() }
+                                .doOnEvent { _, _ -> viewState.onHideLoading() }
 
 }

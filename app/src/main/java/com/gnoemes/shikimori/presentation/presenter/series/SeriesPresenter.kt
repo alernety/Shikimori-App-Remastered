@@ -341,10 +341,10 @@ class SeriesPresenter @Inject constructor(
     }
 
     override fun openPlayer(playerType: PlayerType, payload: Any?) {
-        super.openPlayer(playerType, payload)
-
         isWatchSession = true
         saveSettingsAndIncrementOptional(playerType != PlayerType.EMBEDDED, selectedVideo)
+
+        super.openPlayer(playerType, payload)
     }
 
     private fun saveSettingsAndIncrementOptional(increment: Boolean, payload: TranslationVideo) {
@@ -352,7 +352,6 @@ class SeriesPresenter @Inject constructor(
         else Completable.complete())
                 .andThen(interactor.saveTranslationSettings(TranslationSetting(payload.animeId, payload.author, payload.type)))
                 .subscribe({}, this::processErrors)
-                .addToDisposables()
     }
 
     private fun getVideoAndExecute(payload: TranslationVideo, onSubscribe: (Video) -> Unit) {
