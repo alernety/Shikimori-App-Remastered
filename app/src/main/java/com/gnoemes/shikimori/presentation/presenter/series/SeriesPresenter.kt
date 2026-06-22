@@ -4,6 +4,7 @@ import moxy.InjectViewState
 import com.gnoemes.shikimori.data.local.preference.SettingsSource
 import com.gnoemes.shikimori.domain.download.DownloadInteractor
 import com.gnoemes.shikimori.domain.series.SeriesInteractor
+import com.gnoemes.shikimori.domain.series.SeriesSyncInteractor
 import com.gnoemes.shikimori.entity.app.domain.AnalyticEvent
 import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.common.domain.KeyScreen
@@ -34,6 +35,9 @@ class SeriesPresenter @Inject constructor(
         private val commonResourceProvider: CommonResourceProvider,
         private val shareResourceProvider: ShareResourceProvider
 ) : BaseNetworkPresenter<SeriesView>() {
+
+    @Inject
+    lateinit var seriesSyncInteractor: SeriesSyncInteractor
 
     lateinit var navigationData: SeriesNavigationData
     lateinit var type: TranslationType
@@ -323,7 +327,7 @@ class SeriesPresenter @Inject constructor(
     //Others o uses urls
     private fun openVideo(payload: TranslationVideo, playerType: PlayerType) {
         if (playerType == PlayerType.EMBEDDED) openPlayer(playerType, EmbeddedPlayerNavigationData(navigationData.name, navigationData.rateId, items.firstOrNull()!!.episodesSize, payload, navigationData.nameEng, isAlternative))
-        else if (playerType == PlayerType.WEB && payload.webPlayerUrl != null) openPlayer(playerType, payload.webPlayerUrl)
+        else if (playerType == PlayerType.WEB && payload.webPlayerUrl != null) openPlayer(playerType, payload)
         else getVideoAndExecute(payload) { selectedPlayer = playerType; showQualityChooser(it.tracks) }
     }
 
@@ -345,6 +349,16 @@ class SeriesPresenter @Inject constructor(
         saveSettingsAndIncrementOptional(playerType != PlayerType.EMBEDDED, selectedVideo)
 
         super.openPlayer(playerType, payload)
+    }
+
+    override fun openExternalPlayer(payload: Any?) {
+        episodeId?.let { epId ->
+            seriesSyncInteractor
+                .setEpisodeWatched(selectedVideo.animeId, epId.toInt(), onlyLocal = false)
+                .subscribe({}, this::processErrors)
+                .addToDisposables()
+        }
+        super.openExternalPlayer(payload)
     }
 
     private fun saveSettingsAndIncrementOptional(increment: Boolean, payload: TranslationVideo) {

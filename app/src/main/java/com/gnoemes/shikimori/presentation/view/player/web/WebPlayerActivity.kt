@@ -18,6 +18,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.data.local.preference.PlayerSettingsSource
+import com.gnoemes.shikimori.domain.series.SeriesSyncInteractor
 import com.gnoemes.shikimori.entity.app.domain.AppExtras
 import com.gnoemes.shikimori.entity.app.domain.SettingsExtras
 import com.gnoemes.shikimori.presentation.view.base.activity.BaseThemedActivity
@@ -25,6 +26,8 @@ import com.gnoemes.shikimori.utils.Utils
 import com.gnoemes.shikimori.utils.widgets.VideoWebChromeClient
 import dagger.android.AndroidInjection
 import com.gnoemes.shikimori.databinding.ActivityWebPlayerBinding
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.disposables.Disposable
 import java.util.regex.Pattern
 import javax.inject.Inject
 
@@ -36,6 +39,14 @@ class WebPlayerActivity : BaseThemedActivity() {
 
     @Inject
     lateinit var settingsSource: PlayerSettingsSource
+
+    @Inject
+    lateinit var seriesSyncInteractor: SeriesSyncInteractor
+
+    private val compositeDisposable = CompositeDisposable()
+
+    private val animeId: Long by lazy { intent.getLongExtra(AppExtras.ARGUMENT_ANIME_ID, -1L) }
+    private val episodeId: Long by lazy { intent.getLongExtra(AppExtras.ARGUMENT_EPISODE_ID, -1L) }
 
     companion object {
         private val ANIME_365_REGEX = "smotret-anime\\.com".toRegex()
@@ -121,9 +132,19 @@ class WebPlayerActivity : BaseThemedActivity() {
     }
 
     override fun onDestroy() {
+        compositeDisposable.clear()
+        markEpisodeAsWatched()
         binding.frame?.removeAllViews()
         webView.destroy()
         super.onDestroy()
+    }
+
+    private fun markEpisodeAsWatched() {
+        if (animeId == -1L || episodeId == -1L) return
+        compositeDisposable.add(
+                seriesSyncInteractor.setEpisodeWatched(animeId, episodeId.toInt(), onlyLocal = false)
+                        .subscribe({}, { it.printStackTrace() })
+        )
     }
 
     private fun showSystemUI() {

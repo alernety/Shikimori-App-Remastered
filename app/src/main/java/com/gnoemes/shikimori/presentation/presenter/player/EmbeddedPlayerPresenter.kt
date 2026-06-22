@@ -3,7 +3,7 @@ package com.gnoemes.shikimori.presentation.presenter.player
 import moxy.InjectViewState
 import com.gnoemes.shikimori.data.local.preference.SettingsSource
 import com.gnoemes.shikimori.domain.series.SeriesInteractor
-import com.gnoemes.shikimori.entity.app.domain.Constants
+import com.gnoemes.shikimori.domain.series.SeriesSyncInteractor
 import com.gnoemes.shikimori.entity.app.domain.HttpStatusCode
 import com.gnoemes.shikimori.entity.app.domain.exceptions.ServiceCodeException
 import com.gnoemes.shikimori.entity.series.domain.*
@@ -14,7 +14,6 @@ import com.gnoemes.shikimori.presentation.view.player.embedded.EmbeddedPlayerVie
 import com.gnoemes.shikimori.presentation.view.player.embedded.provider.EmbeddedPlayerResourceProvider
 import com.gnoemes.shikimori.utils.Utils
 import com.gnoemes.shikimori.utils.appendLoadingLogic
-import io.reactivex.android.schedulers.AndroidSchedulers
 import javax.inject.Inject
 
 @InjectViewState
@@ -23,6 +22,9 @@ class EmbeddedPlayerPresenter @Inject constructor(
     private val settingsSource: SettingsSource,
     private val resourceProvider: EmbeddedPlayerResourceProvider
 ) : BaseNetworkPresenter<EmbeddedPlayerView>() {
+
+    @Inject
+    lateinit var seriesSyncInteractor: SeriesSyncInteractor
 
     lateinit var navigationData: EmbeddedPlayerNavigationData
 
@@ -102,10 +104,8 @@ class EmbeddedPlayerPresenter @Inject constructor(
 
     private fun setEpisodeWatched() {
         if (!settingsSource.isAutoIncrement) return
-        val rateId = navigationData.rateId ?: Constants.NO_ID
-        interactor
-            .sendEpisodeChanges(EpisodeChanges.Changes(rateId, animeId, currentEpisode, true))
-            .observeOn(AndroidSchedulers.mainThread())
+        seriesSyncInteractor
+            .setEpisodeWatched(animeId, currentEpisode, onlyLocal = false)
             .subscribe({}, this::processErrors)
             .addToDisposables()
     }
