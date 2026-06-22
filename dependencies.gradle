@@ -3,7 +3,7 @@ ext.versions = [
         compileSdk        : 35,
         targetSdk         : 35,
 
-        gradlePlugin      : '9.1.1',
+        gradlePlugin      : '9.2.1',
         jetifier          : '1.0.0-beta10',
         gms               : '4.4.4',
 

@@ -6,7 +6,7 @@
   <!-- Badges -->
   <p>
     <img src="https://img.shields.io/badge/Android-34_Api-3DDC84?style=flat-square&logo=android" alt="Android API">
-    <img src="https://img.shields.io/badge/AGP-9.1.1-3DDC84?style=flat-square" alt="AGP">
+    <img src="https://img.shields.io/badge/AGP-9.2.1-3DDC84?style=flat-square" alt="AGP">
     <img src="https://img.shields.io/badge/Kotlin-2.3.21-7F52FF?style=flat-square&logo=kotlin" alt="Kotlin">
     <img src="https://img.shields.io/badge/MinSdk-21-orange?style=flat-square" alt="MinSdk">
     <img src="https://img.shields.io/badge/CompileSdk-35-blue?style=flat-square" alt="CompileSdk">
@@ -77,7 +77,7 @@ _Screenshots coming soon. Contributions welcome!_
 | **Date/Time** | Joda-Time Android 2.12.7 | Timezone-safe date handling |
 | **Charts** | SimpleRatingBar 1.5.1 | Interactive rating UI |
 | **Animations** | Android-SpinKit 1.4.0, Shimmer 0.5.0 | Loading animations and placeholders |
-| **Build** | AGP 9.1.1, KSP 2.3.9, Gradle 8.10.2 | Modern build pipeline |
+| **Build** | AGP 9.2.1, KSP 2.3.9, Gradle 8.10.2 | Modern build pipeline |
 | **Minification** | ProGuard + R8 | Code shrinking and obfuscation for release builds |
 
 ---
