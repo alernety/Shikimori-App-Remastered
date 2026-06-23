@@ -42,5 +42,8 @@ jobs:
           [ -n "$VIDEO_BASE_URL" ] && echo "VideoBaseUrl=$VIDEO_BASE_URL" >> gradle.properties
           [ -n "$VK_RANDOM_TOKEN" ] && echo "VkRandomToken=$VK_RANDOM_TOKEN" >> gradle.properties
 
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
       - name: Build with Gradle
         run: ./gradlew assembleDebug --no-daemon
