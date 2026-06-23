@@ -28,7 +28,7 @@ permissions:
 jobs:
   release:
     name: Build & Release APK
-    if: ${{ github.ref_type == 'tag' && ! contains(github.ref_name, '-') }}
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.ref_type == 'tag' && ! contains(github.ref_name, '-')) }}
     runs-on: ubuntu-latest
 
     steps:
@@ -95,7 +95,7 @@ jobs:
       # Build the release APK (unsigned — zipAlignEnabled is set in build.gradle).
       # -----------------------------------------------------------------------
       - name: Build Release APK
-        run: ./gradlew assembleRelease
+        run: ./gradlew assembleRelease --no-daemon
 
       # -----------------------------------------------------------------------
       # Sign the unsigned APK using apksigner.

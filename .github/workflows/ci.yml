@@ -18,6 +18,12 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      # -----------------------------------------------------------------------
+      # Android SDK — installs cmdline-tools + required packages.
+      # -----------------------------------------------------------------------
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
       - name: Cache Gradle dependencies
         uses: actions/cache@v4
         with:
