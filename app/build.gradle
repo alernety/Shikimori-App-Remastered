@@ -8,6 +8,29 @@ apply plugin: 'kotlin-parcelize'
 apply plugin: 'com.google.devtools.ksp'
 
 
+
+def getVersionName() {
+    try {
+        def proc = "git describe --tags --abbrev=0".execute()
+        proc.waitFor()
+        def tag = proc.text?.trim()
+        return tag ? tag.replaceAll('^v', '') : '0.0.0'
+    } catch (Exception e) {
+        return '0.0.0'
+    }
+}
+
+def getVersionCode() {
+    try {
+        def proc = "git rev-list --count HEAD".execute()
+        proc.waitFor()
+        def count = proc.text?.trim()
+        return count ? count.toInteger() : 1
+    } catch (Exception e) {
+        return 1
+    }
+}
+
 android {
     namespace = 'com.gnoemes.shikimori'
     compileSdk versions.compileSdk
@@ -16,8 +39,8 @@ android {
         applicationId "com.gnoemes.shikimori"
         minSdk versions.minSdk
         targetSdk versions.targetSdk
-        versionCode 1
-        versionName "0.8.7"
+        versionCode this.getVersionCode()
+        versionName this.getVersionName()
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
@@ -180,4 +203,40 @@ dependencies {
     // implementation files("../libs/drawer-behavior-0.0.5.aar")
 }
 
+task generateChangelog {
+    doLast {
+        def tagOut = new ByteArrayOutputStream()
+        project.exec {
+            workingDir = rootProject.rootDir
+            commandLine 'git', 'describe', '--tags', '--abbrev=0'
+            standardOutput = tagOut
+            ignoreExitValue = true
+        }
+        def lastTag = tagOut.toString().trim()
+
+        def logOut = new ByteArrayOutputStream()
+        if (lastTag) {
+            project.exec {
+                workingDir = rootProject.rootDir
+                commandLine 'git', 'log', '--oneline', '--no-decorate', "${lastTag}..HEAD"
+                standardOutput = logOut
+            }
+        } else {
+            project.exec {
+                workingDir = rootProject.rootDir
+                commandLine 'git', 'log', '--oneline', '--no-decorate'
+                standardOutput = logOut
+            }
+        }
+
+        def date = new Date().format('yyyy-MM-dd')
+        def title = lastTag ? "## ${lastTag.replaceAll('^v', '')} (${date})" : "## Initial (${date})"
+        def changelog = "# Changelog\n\n${title}\n${logOut.toString().trim()}\n"
+
+        file("${rootDir}/CHANGELOG.md").text = changelog
+    }
+}
+
 apply plugin: 'com.google.gms.google-services'
+
+
