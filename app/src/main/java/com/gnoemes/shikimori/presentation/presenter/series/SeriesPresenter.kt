@@ -24,6 +24,7 @@ import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
 import javax.inject.Inject
 
 @InjectViewState
@@ -56,6 +57,13 @@ class SeriesPresenter @Inject constructor(
     private var selectedPlayer: PlayerType? = null
 
     private var isWatchSession = false
+
+    private val backgroundDisposable = CompositeDisposable()
+
+    override fun onDestroy() {
+        super.onDestroy()
+        backgroundDisposable.clear()
+    }
 
     override fun initData() {
         super.initData()
@@ -356,7 +364,7 @@ class SeriesPresenter @Inject constructor(
             seriesSyncInteractor
                 .setEpisodeWatched(selectedVideo.animeId, epId.toInt(), onlyLocal = false)
                 .subscribe({}, this::processErrors)
-                .addToDisposables()
+                .let { backgroundDisposable.add(it) }
         }
         super.openExternalPlayer(payload)
     }

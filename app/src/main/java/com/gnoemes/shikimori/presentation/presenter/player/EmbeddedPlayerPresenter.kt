@@ -14,6 +14,7 @@ import com.gnoemes.shikimori.presentation.view.player.embedded.EmbeddedPlayerVie
 import com.gnoemes.shikimori.presentation.view.player.embedded.provider.EmbeddedPlayerResourceProvider
 import com.gnoemes.shikimori.utils.Utils
 import com.gnoemes.shikimori.utils.appendLoadingLogic
+import io.reactivex.disposables.CompositeDisposable
 import javax.inject.Inject
 
 @InjectViewState
@@ -33,6 +34,13 @@ class EmbeddedPlayerPresenter @Inject constructor(
     private lateinit var payload: TranslationVideo
 
     private val videos = hashSetOf<Video>()
+
+    private val backgroundDisposable = CompositeDisposable()
+
+    override fun onDestroy() {
+        super.onDestroy()
+        backgroundDisposable.clear()
+    }
 
     override fun initData() {
         super.initData()
@@ -107,7 +115,7 @@ class EmbeddedPlayerPresenter @Inject constructor(
         seriesSyncInteractor
             .setEpisodeWatched(animeId, currentEpisode, onlyLocal = false)
             .subscribe({}, this::processErrors)
-            .addToDisposables()
+            .let { backgroundDisposable.add(it) }
     }
 
     private fun processLoadVideoErrors(throwable: Throwable) {
