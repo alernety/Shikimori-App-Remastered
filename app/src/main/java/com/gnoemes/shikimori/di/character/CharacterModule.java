@@ -2,9 +2,8 @@ package com.gnoemes.shikimori.di.character;
 
 import moxy.MvpPresenter;
 import com.gnoemes.shikimori.data.repository.roles.CharacterRepository;
-import com.gnoemes.shikimori.data.repository.roles.CharacterRepositoryImpl;
-import com.gnoemes.shikimori.data.repository.roles.converter.CharacterDetailsResponseConverter;
-import com.gnoemes.shikimori.data.repository.roles.converter.CharacterDetailsResponseConverterImpl;
+import com.gnoemes.shikimori.data.repository.roles.GraphQLCharacterRepositoryImpl;
+
 import com.gnoemes.shikimori.di.base.modules.BaseChildFragmentModule;
 import com.gnoemes.shikimori.di.base.scopes.BottomChildScope;
 import com.gnoemes.shikimori.domain.roles.CharacterInteractor;
@@ -32,13 +31,9 @@ public interface CharacterModule {
     CharacterInteractor bindCharacterInteractor(CharacterInteractorImpl interactor);
 
     @Binds
-    CharacterRepository bindCharacterRepository(CharacterRepositoryImpl repository);
-
+    CharacterRepository bindCharacterRepository(GraphQLCharacterRepositoryImpl repository);
     @Binds
-    CharacterDetailsResponseConverter bindCharacterDetailsResponseConverter(CharacterDetailsResponseConverterImpl converter);
-
-    @Binds
-    CharacterDetailsViewModelConverter bindCharacterDetailsViewModelConterter(CharacterDetailsViewModelConverterImpl conterter);
+    CharacterDetailsViewModelConverter bindCharacterDetailsViewModelConterter(CharacterDetailsViewModelConverterImpl converter);
 
     @Binds
     @Reusable

@@ -1,9 +1,9 @@
 package com.gnoemes.shikimori.di.manga
 
+import com.gnoemes.shikimori.data.repository.manga.GraphQLMangaRepositoryImpl
 import com.gnoemes.shikimori.data.repository.manga.MangaRepository
-import com.gnoemes.shikimori.data.repository.manga.MangaRepositoryImpl
+import com.gnoemes.shikimori.data.repository.ranobe.GraphQLRanobeRepositoryImpl
 import com.gnoemes.shikimori.data.repository.ranobe.RanobeRepository
-import com.gnoemes.shikimori.data.repository.ranobe.RanobeRepositoryImpl
 import dagger.Binds
 import dagger.Module
 
@@ -11,9 +11,9 @@ import dagger.Module
 interface MangaRepositoryModule {
 
     @Binds
-    fun bindMangaRepository(repository : MangaRepositoryImpl) : MangaRepository
+    fun bindMangaRepository(repository : GraphQLMangaRepositoryImpl) : MangaRepository
 
     @Binds
-    fun bindRanobeRepository(repository : RanobeRepositoryImpl) : RanobeRepository
+    fun bindRanobeRepository(repository : GraphQLRanobeRepositoryImpl) : RanobeRepository
 
 }
