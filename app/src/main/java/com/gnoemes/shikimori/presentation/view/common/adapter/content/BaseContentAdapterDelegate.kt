@@ -45,7 +45,7 @@ abstract class BaseContentAdapterDelegate(
             with(itemView) {
                 findViewById<ImageView>(R.id.imageView)?.let {
                     if (it is CircleImageView) imageLoader.setCircleImage(it, item.image.original)
-                    else imageLoader.setImageListItem(it, item.image.original)
+                    else imageLoader.setImageListItem(it, item.image.original, item.entityType?.name?.lowercase(), item.entityId)
                 }
 
                 findViewById<TextView>(R.id.nameView).text = item.name

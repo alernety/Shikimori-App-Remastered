@@ -76,7 +76,9 @@ class DetailsContentViewModelConverterImpl @Inject constructor(
                 name!!,
                 image,
                 descriptionText,
-                it
+                it,
+                it.type,
+                if (isAnime) it.anime?.id else it.manga?.id
         )
     }
 
@@ -133,8 +135,9 @@ class DetailsContentViewModelConverterImpl @Inject constructor(
                 name,
                 image,
                 description,
-                it
-
+                it,
+                it.type,
+                if (isAnime) it.anime?.id else it.manga?.id
         )
     }
 
@@ -144,7 +147,9 @@ class DetailsContentViewModelConverterImpl @Inject constructor(
                 name,
                 it.image,
                 null,
-                it
+                it,
+                Type.PERSON,
+                it.id
         )
     }
 
@@ -154,7 +159,9 @@ class DetailsContentViewModelConverterImpl @Inject constructor(
                 name,
                 it.image,
                 null,
-                it
+                it,
+                Type.CHARACTER,
+                it.id
         )
     }
 
@@ -175,7 +182,9 @@ class DetailsContentViewModelConverterImpl @Inject constructor(
                 name,
                 it.image,
                 null,
-                it
+                it,
+                Type.MANGA,
+                it.id
         )
     }
 
@@ -196,7 +205,9 @@ class DetailsContentViewModelConverterImpl @Inject constructor(
                 name,
                 it.image,
                 description,
-                it
+                it,
+                Type.ANIME,
+                it.id
         )
     }
 
