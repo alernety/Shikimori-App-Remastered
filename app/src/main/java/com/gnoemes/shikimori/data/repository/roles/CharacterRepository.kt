@@ -6,4 +6,6 @@ import io.reactivex.Single
 interface CharacterRepository {
 
     fun getDetails(id: Long): Single<CharacterDetails>
+
+    fun search(query: String, page: Int, limit: Int): Single<List<CharacterDetails>>
 }

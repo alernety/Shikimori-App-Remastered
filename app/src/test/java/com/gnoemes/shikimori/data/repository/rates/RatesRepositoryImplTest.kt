@@ -73,22 +73,26 @@ class RatesRepositoryImplTest {
                 )
             )
 
+            val offset = (page - 1) * limit
+
             every {
-                api.getUserAnimeRates(userId, page, limit, RateStatus.WATCHING.status)
+                api.getUserAnimeRates(userId, offset, limit, RateStatus.WATCHING.status)
             } returns Single.just(responseList)
             every { converter.apply(responseList) } returns expectedRates
 
             val result = repository.getAnimeRates(userId, page, limit, RateStatus.WATCHING).blockingGet()
 
             assertEquals(expectedRates, result)
-            verify { api.getUserAnimeRates(userId, page, limit, RateStatus.WATCHING.status) }
+            verify { api.getUserAnimeRates(userId, offset, limit, RateStatus.WATCHING.status) }
             verify { converter.apply(responseList) }
         }
 
         @Test
         fun `should return empty list on NoSuchElementException`() {
+            val offset = (page - 1) * limit
+
             every {
-                api.getUserAnimeRates(userId, page, limit, RateStatus.COMPLETED.status)
+                api.getUserAnimeRates(userId, offset, limit, RateStatus.COMPLETED.status)
             } returns Single.error(NoSuchElementException("Not found"))
 
             val result = repository.getAnimeRates(userId, page, limit, RateStatus.COMPLETED).blockingGet()
@@ -98,8 +102,10 @@ class RatesRepositoryImplTest {
 
         @Test
         fun `should propagate non-NoSuchElement errors`() {
+            val offset = (page - 1) * limit
+
             every {
-                api.getUserAnimeRates(userId, page, limit, RateStatus.PLANNED.status)
+                api.getUserAnimeRates(userId, offset, limit, RateStatus.PLANNED.status)
             } returns Single.error(RuntimeException("Network error"))
 
             try {
@@ -127,22 +133,26 @@ class RatesRepositoryImplTest {
                 )
             )
 
+            val offset = (page - 1) * limit
+
             every {
-                api.getUserMangaRates(userId, page, limit, RateStatus.COMPLETED.status)
+                api.getUserMangaRates(userId, offset, limit, RateStatus.COMPLETED.status)
             } returns Single.just(responseList)
             every { converter.apply(responseList) } returns expectedRates
 
             val result = repository.getMangaRates(userId, page, limit, RateStatus.COMPLETED).blockingGet()
 
             assertEquals(expectedRates, result)
-            verify { api.getUserMangaRates(userId, page, limit, RateStatus.COMPLETED.status) }
+            verify { api.getUserMangaRates(userId, offset, limit, RateStatus.COMPLETED.status) }
             verify { converter.apply(responseList) }
         }
 
         @Test
         fun `should return empty list on NoSuchElementException`() {
+            val offset = (page - 1) * limit
+
             every {
-                api.getUserMangaRates(userId, page, limit, RateStatus.COMPLETED.status)
+                api.getUserMangaRates(userId, offset, limit, RateStatus.COMPLETED.status)
             } returns Single.error(NoSuchElementException("Not found"))
 
             val result = repository.getMangaRates(userId, page, limit, RateStatus.COMPLETED).blockingGet()

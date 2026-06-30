@@ -188,8 +188,8 @@ class RatePresenter @Inject constructor(
 
     override fun getPaginatorRequestFactory(): (Int) -> Single<List<Rate>> {
         return if (rateStatus == null) { page: Int -> Single.error(IllegalStateException()) }
-        else if (isAnime) { page: Int -> ratesInteractor.getAnimeRates(userId, page, Constants.MAX_LIMIT, rateStatus!!) }
-        else { page: Int -> ratesInteractor.getMangaRates(userId, page, Constants.MAX_LIMIT, rateStatus!!) }
+        else if (isAnime) { page: Int -> ratesInteractor.getAnimeRates(userId, page, 50, rateStatus!!) }
+        else { page: Int -> ratesInteractor.getMangaRates(userId, page, 50, rateStatus!!) }
     }
 
     override fun showEmptyError(show: Boolean, throwable: Throwable?) {
