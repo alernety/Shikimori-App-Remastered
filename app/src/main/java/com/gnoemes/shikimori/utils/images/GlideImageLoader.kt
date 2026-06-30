@@ -88,10 +88,9 @@ class GlideImageLoader @Inject constructor(
         val key = Pair(entityType, entityId)
         val cached = imageCache[key]
         if (cached != null) {
-            loadDirect(image, cached)
+            loadListItemDirect(image, cached)
             return
         }
-        glide.clear(image)
         val query = when (entityType) {
             "anime" -> AnimeByIdQuery(ids = entityId.toString())
             "manga" -> MangaByIdQuery(ids = entityId.toString())
@@ -106,10 +105,10 @@ class GlideImageLoader @Inject constructor(
                 .subscribe({ data ->
                     val gqlUrl = extractImageUrl(entityType, data)
                     imageCache[key] = gqlUrl
-                    loadDirect(image, gqlUrl ?: restFallback)
+                    loadListItemDirect(image, gqlUrl ?: restFallback)
                 }, {
                     imageCache[key] = null
-                    loadDirect(image, restFallback)
+                    loadListItemDirect(image, restFallback)
                 })
         val previous = image.getTag(R.id.glide_disposable)
         if (previous is Disposable) previous.dispose()

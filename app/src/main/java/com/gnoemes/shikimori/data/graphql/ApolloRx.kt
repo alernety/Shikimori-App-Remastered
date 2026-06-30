@@ -10,6 +10,7 @@ import io.reactivex.disposables.Disposable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
 /**
@@ -49,8 +50,12 @@ fun <D : Query.Data> ApolloClient.rxQuery(query: Query<D>): Single<D> {
                     // ContentException — a graceful empty/not-found state.
                     emitter.onError(NoSuchElementException("No data was found"))
                 }
+            } catch (e: CancellationException) {
+                throw e  // Must rethrow — coroutine cancellation signal
             } catch (e: Exception) {
-                emitter.onError(e)
+                if (!emitter.isDisposed) {
+                    emitter.onError(e)
+                }
             }
         }
 
@@ -81,8 +86,12 @@ fun ApolloClient.rxMutation(mutation: Mutation<*>): Completable {
             try {
                 this@rxMutation.mutation(mutation).execute()
                 emitter.onComplete()
+            } catch (e: CancellationException) {
+                throw e  // Must rethrow — coroutine cancellation signal
             } catch (e: Exception) {
-                emitter.onError(e)
+                if (!emitter.isDisposed) {
+                    emitter.onError(e)
+                }
             }
         }
 
