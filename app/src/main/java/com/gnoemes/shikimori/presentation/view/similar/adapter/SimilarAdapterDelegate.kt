@@ -10,6 +10,7 @@ import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.rates.domain.RateStatus
 import com.gnoemes.shikimori.entity.similar.presentation.SimilarViewModel
 import com.gnoemes.shikimori.utils.*
+import com.gnoemes.shikimori.utils.images.GlideImageLoader
 import com.gnoemes.shikimori.utils.images.ImageLoader
 import com.hannesdorfmann.adapterdelegates4.AbsListItemAdapterDelegate
 
@@ -44,7 +45,7 @@ class SimilarAdapterDelegate(
         fun bind(item: SimilarViewModel) {
             this.item = item
             with(binding) {
-                imageLoader.setImageWithPlaceHolder(imageView, item.image.original)
+                imageLoader.setImageWithPlaceHolder(imageView, item.image.original, GlideImageLoader.entityType(item.type), item.id)
                 nameView.text = item.title
                 descriptionView.text = item.description
                 statusRateBtn.visibleIf { !item.isGuest }

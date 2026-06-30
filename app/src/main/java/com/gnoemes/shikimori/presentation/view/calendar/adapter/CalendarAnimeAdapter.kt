@@ -56,7 +56,7 @@ class CalendarAnimeAdapter(
 
         fun bind(item: CalendarAnimeItem) {
             this.item = item
-            imageLoader.setImageListItem(binding.imageView, item.image.original)
+            imageLoader.setImageListItem(binding.imageView, item.image.original, "anime", item.id)
             binding.nameView.text = item.name
             binding.descriptionView.text = item.description
 

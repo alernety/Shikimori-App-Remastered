@@ -6,4 +6,5 @@
     <item name="rate_dropped" type="id"/>
     <item name="rate_on_hold" type="id"/>
     <item name="rate_rewatching" type="id"/>
+    <item name="glide_disposable" type="id"/>
 </resources>

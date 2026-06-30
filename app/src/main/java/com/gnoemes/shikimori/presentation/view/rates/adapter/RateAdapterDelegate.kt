@@ -9,6 +9,7 @@ import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.common.presentation.DetailsAction
 import com.gnoemes.shikimori.entity.rates.domain.RateListAction
 import com.gnoemes.shikimori.entity.rates.presentation.RateViewModel
+import com.gnoemes.shikimori.utils.images.GlideImageLoader
 import com.gnoemes.shikimori.utils.images.ImageLoader
 import com.gnoemes.shikimori.utils.inflate
 import com.gnoemes.shikimori.utils.onClick
@@ -49,7 +50,7 @@ class RateAdapterDelegate(
         fun bind(item: RateViewModel) {
             this.item = item
             with(binding) {
-                imageLoader.setImageWithPlaceHolder(imageView, item.image.original)
+                imageLoader.setImageWithPlaceHolder(imageView, item.image.original, GlideImageLoader.entityType(item.type), item.contentId)
 
                 nameView.text = item.name
                 ratingView.text = item.rating

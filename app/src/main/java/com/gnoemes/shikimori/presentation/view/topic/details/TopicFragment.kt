@@ -37,6 +37,7 @@ import com.gnoemes.shikimori.presentation.view.topic.holders.TopicContentViewHol
 import com.gnoemes.shikimori.presentation.view.topic.holders.TopicUserViewHolder
 import com.gnoemes.shikimori.utils.*
 import com.gnoemes.shikimori.utils.date.DateTimeConverter
+import com.gnoemes.shikimori.utils.images.GlideImageLoader
 import com.gnoemes.shikimori.utils.images.ImageLoader
 import javax.inject.Inject
 
@@ -157,7 +158,7 @@ class TopicFragment : BasePaginationFragment<CommentViewModel, TopicPresenter, T
             b.linkedLayout.root.visibleIf { linked != null }
             if (linked != null) {
                 b.linkedLayout.root.setOnClickListener { getPresenter().onContentClicked(linked.linkedType, linked.linkedId) }
-                imageLoader.setImageWithPlaceHolder(b.linkedLayout.imageView, linked.imageUrl)
+                imageLoader.setImageWithPlaceHolder(b.linkedLayout.imageView, linked.imageUrl, GlideImageLoader.entityType(linked.linkedType), linked.linkedId)
                 b.linkedLayout.linkedTitleView.text = linked.linkedName
 
                 if (linked is Anime) {
