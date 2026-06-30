@@ -54,7 +54,7 @@ class AnimeDetailsViewModelConverterImpl @Inject constructor(
         }
 
         it.genres.forEach {
-            tags.add(DetailsTagItem(it.animeId.toLong(), DetailsTagItem.TagType.GENRE, it.russianName, it))
+            tags.add(DetailsTagItem(it.ordinal.toLong(), DetailsTagItem.TagType.GENRE, it.russianName, it))
         }
 
         val info = mutableListOf<Any>()
