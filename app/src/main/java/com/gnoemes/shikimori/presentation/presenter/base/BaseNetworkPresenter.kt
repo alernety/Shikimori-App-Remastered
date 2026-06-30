@@ -5,9 +5,28 @@ import com.gnoemes.shikimori.entity.app.domain.exceptions.BaseException
 import com.gnoemes.shikimori.entity.app.domain.exceptions.NetworkException
 import com.gnoemes.shikimori.entity.app.domain.exceptions.ServiceCodeException
 import com.gnoemes.shikimori.presentation.view.base.activity.BaseNetworkView
+import com.gnoemes.shikimori.utils.rx.GraphQLFallbackNotifier
+import javax.inject.Inject
+
 abstract class BaseNetworkPresenter<View : BaseNetworkView> : BaseNavigationPresenter<View>() {
 
+    @Inject
+    lateinit var graphQLFallbackNotifier: GraphQLFallbackNotifier
+
     override fun initData() {}
+
+    override fun onFirstViewAttach() {
+        super.onFirstViewAttach()
+        subscribeToGraphQLFallback()
+    }
+
+    private fun subscribeToGraphQLFallback() {
+        graphQLFallbackNotifier.observe()
+                .subscribe { throwable ->
+                    viewState.showSystemMessage(throwable.localizedMessage ?: "Something went wrong")
+                }
+                .addToDisposables()
+    }
 
     //TODO process exceptions
     protected open fun processErrors(throwable: Throwable) {

@@ -28,6 +28,7 @@ import com.gnoemes.shikimori.utils.date.impl.DateTimeResourceProviderImpl;
 import com.gnoemes.shikimori.utils.date.impl.DateTimeUtilsImpl;
 import com.gnoemes.shikimori.utils.images.GlideImageLoader;
 import com.gnoemes.shikimori.utils.images.ImageLoader;
+import com.gnoemes.shikimori.utils.rx.GraphQLFallbackNotifier;
 import com.google.firebase.analytics.FirebaseAnalytics;
 
 import javax.inject.Singleton;
@@ -72,6 +73,12 @@ public interface UtilModule {
     @Provides
     static FirebaseAnalytics provideFirebaseAnalytics(Context context) {
         return FirebaseAnalytics.getInstance(context);
+    }
+
+    @Provides
+    @Singleton
+    static GraphQLFallbackNotifier provideGraphQLFallbackNotifier() {
+        return new GraphQLFallbackNotifier();
     }
 
     @Binds

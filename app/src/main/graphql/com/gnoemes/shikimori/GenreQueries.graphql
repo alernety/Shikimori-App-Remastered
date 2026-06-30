@@ -1,0 +1,19 @@
+query AnimeGenres {
+  genres(entryType: Anime) {
+    id
+    name
+    russian
+    kind
+    entryType
+  }
+}
+
+query MangaGenres {
+  genres(entryType: Manga) {
+    id
+    name
+    russian
+    kind
+    entryType
+  }
+}
