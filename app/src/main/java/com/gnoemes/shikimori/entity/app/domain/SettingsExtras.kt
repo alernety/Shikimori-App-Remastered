@@ -44,6 +44,8 @@ object SettingsExtras {
     const val PLAYER_FORWARD_REWIND_OFFSET_BIG = "PLAYER_FORWARD_REWIND_OFFSET_BIG"
     const val PLAYER_IS_ZOOM_PROPORTIONAL = "PLAYER_ZOOM_TYPE"
     const val PLAYER_IS_AUTO_PIP = "PLAYER_AUTO_PIP"
+    const val PLAYER_ROTATION_BUTTON_X = "player_rotation_button_x"
+    const val PLAYER_ROTATION_BUTTON_Y = "player_rotation_button_y"
 
     ////////////////////////////////////////////////////////////////////////
     // OTHER

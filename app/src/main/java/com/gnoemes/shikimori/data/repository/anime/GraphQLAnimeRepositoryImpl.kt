@@ -270,7 +270,7 @@ class GraphQLAnimeRepositoryImpl @Inject constructor(
         return AnimeVideo(
                 id = id.toLongOrNull() ?: 0L,
                 name = name,
-                imageUrl = imageUrl,
+                imageUrl = imageUrl?.appendHostIfNeed(),
                 url = playerUrl,
                 type = kind.toAnimeVideoType(),
                 hosting = null

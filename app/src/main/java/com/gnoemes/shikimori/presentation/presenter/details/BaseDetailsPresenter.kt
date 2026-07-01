@@ -153,7 +153,7 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView>(
             is DetailsAction.EditRate -> onEditRate()
             is DetailsAction.OpenInBrowser -> onOpenInBrowser()
             is DetailsAction.ClearHistory -> onClearHistory()
-            is DetailsAction.Video -> onOpenWeb(action.url)
+            is DetailsAction.Video -> openWebPlayer(action.url)
             is DetailsAction.GenreClicked -> onGenreClicked(action.genre)
             is DetailsAction.ChangeRateStatus -> onChangeRateStatus(action.newStatus)
             is DetailsAction.Screenshots -> onScreenshotsClicked(action.pos)

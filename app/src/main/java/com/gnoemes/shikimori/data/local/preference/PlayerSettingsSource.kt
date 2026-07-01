@@ -11,4 +11,7 @@ interface PlayerSettingsSource {
 
     var forwardRewindOffset : Long
     var forwardRewindOffsetBig : Long
+
+    var rotationButtonX: Float
+    var rotationButtonY: Float
 }

@@ -28,7 +28,11 @@ import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 
 fun String.appendHostIfNeed(host: String = BuildConfig.ShikimoriBaseUrl): String {
-    return if (this.contains("http")) this else host + this
+    return when {
+        startsWith("//") -> "https:$this"
+        contains("http") -> this
+        else -> host + this
+    }
 }
 
 fun String.firstUpperCase(): String? {
