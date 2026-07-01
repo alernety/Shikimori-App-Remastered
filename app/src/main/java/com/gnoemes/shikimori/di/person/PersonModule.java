@@ -2,7 +2,7 @@ package com.gnoemes.shikimori.di.person;
 
 import moxy.MvpPresenter;
 import com.gnoemes.shikimori.data.repository.roles.PersonRepository;
-import com.gnoemes.shikimori.data.repository.roles.GraphQLPersonRepositoryImpl;
+import com.gnoemes.shikimori.data.repository.roles.RestPersonRepositoryImpl;
 
 import com.gnoemes.shikimori.di.base.modules.BaseChildFragmentModule;
 import com.gnoemes.shikimori.di.base.scopes.BottomChildScope;
@@ -31,7 +31,7 @@ public interface PersonModule {
     PersonInteractor bindPersonInteractor(PersonInteractorImpl interactor);
 
     @Binds
-    PersonRepository bindPersonRepository(GraphQLPersonRepositoryImpl repository);
+    PersonRepository bindPersonRepository(RestPersonRepositoryImpl repository);
     @Binds
     PersonDetailsViewModelConverter bindPersonDetailsViewModelConverter(PersonDetailsViewModelConverterImpl converter);
 
