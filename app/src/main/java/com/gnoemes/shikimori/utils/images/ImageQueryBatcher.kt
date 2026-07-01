@@ -32,10 +32,29 @@ class ImageQueryBatcher @Inject constructor(
     private val TAG = "ImageQueryBatcher"
 
     /**
-     * Cache of resolved image URLs. Keyed by (entityType, entityId).
-     * Stores null for entities that failed to resolve.
+     * Cache of successfully resolved image URLs. Keyed by (entityType, entityId).
+     * Failed resolutions are NOT cached — the retry mechanism handles them.
      */
     private val cache = HashMap<Pair<String, Long>, String?>()
+
+    /**
+     * Items that failed to resolve and are pending retry.
+     * Structure: entityType -> (entityId -> list of callbacks)
+     */
+    private val failedItems = mutableMapOf<String, MutableMap<Long, MutableList<(String?) -> Unit>>>()
+
+    /**
+     * Current retry delay in ms per entity type (exponential backoff).
+     */
+    private val retryDelays = mutableMapOf<String, Long>()
+
+    /**
+     * True while a retry is already scheduled for an entity type.
+     */
+    private val retryScheduled = mutableMapOf<String, Boolean>()
+
+    private val INITIAL_RETRY_DELAY = 2_000L   // 2 seconds
+    private val MAX_RETRY_DELAY = 60_000L       // 60 seconds
 
     /**
      * Pending callbacks grouped by entity type and entity ID.
@@ -101,6 +120,9 @@ class ImageQueryBatcher @Inject constructor(
             }
         }
         pending.clear()
+        failedItems.clear()
+        retryScheduled.clear()
+        retryDelays.clear()
     }
 
     /**
@@ -121,9 +143,19 @@ class ImageQueryBatcher @Inject constructor(
 
     /**
      * Fire all pending batches, one per entity type.
+     * Merges any previously failed items into the pending set before firing.
      * Takes a snapshot of [pending] and clears it before executing queries.
      */
     private fun fireBatches() {
+        // Merge failed items into pending so retried items get re-queried
+        for ((entityType, idMap) in failedItems) {
+            val target = pending.getOrPut(entityType) { mutableMapOf() }
+            for ((entityId, callbacks) in idMap) {
+                target.getOrPut(entityId) { mutableListOf() }.addAll(callbacks)
+            }
+        }
+        failedItems.clear()
+
         val snapshot = pending.toMap()
         pending.clear()
 
@@ -134,6 +166,34 @@ class ImageQueryBatcher @Inject constructor(
                 "character" -> fireCharacterBatch(idMap)
                 "person" -> firePersonBatch(idMap)
             }
+        }
+    }
+
+    /**
+     * Schedule a retry for the given entity type with exponential backoff.
+     * Merges failed callbacks into [failedItems] and delivers null now so
+     * the REST fallback can display immediately.
+     */
+    private fun scheduleRetry(
+        entityType: String,
+        idMap: Map<Long, MutableList<(String?) -> Unit>>
+    ) {
+        // Save callbacks for retry
+        val target = failedItems.getOrPut(entityType) { mutableMapOf() }
+        for ((entityId, callbacks) in idMap) {
+            target.getOrPut(entityId) { mutableListOf() }.addAll(callbacks)
+        }
+
+        // Schedule retry if not already pending
+        if (retryScheduled[entityType] != true) {
+            retryScheduled[entityType] = true
+            val delay = retryDelays.getOrDefault(entityType, INITIAL_RETRY_DELAY)
+            retryDelays[entityType] = minOf(delay * 2, MAX_RETRY_DELAY)
+
+            handler.postDelayed({
+                retryScheduled[entityType] = false
+                fireBatches()
+            }, delay)
         }
     }
 
@@ -156,6 +216,7 @@ class ImageQueryBatcher @Inject constructor(
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
                 { data ->
+                    retryDelays.remove("anime")
                     for ((entityId, callbacks) in idMap) {
                         val targetId = entityId.toString()
                         val url = data.animes
@@ -167,8 +228,8 @@ class ImageQueryBatcher @Inject constructor(
                 },
                 { throwable ->
                     Log.e(TAG, "Failed to resolve anime batch (ids=$ids)", throwable)
-                    for ((entityId, callbacks) in idMap) {
-                        cache[Pair("anime", entityId)] = null
+                    scheduleRetry("anime", idMap)
+                    for ((_, callbacks) in idMap) {
                         for (cb in callbacks) cb(null)
                     }
                 }
@@ -195,6 +256,7 @@ class ImageQueryBatcher @Inject constructor(
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
                 { data ->
+                    retryDelays.remove("manga")
                     for ((entityId, callbacks) in idMap) {
                         val targetId = entityId.toString()
                         val url = data.mangas
@@ -206,8 +268,8 @@ class ImageQueryBatcher @Inject constructor(
                 },
                 { throwable ->
                     Log.e(TAG, "Failed to resolve manga batch (ids=$ids)", throwable)
-                    for ((entityId, callbacks) in idMap) {
-                        cache[Pair("manga", entityId)] = null
+                    scheduleRetry("manga", idMap)
+                    for ((_, callbacks) in idMap) {
                         for (cb in callbacks) cb(null)
                     }
                 }
@@ -231,6 +293,7 @@ class ImageQueryBatcher @Inject constructor(
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
                 { data ->
+                    retryDelays.remove("character")
                     for ((entityId, callbacks) in idMap) {
                         val targetId = entityId.toString()
                         val url = data.characters
@@ -242,8 +305,8 @@ class ImageQueryBatcher @Inject constructor(
                 },
                 { throwable ->
                     Log.e(TAG, "Failed to resolve character batch (ids=$ids)", throwable)
-                    for ((entityId, callbacks) in idMap) {
-                        cache[Pair("character", entityId)] = null
+                    scheduleRetry("character", idMap)
+                    for ((_, callbacks) in idMap) {
                         for (cb in callbacks) cb(null)
                     }
                 }
@@ -267,6 +330,7 @@ class ImageQueryBatcher @Inject constructor(
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
                 { data ->
+                    retryDelays.remove("person")
                     for ((entityId, callbacks) in idMap) {
                         val targetId = entityId.toString()
                         val url = data.people
@@ -278,8 +342,8 @@ class ImageQueryBatcher @Inject constructor(
                 },
                 { throwable ->
                     Log.e(TAG, "Failed to resolve person batch (ids=$ids)", throwable)
-                    for ((entityId, callbacks) in idMap) {
-                        cache[Pair("person", entityId)] = null
+                    scheduleRetry("person", idMap)
+                    for ((_, callbacks) in idMap) {
                         for (cb in callbacks) cb(null)
                     }
                 }

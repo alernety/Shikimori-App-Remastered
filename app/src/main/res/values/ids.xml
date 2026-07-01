@@ -7,4 +7,5 @@
     <item name="rate_on_hold" type="id"/>
     <item name="rate_rewatching" type="id"/>
     <item name="glide_disposable" type="id"/>
+    <item name="glide_entity_tag" type="id"/>
 </resources>

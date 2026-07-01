@@ -5,6 +5,7 @@ import android.widget.ImageView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.Priority
 import com.bumptech.glide.request.target.BitmapImageViewTarget
+import com.bumptech.glide.request.target.Target
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.utils.images.blur.BlurTransformation
@@ -75,6 +76,7 @@ class GlideImageLoader @Inject constructor(
 
     private fun resolveAndLoad(image: ImageView, restFallback: String?, entityType: String, entityId: Long) {
         val key = Pair(entityType, entityId)
+        image.setTag(R.id.glide_entity_tag, entityId)
         if (imageCache.containsKey(key)) {
             val cached = imageCache[key]
             if (cached != null) {
@@ -84,10 +86,23 @@ class GlideImageLoader @Inject constructor(
             }
             return
         }
+
+        // Load the REST URL immediately so the user sees something
+        if (restFallback != null) {
+            loadListItemDirect(image, restFallback)
+        }
+
+        // Then try to upgrade to a higher-quality URL via GraphQL batcher
         batcher.resolve(entityType, entityId) { gqlUrl ->
-            imageCache[key] = gqlUrl
-            val url = gqlUrl ?: restFallback
-            loadListItemDirect(image, url)
+            // Guard: skip if the ImageView was recycled and repurposed for a different entity
+            if (image.getTag(R.id.glide_entity_tag) != entityId) return@resolve
+            if (gqlUrl != null) {
+                imageCache[key] = gqlUrl
+                // Only upgrade if the batcher found a different (better) URL
+                if (gqlUrl != restFallback) {
+                    loadListItemDirect(image, gqlUrl)
+                }
+            }
         }
     }
 
@@ -101,13 +116,15 @@ class GlideImageLoader @Inject constructor(
     }
 
     private fun loadListItemDirect(image: ImageView, url: String?) {
+        val overrideWidth = if (image.measuredWidth > 0) image.measuredWidth / 2 else Target.SIZE_ORIGINAL
+        val overrideHeight = if (image.measuredHeight > 0) image.measuredHeight / 2 else Target.SIZE_ORIGINAL
         Glide.with(image)
                 .asBitmap()
                 .dontAnimate()
                 .error(R.drawable.missing_original)
                 .centerCrop()
                 .load(url)
-                .override(image.measuredWidth / 2, image.measuredHeight / 2)
+                .override(overrideWidth, overrideHeight)
                 .into(BitmapImageViewTarget(image).apply { waitForLayout() })
     }
 }
