@@ -52,14 +52,18 @@ class GraphQLCharacterRepositoryImpl @Inject constructor(
             mangas = emptyList()
     )
 
-    private fun CharacterListQuery.Poster?.toDomainImage(): Image = if (this == null) {
-        Image(null, null, null, null)
-    } else {
-        Image(
-                original = mainUrl.appendHostIfNeed(),
-                preview = previewUrl.appendHostIfNeed(),
-                x96 = preview2xUrl.appendHostIfNeed(),
-                x48 = null
-        )
+    private fun CharacterListQuery.Poster?.toDomainImage(): Image = mapPosterImage(this?.mainUrl, this?.previewUrl, this?.preview2xUrl)
+
+    private fun mapPosterImage(mainUrl: String?, previewUrl: String?, preview2xUrl: String?): Image {
+        return if (mainUrl == null) {
+            Image(null, null, null, null)
+        } else {
+            Image(
+                    original = mainUrl.appendHostIfNeed(),
+                    preview = previewUrl?.appendHostIfNeed(),
+                    x96 = preview2xUrl?.appendHostIfNeed(),
+                    x48 = null
+            )
+        }
     }
 }

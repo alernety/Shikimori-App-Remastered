@@ -2,7 +2,7 @@ package com.gnoemes.shikimori.di.character;
 
 import moxy.MvpPresenter;
 import com.gnoemes.shikimori.data.repository.roles.CharacterRepository;
-import com.gnoemes.shikimori.data.repository.roles.GraphQLCharacterRepositoryImpl;
+import com.gnoemes.shikimori.data.repository.roles.RestCharacterRepositoryImpl;
 
 import com.gnoemes.shikimori.di.base.modules.BaseChildFragmentModule;
 import com.gnoemes.shikimori.di.base.scopes.BottomChildScope;
@@ -31,7 +31,7 @@ public interface CharacterModule {
     CharacterInteractor bindCharacterInteractor(CharacterInteractorImpl interactor);
 
     @Binds
-    CharacterRepository bindCharacterRepository(GraphQLCharacterRepositoryImpl repository);
+    CharacterRepository bindCharacterRepository(RestCharacterRepositoryImpl repository);
     @Binds
     CharacterDetailsViewModelConverter bindCharacterDetailsViewModelConterter(CharacterDetailsViewModelConverterImpl converter);
 
