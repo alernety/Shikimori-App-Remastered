@@ -37,6 +37,10 @@ class ForumConverterImpl @Inject constructor(
             ForumType.SITE -> R.string.forum_site
             ForumType.VISUAL_NOVELS -> R.string.forum_vn
             ForumType.ARTICLES -> R.string.forum_articles
+            ForumType.HIDDEN -> R.string.forum_hidden
+            ForumType.PREMODERATION -> R.string.forum_premoderation
+            ForumType.TIERLISTS -> R.string.forum_tierlists
+            ForumType.CRITIQUES -> R.string.forum_critiques
         }
     }
 }
