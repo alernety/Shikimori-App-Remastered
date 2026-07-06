@@ -7,6 +7,7 @@ import com.gnoemes.shikimori.data.repository.app.TokenRepository;
 import com.gnoemes.shikimori.di.app.annotations.AuthCommonApi;
 import com.gnoemes.shikimori.entity.app.domain.Constants;
 import com.gnoemes.shikimori.utils.network.AuthHolder;
+import com.gnoemes.shikimori.utils.network.RetryInterceptor;
 import com.gnoemes.shikimori.utils.network.ShikiAuthenticator;
 import com.gnoemes.shikimori.utils.network.TokenInterceptor;
 import com.gnoemes.shikimori.utils.network.UserAgentInterceptor;
@@ -33,9 +34,11 @@ public interface AuthCommonNetworkModule {
     static OkHttpClient provideOkHttpClient(HttpLoggingInterceptor interceptor,
                                             UserAgentInterceptor userAgentInterceptor,
                                             @AuthCommonApi Authenticator authenticator,
-                                            @AuthCommonApi TokenInterceptor tokenInterceptor) {
+                                            @AuthCommonApi TokenInterceptor tokenInterceptor,
+                                            RetryInterceptor retryInterceptor) {
         return new OkHttpClient.Builder()
                 .authenticator(authenticator)
+                .addInterceptor(retryInterceptor)
                 .addInterceptor(tokenInterceptor)
                 .addInterceptor(userAgentInterceptor)
                 .addInterceptor(interceptor)
@@ -59,6 +62,11 @@ public interface AuthCommonNetworkModule {
     @AuthCommonApi
     static Retrofit provideRetrofit(@AuthCommonApi Retrofit.Builder builder) {
         return builder.baseUrl(BuildConfig.ShikimoriBaseUrl).build();
+    }
+
+    @Provides
+    static RetryInterceptor provideRetryInterceptor() {
+        return new RetryInterceptor();
     }
 
     @Provides

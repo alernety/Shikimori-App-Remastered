@@ -294,6 +294,7 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
     }
 
     override fun onDestroyView() {
+        cleanupLoader()
         _binding?.includedLayoutDefaultList?.recyclerView?.adapter = null
         super.onDestroyView()
         _binding = null
@@ -441,6 +442,38 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
                 .setActionTextColor(context!!.colorAttr(R.attr.colorSecondary))
                 .setAction(R.string.common_cancel_variant) { getPresenter().onTaskCanceled(taskId, rateId) }
                 .show()
+    }
+
+    private var loaderOverlay: FrameLayout? = null
+
+    override fun showLoadAllRatesProgress(show: Boolean) {
+        if (loaderOverlay == null && show) {
+            val progressBar = progressBinding?.progressBar ?: return
+            (progressBar.parent as? ViewGroup)?.removeView(progressBar)
+            val overlay = FrameLayout(requireContext()).apply {
+                layoutParams = ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT
+                )
+                isClickable = true
+                isFocusable = true
+                addView(progressBar, FrameLayout.LayoutParams(
+                    FrameLayout.LayoutParams.WRAP_CONTENT,
+                    FrameLayout.LayoutParams.WRAP_CONTENT,
+                    Gravity.CENTER
+                ))
+            }
+            (view?.rootView as? ViewGroup)?.addView(overlay)
+            loaderOverlay = overlay
+        }
+        loaderOverlay?.visibleIf { show }
+    }
+
+    private fun cleanupLoader() {
+        loaderOverlay?.let {
+            (it.parent as? ViewGroup)?.removeView(it)
+        }
+        loaderOverlay = null
     }
 
     override fun showNetworkView() {

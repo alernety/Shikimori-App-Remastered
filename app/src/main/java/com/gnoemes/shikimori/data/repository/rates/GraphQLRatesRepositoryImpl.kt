@@ -8,6 +8,7 @@ import com.gnoemes.shikimori.data.graphql.type.AnimeKindEnum
 import com.gnoemes.shikimori.data.graphql.type.AnimeStatusEnum
 import com.gnoemes.shikimori.data.graphql.type.MangaKindEnum
 import com.gnoemes.shikimori.data.graphql.type.MangaStatusEnum
+import com.gnoemes.shikimori.data.graphql.type.UserRateOrderInputType
 import com.gnoemes.shikimori.data.graphql.type.UserRateStatusEnum
 import com.gnoemes.shikimori.data.graphql.type.UserRateTargetTypeEnum
 import com.gnoemes.shikimori.data.local.db.AnimeRateSyncDbSource
@@ -68,13 +69,14 @@ class GraphQLRatesRepositoryImpl @Inject constructor(
     //  so the REST fallback recalculates the offset from page number.
     // ──────────────────────────────────────────────
 
-    override fun getAnimeRates(id: Long, page: Int, limit: Int, rateStatus: RateStatus): Single<List<Rate>> {
+    override fun getAnimeRates(id: Long, page: Int, limit: Int, rateStatus: RateStatus, order: UserRateOrderInputType?): Single<List<Rate>> {
         val query = UserRatesQuery(
             page = Optional.present(page),
             limit = Optional.present(limit),
             userId = Optional.present(id.toString()),
             targetType = Optional.present(UserRateTargetTypeEnum.Anime),
             status = Optional.present(rateStatus.status.toGraphQLRateStatus()),
+            order = if (order != null) Optional.present(order) else Optional.Absent,
             includeAnime = true,
             includeManga = false
         )
@@ -91,13 +93,14 @@ class GraphQLRatesRepositoryImpl @Inject constructor(
             }
     }
 
-    override fun getMangaRates(id: Long, page: Int, limit: Int, rateStatus: RateStatus): Single<List<Rate>> {
+    override fun getMangaRates(id: Long, page: Int, limit: Int, rateStatus: RateStatus, order: UserRateOrderInputType?): Single<List<Rate>> {
         val query = UserRatesQuery(
             page = Optional.present(page),
             limit = Optional.present(limit),
             userId = Optional.present(id.toString()),
             targetType = Optional.present(UserRateTargetTypeEnum.Manga),
             status = Optional.present(rateStatus.status.toGraphQLRateStatus()),
+            order = if (order != null) Optional.present(order) else Optional.Absent,
             includeAnime = false,
             includeManga = true
         )
@@ -125,19 +128,20 @@ class GraphQLRatesRepositoryImpl @Inject constructor(
         target: Type?,
         statuses: String?,
         page: Int,
-        limit: Int
+        limit: Int,
+        order: UserRateOrderInputType?
     ): Single<List<UserRate>> {
         // GraphQL UserRatesQuery doesn't support targetId filtering
         if (targetId != null) {
-            return fallbackGetUserRates(id, targetId, target, statuses, page, limit)
+            return fallbackGetUserRates(id, targetId, target, statuses, page, limit, order)
         }
 
         // GraphQL UserRatesQuery only accepts a single status value
         if (statuses != null && statuses.contains(",")) {
-            return fallbackGetUserRates(id, null, target, statuses, page, limit)
+            return fallbackGetUserRates(id, null, target, statuses, page, limit, order)
         }
 
-        return getUserRatesGraphQL(id, target, statuses, page, limit)
+        return getUserRatesGraphQL(id, target, statuses, page, limit, order)
     }
 
     // ──────────────────────────────────────────────
@@ -206,7 +210,8 @@ class GraphQLRatesRepositoryImpl @Inject constructor(
         target: Type?,
         statuses: String?,
         page: Int,
-        limit: Int
+        limit: Int,
+        order: UserRateOrderInputType?
     ): Single<List<UserRate>> {
         val query = UserRatesQuery(
             page = Optional.present(page),
@@ -222,6 +227,7 @@ class GraphQLRatesRepositoryImpl @Inject constructor(
             } else {
                 Optional.Absent
             },
+            order = if (order != null) Optional.present(order) else Optional.Absent,
             includeAnime = target == null || target == Type.ANIME,
             includeManga = target == null || target == Type.MANGA || target == Type.RANOBE
         )
@@ -234,7 +240,7 @@ class GraphQLRatesRepositoryImpl @Inject constructor(
                 // Graceful fallback: if GraphQL fails, try REST
                 FirebaseCrashlytics.getInstance().recordException(error)
                 graphQLFallbackNotifier.notify(error)
-                fallbackGetUserRates(userId, null, target, statuses, page, limit)
+                fallbackGetUserRates(userId, null, target, statuses, page, limit, order)
             }
     }
 
@@ -248,7 +254,8 @@ class GraphQLRatesRepositoryImpl @Inject constructor(
         target: Type?,
         statuses: String?,
         page: Int,
-        limit: Int
+        limit: Int,
+        order: UserRateOrderInputType?
     ): Single<List<UserRate>> =
         api.getUserRates(id, targetId, target?.name?.lowercase()?.firstUpperCase(), statuses, page, limit)
             .map { list -> list.mapNotNull { converter.convertUserRateResponse(targetId, it) } }

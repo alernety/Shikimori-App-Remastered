@@ -33,13 +33,13 @@ class RateSortDialog : BaseBottomSheetDialogFragment() {
         super.onAttach(context)
         peekHeight = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-            windowManager.currentWindowMetrics.bounds.width() - context.dimenAttr(android.R.attr.actionBarSize)
+            windowManager.currentWindowMetrics.bounds.height() - context.dimenAttr(android.R.attr.actionBarSize)
         } else {
             Point().let { point ->
                 @Suppress("DEPRECATION")
                 activity?.windowManager?.defaultDisplay?.getSize(point)
                 point
-            }.x - context.dimenAttr(android.R.attr.actionBarSize)
+            }.y - context.dimenAttr(android.R.attr.actionBarSize)
         }
     }
 
@@ -77,13 +77,15 @@ class RateSortDialog : BaseBottomSheetDialogFragment() {
             }
             menu.apply {
                 val checkedId = sorts.find { it.isSelected }?.type?.order ?: 0
-                sorts.forEachIndexed { index, sort -> add(0, sort.type.order, index, sort.text) }
+                sorts.forEachIndexed { index, sort -> 
+                    val title = sort.text
+                    add(0, sort.type.order, index, title) 
+                }
                 setGroupCheckable(0, true, true)
                 setCheckedItem(checkedId)
             }
         }
     }
-
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
