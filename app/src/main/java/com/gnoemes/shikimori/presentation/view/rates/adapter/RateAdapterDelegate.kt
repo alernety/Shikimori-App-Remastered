@@ -33,7 +33,12 @@ class RateAdapterDelegate(
         holder.bind(item)
     }
 
-    inner class ViewHolder(private val binding: ItemRateBinding) : RecyclerView.ViewHolder(binding.root) {
+    override fun onViewRecycled(holder: RecyclerView.ViewHolder) {
+        super.onViewRecycled(holder)
+        imageLoader.clearImage((holder as ViewHolder).binding.imageView)
+    }
+
+    inner class ViewHolder(val binding: ItemRateBinding) : RecyclerView.ViewHolder(binding.root) {
 
         private lateinit var item: RateViewModel
 
