@@ -44,7 +44,7 @@ import org.junit.jupiter.api.Test
 class UserRepositoryImplTest {
 
     private val api: UserApi = mockk()
-    private val userSource: UserSource = mockk()
+    private val userSource: UserSource = mockk(relaxUnitFun = true)
     private val converter: UserBriefResponseConverter = mockk()
     private val detailsConverter: UserDetailsResponseConverter = mockk()
     private val historyConverter: UserHistoryConverter = mockk()
@@ -107,6 +107,7 @@ class UserRepositoryImplTest {
             )
 
             every { userSource.getUserId() } returns Constants.NO_ID
+            every { userSource.getUserStatus() } returns UserStatus.GUEST
             every { api.getCurrentUserBrief() } returns Single.just(response)
             every { converter.convertResponse(response) } returns sampleUserBrief
 
@@ -176,6 +177,8 @@ class UserRepositoryImplTest {
             )
 
             every { userSource.getUserId() } returns userId
+            every { userSource.getUserStatus() } returns UserStatus.AUTHORIZED
+            every { userSource.getUser() } returns sampleUserBrief
             every { api.getUserMessages(userId, MessageType.INBOX) } returns Single.just(responseList)
             every { messageConverter.apply(responseList) } returns expectedMessages
 

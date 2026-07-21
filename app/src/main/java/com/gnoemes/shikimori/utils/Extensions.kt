@@ -8,7 +8,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.text.Spannable
 import android.text.SpannableStringBuilder
-import android.text.TextUtils
 import android.text.style.ForegroundColorSpan
 import android.text.style.StyleSpan
 import android.text.style.URLSpan
@@ -36,7 +35,7 @@ fun String.appendHostIfNeed(host: String = BuildConfig.ShikimoriBaseUrl): String
 }
 
 fun String.firstUpperCase(): String? {
-    return if (TextUtils.isEmpty(this)) null else this.substring(0, 1).uppercase() + this.substring(1)
+    return if (isEmpty()) null else this.substring(0, 1).uppercase() + this.substring(1)
 }
 
 fun String?.nullIfEmpty(): String? {

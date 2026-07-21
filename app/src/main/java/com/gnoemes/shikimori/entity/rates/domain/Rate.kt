@@ -19,5 +19,5 @@ data class Rate(
         val updatedDateTime : DateTime?,
         val anime: Anime?,
         val manga: Manga?,
-        val type: Type = if (anime != null) Type.ANIME else if (manga?.isRanobe!!) Type.RANOBE else Type.MANGA
+        val type: Type = if (anime != null) Type.ANIME else if (manga?.isRanobe == true) Type.RANOBE else Type.MANGA
 )
