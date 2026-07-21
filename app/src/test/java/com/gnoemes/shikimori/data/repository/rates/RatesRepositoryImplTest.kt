@@ -439,6 +439,7 @@ class RatesRepositoryImplTest {
             every { animeSyncSource.getRate(rateId) } returns Single.error(RuntimeException("Local not found"))
             every { api.getRate(rateId) } returns Single.just(UserRateResponse(id = rateId, targetId = animeId, targetType = Type.ANIME, episodes = 3))
             every { converter.convertUserRateResponse(null, any()) } returns networkRate
+            every { animeSyncSource.saveRate(networkRate) } returns Completable.complete()
             every { animeSyncSource.saveRate(networkRate.copy(episodes = 5)) } returns Completable.complete()
             every { api.increment(rateId) } returns Completable.complete()
 

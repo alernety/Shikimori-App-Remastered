@@ -15,6 +15,7 @@ import com.gnoemes.shikimori.presentation.presenter.series.SeriesPresenter
 import com.gnoemes.shikimori.presentation.presenter.common.provider.CommonResourceProvider
 import com.gnoemes.shikimori.presentation.presenter.common.provider.ShareResourceProvider
 import com.gnoemes.shikimori.presentation.presenter.series.translations.converter.TranslationsViewModelConverter
+import com.gnoemes.shikimori.utils.rx.GraphQLFallbackNotifier
 import io.mockk.every
 import io.mockk.mockk
 import io.reactivex.Completable
@@ -58,6 +59,7 @@ class SeriesPresenterTest {
     private val seriesSyncInteractor: SeriesSyncInteractor = mockk()
     private val analyticInteractor: AnalyticInteractor = mockk(relaxed = true)
     private val router: Router = mockk(relaxed = true)
+    private val graphQLFallbackNotifier: GraphQLFallbackNotifier = mockk(relaxed = true)
 
     // ── View (relaxed to handle default state calls from initData) ──
 
@@ -116,6 +118,7 @@ class SeriesPresenterTest {
         presenter.seriesSyncInteractor = seriesSyncInteractor
         presenter.analyticInteractor = analyticInteractor
         presenter.localRouter = router
+        presenter.graphQLFallbackNotifier = graphQLFallbackNotifier
 
         // ── Navigation data (required before attachView -> initData) ──
         presenter.navigationData = SeriesNavigationData(

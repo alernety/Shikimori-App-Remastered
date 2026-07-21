@@ -1,40 +1,60 @@
 name: CI Build
 
 on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
   workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
 
 jobs:
   build:
     name: Build Debug APK
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
-          java-version: '17'
-          distribution: 'temurin'
+          fetch-depth: 0
 
-      # -----------------------------------------------------------------------
-      # Android SDK — installs cmdline-tools + required packages.
-      # -----------------------------------------------------------------------
+      - name: Set up JDK 21
+        uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95 # v5
+        with:
+          distribution: temurin
+          java-version: '21'
+
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@40fd30fb8d7440372e1316f5d1809ec01dcd3699 # v4
 
-      - name: Cache Gradle dependencies
-        uses: actions/cache@v4
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6
+
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
+      - name: Compute source hash
+        id: source-hash
+        run: |
+          HASH=$(find app/src app/build.gradle build.gradle settings.gradle \
+            gradle.properties dependencies.gradle proguard-rules.pro gradle \
+            -type f -exec md5sum {} + 2>/dev/null | sort | \
+            md5sum | cut -d' ' -f1)
+          echo "hash=$HASH" >> "$GITHUB_OUTPUT"
+
+      - name: Cache APK
+        id: cache-apk
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
+          path: app/build/outputs/apk/debug/app-debug.apk
+          key: apk-${{ runner.os }}-${{ steps.source-hash.outputs.hash }}
 
       - name: Inject secrets into gradle.properties
+        if: steps.cache-apk.outputs.cache-hit != 'true'
         env:
           SHIKIMORI_CLIENT_ID: ${{ secrets.SHIKIMORI_CLIENT_ID }}
           SHIKIMORI_CLIENT_SECRET: ${{ secrets.SHIKIMORI_CLIENT_SECRET }}
@@ -42,14 +62,24 @@ jobs:
           VIDEO_BASE_URL: ${{ secrets.VIDEO_BASE_URL }}
           VK_RANDOM_TOKEN: ${{ secrets.VK_RANDOM_TOKEN }}
         run: |
-          [ -n "$SHIKIMORI_CLIENT_ID" ] && echo "ShikimoriClientId=$SHIKIMORI_CLIENT_ID" >> gradle.properties
-          [ -n "$SHIKIMORI_CLIENT_SECRET" ] && echo "ShikimoriClientSecret=$SHIKIMORI_CLIENT_SECRET" >> gradle.properties
-          [ -n "$SHIKIMORI_BASE_URL" ] && echo "ShikimoriBaseUrl=$SHIKIMORI_BASE_URL" >> gradle.properties
-          [ -n "$VIDEO_BASE_URL" ] && echo "VideoBaseUrl=$VIDEO_BASE_URL" >> gradle.properties
-          [ -n "$VK_RANDOM_TOKEN" ] && echo "VkRandomToken=$VK_RANDOM_TOKEN" >> gradle.properties
-
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
+          [ -n "$SHIKIMORI_CLIENT_ID" ] && echo "ShikimoriClientId=\"$SHIKIMORI_CLIENT_ID\"" >> gradle.properties
+          [ -n "$SHIKIMORI_CLIENT_SECRET" ] && echo "ShikimoriClientSecret=\"$SHIKIMORI_CLIENT_SECRET\"" >> gradle.properties
+          [ -n "$SHIKIMORI_BASE_URL" ] && echo "ShikimoriBaseUrl=\"$SHIKIMORI_BASE_URL\"" >> gradle.properties
+          [ -n "$VIDEO_BASE_URL" ] && echo "VideoBaseUrl=\"$VIDEO_BASE_URL\"" >> gradle.properties
+          [ -n "$VK_RANDOM_TOKEN" ] && echo "VkRandomToken=\"$VK_RANDOM_TOKEN\"" >> gradle.properties
 
       - name: Build with Gradle
-        run: ./gradlew assembleDebug --no-daemon
+        if: steps.cache-apk.outputs.cache-hit != 'true'
+        run: ./gradlew assembleDebug --no-daemon --build-cache
+
+      - name: Run unit tests
+        if: steps.cache-apk.outputs.cache-hit != 'true'
+        run: ./gradlew testDebugUnitTest --no-daemon --build-cache
+
+      - name: Upload Debug APK
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: app-debug
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 7
