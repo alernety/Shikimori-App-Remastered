@@ -7,56 +7,45 @@ on:
     branches: [master]
   workflow_dispatch:
 
+permissions:
+  contents: read
+  pull-requests: read
+
 jobs:
   build:
     name: Build Debug APK
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0
 
       - name: Set up JDK 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@3a4f6e1af504cf6a31855fa899c6aa5355ba6c12 # v4.7.0
         with:
+          distribution: temurin
           java-version: '21'
-          distribution: 'temurin'
 
-      # -----------------------------------------------------------------------
-      # Android SDK — installs cmdline-tools + required packages.
-      # -----------------------------------------------------------------------
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@b4880220a91f5ee11bb0b6a1cf0a59ff607ebc08 # v3.3.0
 
-      # -----------------------------------------------------------------------
-      # Gradle setup — caches distributions, dependencies, and build cache.
-      # Build cache reuse across CI runs (gradle/actions/setup-gradle manages
-      # this natively, avoiding manual actions/cache fragility).
-      # -----------------------------------------------------------------------
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@94baf225fe0a50832b66a648b41af8d2a0e10ffd # v4.3.1
 
-      # -----------------------------------------------------------------------
-      # Source hash — used to skip build+tests entirely when code hasn't
-      # changed. Covers source files, resources, build scripts, and deps.
-      # -----------------------------------------------------------------------
       - name: Compute source hash
         id: source-hash
         run: |
           HASH=$(find app/src app/build.gradle build.gradle settings.gradle \
             gradle.properties dependencies.gradle proguard-rules.pro gradle \
-            -type f 2>/dev/null | xargs md5sum 2>/dev/null | sort | \
+            -type f -exec md5sum {} + 2>/dev/null | sort | \
             md5sum | cut -d' ' -f1)
           echo "hash=$HASH" >> "$GITHUB_OUTPUT"
 
-      # -----------------------------------------------------------------------
-      # APK cache — restored by source hash. If hit, Gradle steps are skipped.
-      # -----------------------------------------------------------------------
       - name: Cache APK
         id: cache-apk
-        uses: actions/cache@v4
+        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
         with:
           path: app/build/outputs/apk/debug/app-debug.apk
           key: apk-${{ runner.os }}-${{ steps.source-hash.outputs.hash }}
@@ -85,8 +74,9 @@ jobs:
         run: ./gradlew testDebugUnitTest --no-daemon --build-cache
 
       - name: Upload Debug APK
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd6aab436354f7a5933 # v4.6.0
         with:
           name: app-debug
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
+          retention-days: 7

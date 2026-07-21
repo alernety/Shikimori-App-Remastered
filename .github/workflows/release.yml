@@ -1,19 +1,3 @@
-# =============================================================================
-# Release workflow — tag-triggered APK build, sign & release
-# Trigger: strict semver v<major>.<minor>.<patch> tags only (e.g. v0.8.8, v1.0.0)
-#
-# Secrets required in GitHub repository settings:
-#   KEYSTORE_BASE64        — base64-encoded Android keystore (.jks/.keystore)
-#   KEYSTORE_PASSWORD      — keystore master password
-#   KEY_ALIAS              — signing key alias
-#   KEY_PASSWORD           — private key password
-#   SHIKIMORI_CLIENT_ID
-#   SHIKIMORI_CLIENT_SECRET
-#   SHIKIMORI_BASE_URL
-#   VIDEO_BASE_URL
-#   VK_RANDOM_TOKEN
-# =============================================================================
-
 name: Release
 
 on:
@@ -28,59 +12,27 @@ permissions:
 jobs:
   release:
     name: Build & Release APK
-    if: ${{ github.event_name == 'workflow_dispatch' || (github.ref_type == 'tag' && ! contains(github.ref_name, '-')) }}
-    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' || (github.ref_type == 'tag' && !contains(github.ref_name, '-'))
+    runs-on: ubuntu-24.04
 
     steps:
-      # -----------------------------------------------------------------------
-      # Checkout with full history (advanced-build-version plugin uses git
-      # commit count for auto versionCode).
-      # -----------------------------------------------------------------------
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0
 
-      # -----------------------------------------------------------------------
-      # Java 21 — matches the local Gradle daemon JVM and avoids PKCS12
-      # "Tag number over 30" errors when loading keystores generated with a
-      # modern JDK.
-      # -----------------------------------------------------------------------
       - name: Set up JDK 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@3a4f6e1af504cf6a31855fa899c6aa5355ba6c12 # v4.7.0
         with:
           distribution: temurin
           java-version: '21'
 
-      # -----------------------------------------------------------------------
-      # Android SDK — installs cmdline-tools + required packages.
-      # -----------------------------------------------------------------------
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@b4880220a91f5ee11bb0b6a1cf0a59ff607ebc08 # v3.3.0
 
-      # -----------------------------------------------------------------------
-      # Grant execute permission to the Gradle wrapper.
-      # -----------------------------------------------------------------------
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@94baf225fe0a50832b66a648b41af8d2a0e10ffd # v4.3.1
 
-      # -----------------------------------------------------------------------
-      # Cache Gradle dependencies + build cache across runs.
-      # With --build-cache on every ./gradlew, task outputs from a prior run
-      # are reused when inputs haven't changed.
-      # -----------------------------------------------------------------------
-      - name: Cache Gradle dependencies + build outputs
-        uses: actions/cache@v4
-        with:
-          path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
-
-      # -----------------------------------------------------------------------
-      # Override gradle.properties values with GitHub Secrets.
-      # Appending ensures secrets take precedence over committed defaults.
-      # -----------------------------------------------------------------------
       - name: Inject secrets into gradle.properties
         env:
           SHIKIMORI_CLIENT_ID: ${{ secrets.SHIKIMORI_CLIENT_ID }}
@@ -95,23 +47,9 @@ jobs:
           [ -n "$VIDEO_BASE_URL" ] && echo "VideoBaseUrl=\"$VIDEO_BASE_URL\"" >> gradle.properties
           [ -n "$VK_RANDOM_TOKEN" ] && echo "VkRandomToken=\"$VK_RANDOM_TOKEN\"" >> gradle.properties
 
-      # -----------------------------------------------------------------------
-      # Build the release APK (unsigned — zipAlignEnabled is set in build.gradle).
-      # -----------------------------------------------------------------------
       - name: Build Release APK
         run: ./gradlew assembleRelease --no-daemon --build-cache
 
-      # -----------------------------------------------------------------------
-      # Sign the unsigned APK using apksigner.
-      #
-      # apksigner supports env:VARNAME syntax for password arguments, which
-      # avoids exposing secrets in the process command line.
-      #
-      # Keystore re-encoding (keystore.orig → PEM → keystore.jks):
-      # Some PKCS12 files use newer attribute tags (tag number > 30) that
-      # the JDK's DerValue parser cannot decode. Extracting to PEM (which
-      # has no tags) and re-exporting produces a file with standard tags.
-      # -----------------------------------------------------------------------
       - name: Sign APK
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
@@ -119,67 +57,58 @@ jobs:
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
         run: |
-          # --- Validate secrets ---------------------------------------------------
-          # Use env:KEYSTORE_BASE64 (not inline ${{ }}) to handle multiline values
           if [ -z "$KEYSTORE_BASE64" ]; then
-            echo "::error::KEYSTORE_BASE64 secret is not set. Configure it in repository settings."
+            echo "::error::KEYSTORE_BASE64 secret is not set"
             exit 1
           fi
           if [ -z "$KEY_ALIAS" ]; then
-            echo "::error::KEY_ALIAS secret is not set. Configure it in repository settings."
+            echo "::error::KEY_ALIAS secret is not set"
             exit 1
           fi
           if [ -z "$KEYSTORE_PASSWORD" ]; then
-            echo "::error::KEYSTORE_PASSWORD secret is not set. Configure it in repository settings."
+            echo "::error::KEYSTORE_PASSWORD secret is not set"
             exit 1
           fi
           if [ -z "$KEY_PASSWORD" ]; then
-            echo "::error::KEY_PASSWORD secret is not set. Configure it in repository settings."
+            echo "::error::KEY_PASSWORD secret is not set"
             exit 1
           fi
 
-          # Decode base64-encoded keystore via env var (handles multi-line values)
-          base64 -d <<< "$KEYSTORE_BASE64" > keystore.orig
+          echo "$KEYSTORE_BASE64" | base64 -d > keystore.orig
           if [ ! -s keystore.orig ]; then
-            echo "::error::Decoded keystore is empty. Check KEYSTORE_BASE64 value."
+            echo "::error::Decoded keystore is empty. Check KEYSTORE_BASE64."
             exit 1
           fi
 
-          # Re-encode PKCS12 to strip non-standard DER tags (Tag number > 30)
-          # PEM format has no attribute tags; re-export creates standard tags.
-          # `|| true` prevents bash -e -o pipefail from killing the script
-          # on OpenSSL failure — the file-size check below handles the error.
+          # Re-encode PKCS12 to strip non-standard DER tags (tag number > 30)
+          # Some PKCS12 files use newer attribute tags that the JDK's DerValue
+          # parser cannot decode. PEM has no tags; re-export creates standard ones.
           openssl pkcs12 -in keystore.orig \
             -password env:KEYSTORE_PASSWORD \
             -nodes 2>/dev/null | \
           openssl pkcs12 -export \
             -out keystore.jks \
             -passout env:KEYSTORE_PASSWORD \
-            -name "$KEY_ALIAS" 2>/dev/null || true
+            -name "$KEY_ALIAS" 2>/dev/null
           if [ ! -s keystore.jks ]; then
-            echo "::error::OpenSSL PKCS12 re-encoding failed. Verify the keystore password and format."
+            echo "::error::OpenSSL PKCS12 re-encoding failed"
             exit 1
           fi
 
-          # Locate the unsigned APK
           APK_UNSIGNED=$(find app/build/outputs/apk/release -name "*-unsigned.apk" -type f | head -n 1)
           if [ -z "$APK_UNSIGNED" ]; then
-            echo "::error::No unsigned APK found in app/build/outputs/apk/release/"
+            echo "::error::unsigned APK not found"
             exit 1
           fi
-          echo "Found unsigned APK: $APK_UNSIGNED"
 
-          # Locate apksigner from the installed Android SDK build-tools
           ANDROID_HOME="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-/usr/local/lib/android/sdk}}"
           BUILD_TOOLS_DIR=$(ls -d "$ANDROID_HOME"/build-tools/* 2>/dev/null | head -n 1)
           if [ -z "$BUILD_TOOLS_DIR" ]; then
-            echo "::error::Could not locate Android SDK build-tools under $ANDROID_HOME"
+            echo "::error::Android SDK build-tools not found"
             exit 1
           fi
           APKSIGNER="$BUILD_TOOLS_DIR/apksigner"
-          echo "Using apksigner: $APKSIGNER"
 
-          # Sign — output alongside the original
           APK_SIGNED="${APK_UNSIGNED%-unsigned.apk}.apk"
           "$APKSIGNER" sign \
             --ks keystore.jks \
@@ -189,35 +118,24 @@ jobs:
             --out "$APK_SIGNED" \
             "$APK_UNSIGNED"
 
-          echo "Signed APK: $APK_SIGNED"
           echo "signed_apk_path=$APK_SIGNED" >> "$GITHUB_ENV"
 
-      # -----------------------------------------------------------------------
-      # Verify the signed APK using apksigner verify.
-      # -----------------------------------------------------------------------
       - name: Verify Signed APK
         run: |
           ANDROID_HOME="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-/usr/local/lib/android/sdk}}"
           BUILD_TOOLS_DIR=$(ls -d "$ANDROID_HOME"/build-tools/* 2>/dev/null | head -n 1)
-          APKSIGNER="$BUILD_TOOLS_DIR/apksigner"
-          "$APKSIGNER" verify --verbose "${{ env.signed_apk_path }}"
+          "$BUILD_TOOLS_DIR/apksigner" verify --verbose "${{ env.signed_apk_path }}"
 
-      # -----------------------------------------------------------------------
-      # Upload the signed APK as a build artifact for later download.
-      # -----------------------------------------------------------------------
-      - name: Upload Signed APK Artifact
-        uses: actions/upload-artifact@v4
+      - name: Upload Signed APK
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd6aab436354f7a5933 # v4.6.0
         with:
           name: app-release-signed
           path: ${{ env.signed_apk_path }}
           if-no-files-found: error
+          retention-days: 14
 
-      # -----------------------------------------------------------------------
-      # Create a GitHub Release and attach the signed APK.
-      # Release notes are auto-generated from merged pull requests.
-      # -----------------------------------------------------------------------
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@c95fe605939608e9df0c899fcbd7c35ff8d9ff72 # v2.2.1
         with:
           files: ${{ env.signed_apk_path }}
           generate_release_notes: true
