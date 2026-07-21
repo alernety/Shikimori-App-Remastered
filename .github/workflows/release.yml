@@ -65,9 +65,11 @@ jobs:
         run: chmod +x gradlew
 
       # -----------------------------------------------------------------------
-      # Cache Gradle dependencies between builds (speeds up subsequent runs).
+      # Cache Gradle dependencies + build cache across runs.
+      # With --build-cache on every ./gradlew, task outputs from a prior run
+      # are reused when inputs haven't changed.
       # -----------------------------------------------------------------------
-      - name: Cache Gradle dependencies
+      - name: Cache Gradle dependencies + build outputs
         uses: actions/cache@v4
         with:
           path: ~/.gradle/caches
@@ -97,7 +99,7 @@ jobs:
       # Build the release APK (unsigned — zipAlignEnabled is set in build.gradle).
       # -----------------------------------------------------------------------
       - name: Build Release APK
-        run: ./gradlew assembleRelease --no-daemon
+        run: ./gradlew assembleRelease --no-daemon --build-cache
 
       # -----------------------------------------------------------------------
       # Sign the unsigned APK using apksigner.
@@ -112,22 +114,52 @@ jobs:
       # -----------------------------------------------------------------------
       - name: Sign APK
         env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
         run: |
-          # Decode base64-encoded keystore
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > keystore.orig
+          # --- Validate secrets ---------------------------------------------------
+          # Use env:KEYSTORE_BASE64 (not inline ${{ }}) to handle multiline values
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "::error::KEYSTORE_BASE64 secret is not set. Configure it in repository settings."
+            exit 1
+          fi
+          if [ -z "$KEY_ALIAS" ]; then
+            echo "::error::KEY_ALIAS secret is not set. Configure it in repository settings."
+            exit 1
+          fi
+          if [ -z "$KEYSTORE_PASSWORD" ]; then
+            echo "::error::KEYSTORE_PASSWORD secret is not set. Configure it in repository settings."
+            exit 1
+          fi
+          if [ -z "$KEY_PASSWORD" ]; then
+            echo "::error::KEY_PASSWORD secret is not set. Configure it in repository settings."
+            exit 1
+          fi
+
+          # Decode base64-encoded keystore via env var (handles multi-line values)
+          base64 -d <<< "$KEYSTORE_BASE64" > keystore.orig
+          if [ ! -s keystore.orig ]; then
+            echo "::error::Decoded keystore is empty. Check KEYSTORE_BASE64 value."
+            exit 1
+          fi
 
           # Re-encode PKCS12 to strip non-standard DER tags (Tag number > 30)
-          # PEM format has no attribute tags; re-export creates standard tags
+          # PEM format has no attribute tags; re-export creates standard tags.
+          # `|| true` prevents bash -e -o pipefail from killing the script
+          # on OpenSSL failure — the file-size check below handles the error.
           openssl pkcs12 -in keystore.orig \
             -password env:KEYSTORE_PASSWORD \
             -nodes 2>/dev/null | \
           openssl pkcs12 -export \
             -out keystore.jks \
             -passout env:KEYSTORE_PASSWORD \
-            -name "$KEY_ALIAS" 2>/dev/null
+            -name "$KEY_ALIAS" 2>/dev/null || true
+          if [ ! -s keystore.jks ]; then
+            echo "::error::OpenSSL PKCS12 re-encoding failed. Verify the keystore password and format."
+            exit 1
+          fi
 
           # Locate the unsigned APK
           APK_UNSIGNED=$(find app/build/outputs/apk/release -name "*-unsigned.apk" -type f | head -n 1)
