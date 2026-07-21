@@ -1,5 +1,6 @@
 package com.gnoemes.shikimori.domain.rates
 
+import com.gnoemes.shikimori.data.graphql.type.UserRateOrderInputType
 import com.gnoemes.shikimori.data.repository.rates.RatesRepository
 import com.gnoemes.shikimori.data.repository.user.UserRepository
 import com.gnoemes.shikimori.entity.common.domain.Type
@@ -16,12 +17,12 @@ class RatesInteractorImpl @Inject constructor(
         private val userRepository: UserRepository
 ) : RatesInteractor {
 
-    override fun getAnimeRates(id: Long, page: Int, limit: Int, rateStatus: RateStatus): Single<List<Rate>> =
-            repository.getAnimeRates(id, page, limit, rateStatus)
+    override fun getAnimeRates(id: Long, page: Int, limit: Int, rateStatus: RateStatus, order: UserRateOrderInputType?): Single<List<Rate>> =
+            repository.getAnimeRates(id, page, limit, rateStatus, order)
                     .applyErrorHandlerAndSchedulers()
 
-    override fun getMangaRates(id: Long, page: Int, limit: Int, rateStatus: RateStatus): Single<List<Rate>> =
-            repository.getMangaRates(id, page, limit, rateStatus)
+    override fun getMangaRates(id: Long, page: Int, limit: Int, rateStatus: RateStatus, order: UserRateOrderInputType?): Single<List<Rate>> =
+            repository.getMangaRates(id, page, limit, rateStatus, order)
                     .applyErrorHandlerAndSchedulers()
 
     override fun getRate(id: Long): Single<UserRate> = repository.getRate(id).applyErrorHandlerAndSchedulers()

@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.user.presentation.UserContentItem
+import com.gnoemes.shikimori.utils.images.GlideImageLoader
 import com.gnoemes.shikimori.utils.images.ImageLoader
 import com.gnoemes.shikimori.utils.inflate
 import com.gnoemes.shikimori.utils.onClick
@@ -40,7 +41,7 @@ class UserContentAdapterDelegate(
         fun bind(item: UserContentItem) {
             this.item = item
             if (layoutRes == R.layout.item_profile) imageLoader.setCircleImage(imageView, item.image)
-            else imageLoader.setImageWithPlaceHolder(imageView, item.image)
+            else imageLoader.setImageWithPlaceHolder(imageView, item.image, GlideImageLoader.entityType(item.type), item.id)
         }
 
     }

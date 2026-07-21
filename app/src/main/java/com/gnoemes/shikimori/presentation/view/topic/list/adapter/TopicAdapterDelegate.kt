@@ -14,6 +14,7 @@ import com.gnoemes.shikimori.presentation.view.topic.holders.TopicContentViewHol
 import com.gnoemes.shikimori.presentation.view.topic.holders.TopicUserViewHolder
 import com.gnoemes.shikimori.utils.dimen
 import com.gnoemes.shikimori.utils.gone
+import com.gnoemes.shikimori.utils.images.GlideImageLoader
 import com.gnoemes.shikimori.utils.images.ImageLoader
 import com.gnoemes.shikimori.utils.visibleIf
 import com.hannesdorfmann.adapterdelegates4.AbsListItemAdapterDelegate
@@ -67,7 +68,7 @@ class TopicAdapterDelegate(
                 linkedImageView.visibleIf { linked != null }
 
                 if (linked !== null) {
-                    imageLoader.setImageWithPlaceHolder(linkedImageView, linked.imageUrl)
+                    imageLoader.setImageWithPlaceHolder(linkedImageView, linked.imageUrl, GlideImageLoader.entityType(linked.linkedType), linked.linkedId)
                     (topicLayout.titleView.layoutParams as ConstraintLayout.LayoutParams).apply { leftMargin = margin }
                 } else {
                     (topicLayout.titleView.layoutParams as ConstraintLayout.LayoutParams).apply { leftMargin = 0 }

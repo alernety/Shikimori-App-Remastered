@@ -11,6 +11,8 @@ import com.gnoemes.shikimori.di.app.module.UtilModule;
 import com.gnoemes.shikimori.di.app.module.local.DbModule;
 import com.gnoemes.shikimori.di.app.module.local.SettingsModule;
 import com.gnoemes.shikimori.di.app.module.network.ApiModule;
+import com.gnoemes.shikimori.di.app.module.network.GraphQLModule;
+import com.gnoemes.shikimori.di.app.module.network.GraphQLSourceModule;
 
 import javax.inject.Singleton;
 
@@ -22,7 +24,8 @@ import dagger.android.AndroidInjector;
         ActivityInjectionModule.class, NavigationModule.class,
         UtilModule.class, DbModule.class, SettingsModule.class,
         RepositoryModule.class, InteractorModule.class,
-        ConverterModule.class})
+        ConverterModule.class, GraphQLModule.class,
+        GraphQLSourceModule.class})
 public interface AppComponent extends AndroidInjector<App> {
 
     @Component.Builder

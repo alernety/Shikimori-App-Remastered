@@ -27,6 +27,10 @@ class RanobeRepositoryImpl @Inject constructor(
         private val rolesConverter: RolesResponseConverter
 ) : RanobeRepository {
 
+    override fun getList(filters: Map<String, String>): Single<List<Manga>> =
+            api.getList(filters)
+                    .map(mangaConverter)
+
     override fun getDetails(id: Long): Single<MangaDetails> =
             api.getDetails(id)
                     .map(detailsConverter)

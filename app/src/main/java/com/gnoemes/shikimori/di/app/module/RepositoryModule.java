@@ -24,16 +24,16 @@ import com.gnoemes.shikimori.data.repository.download.DownloadRepository;
 import com.gnoemes.shikimori.data.repository.download.DownloadRepositoryImpl;
 import com.gnoemes.shikimori.data.repository.rates.RateChangesRepository;
 import com.gnoemes.shikimori.data.repository.rates.RateChangesRepositoryImpl;
+import com.gnoemes.shikimori.data.repository.rates.GraphQLRatesRepositoryImpl;
 import com.gnoemes.shikimori.data.repository.rates.RatesRepository;
-import com.gnoemes.shikimori.data.repository.rates.RatesRepositoryImpl;
 import com.gnoemes.shikimori.data.repository.series.shikimori.EpisodeChangesRepository;
 import com.gnoemes.shikimori.data.repository.series.shikimori.EpisodeChangesRepositoryImpl;
 import com.gnoemes.shikimori.data.repository.series.shikimori.SeriesSyncRepository;
 import com.gnoemes.shikimori.data.repository.series.shikimori.SeriesSyncRepositoryImpl;
 import com.gnoemes.shikimori.data.repository.series.smotretanime.Anime365TokenSource;
 import com.gnoemes.shikimori.data.repository.series.smotretanime.Anime365TokenSourceImpl;
+import com.gnoemes.shikimori.data.repository.user.GraphQLUserRepositoryImpl;
 import com.gnoemes.shikimori.data.repository.user.UserRepository;
-import com.gnoemes.shikimori.data.repository.user.UserRepositoryImpl;
 
 import javax.inject.Singleton;
 
@@ -54,11 +54,11 @@ public interface RepositoryModule {
 
     @Binds
     @Reusable
-    UserRepository bindUserRepository(UserRepositoryImpl repository);
+    UserRepository bindUserRepository(GraphQLUserRepositoryImpl repository);
 
     @Binds
     @Reusable
-    RatesRepository bindRatesRepository(RatesRepositoryImpl repository);
+    RatesRepository bindRatesRepository(GraphQLRatesRepositoryImpl repository);
 
     @Binds
     @Reusable

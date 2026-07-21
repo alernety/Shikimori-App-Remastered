@@ -1,6 +1,9 @@
 package com.gnoemes.shikimori.presentation.presenter.rates
 
 import moxy.InjectViewState
+import com.gnoemes.shikimori.data.graphql.type.UserRateOrderInputType
+import com.gnoemes.shikimori.data.graphql.type.UserRateOrderFieldEnum
+import com.gnoemes.shikimori.data.graphql.type.SortOrderEnum
 import com.gnoemes.shikimori.data.local.preference.RateSortSource
 import com.gnoemes.shikimori.data.local.preference.SettingsSource
 import com.gnoemes.shikimori.domain.app.CancelableTaskInteractor
@@ -38,12 +41,15 @@ import com.gnoemes.shikimori.presentation.presenter.rates.converter.RateCountCon
 import com.gnoemes.shikimori.presentation.presenter.rates.converter.RateViewModelConverter
 import com.gnoemes.shikimori.presentation.presenter.rates.provider.RateResourceProvider
 import com.gnoemes.shikimori.presentation.view.rates.RateView
+import com.gnoemes.shikimori.utils.applyErrorHandlerAndSchedulers
 import com.gnoemes.shikimori.utils.nullIfEmpty
 import io.reactivex.Completable
+import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.functions.BiFunction
 import io.reactivex.schedulers.Schedulers
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 @InjectViewState
@@ -82,6 +88,8 @@ class RatePresenter @Inject constructor(
     private var pinnedRates: Int = 0
 
     private var localRemovedItems = mutableListOf<Long>()
+
+    private var rateCategories: List<RateCategory> = emptyList()
 
     override fun onViewReattached() {
         loadUserOrCategories()
@@ -125,6 +133,7 @@ class RatePresenter @Inject constructor(
                     .subscribe({ }, this::processUserErrors)
 
     private fun setRateData(items: List<RateCategory>) {
+        rateCategories = items
         viewState.setNavigationItems(items)
         viewState.showNeedAuthView(false)
         if (items.isNotEmpty()) {
@@ -186,13 +195,65 @@ class RatePresenter @Inject constructor(
     // Rate list logic
     ///////////////////////////////////////////////////////////////////////////
 
+    override fun loadData() {
+        viewState.showLoadAllRatesProgress(true)
+        if (sort.toUserRateOrderInputType(isDescendingSort) != null) {
+            super.loadData()
+        } else {
+            loadAllRates()
+        }
+    }
+
+    private fun loadAllRates() {
+        val totalCount = rateCategories.find { it.status == rateStatus }?.count ?: run {
+            showEmptyView(true)
+            return
+        }
+        if (totalCount == 0) {
+            showEmptyView(true)
+            return
+        }
+
+        val totalPages = (totalCount + 49) / 50
+        if (totalPages <= 1) {
+            // Single page — load normally via paginator
+            super.loadData()
+            return
+        }
+
+        viewState.showLoadAllRatesProgress(true)
+
+        Observable.range(1, totalPages)
+            .concatMapSingle { page ->
+                val request = if (isAnime) ratesInteractor.getAnimeRates(userId, page, 50, rateStatus!!)
+                              else ratesInteractor.getMangaRates(userId, page, 50, rateStatus!!)
+                request.delay(700, TimeUnit.MILLISECONDS)
+            }
+            .toList()
+            .map { arrays ->
+                @Suppress("UNCHECKED_CAST")
+                arrays.flatMap { it as List<Rate> }
+            }
+            .doAfterTerminate { viewState.showLoadAllRatesProgress(false) }
+            .applyErrorHandlerAndSchedulers()
+            .subscribe({ allRates ->
+                items = allRates.toMutableList()
+                showData(true, allRates)
+            }, { error ->
+                processErrors(error)
+            })
+            .addToDisposables()
+    }
+
     override fun getPaginatorRequestFactory(): (Int) -> Single<List<Rate>> {
+        val orderInput = sort.toUserRateOrderInputType(isDescendingSort)
         return if (rateStatus == null) { page: Int -> Single.error(IllegalStateException()) }
-        else if (isAnime) { page: Int -> ratesInteractor.getAnimeRates(userId, page, Constants.MAX_LIMIT, rateStatus!!) }
-        else { page: Int -> ratesInteractor.getMangaRates(userId, page, Constants.MAX_LIMIT, rateStatus!!) }
+        else if (isAnime) { page: Int -> ratesInteractor.getAnimeRates(userId, page, 50, rateStatus!!, orderInput) }
+        else { page: Int -> ratesInteractor.getMangaRates(userId, page, 50, rateStatus!!, orderInput) }
     }
 
     override fun showEmptyError(show: Boolean, throwable: Throwable?) {
+        viewState.showLoadAllRatesProgress(false)
         if (show) processErrors(throwable!!)
         else viewState.apply {
             hideEmptyView()
@@ -201,12 +262,14 @@ class RatePresenter @Inject constructor(
     }
 
     override fun showData(show: Boolean, data: List<Rate>) {
+        viewState.showLoadAllRatesProgress(false)
         items = data.toMutableList()
         if (show) onSortChanged(sort, isDescendingSort)
         else viewState.showContent(show)
     }
 
     override fun showEmptyView(show: Boolean) {
+        viewState.showLoadAllRatesProgress(false)
         if (show) {
             rateStatus = null
             loadUserOrCategories()
@@ -569,5 +632,19 @@ class RatePresenter @Inject constructor(
     private fun openAuth(type: AuthType) {
         router.navigateTo(KeyScreen(Screens.AUTHORIZATION, type))
         logEvent(AnalyticEvent.NAVIGATION_AUTHORIZATION)
+    }
+
+    private fun RateSort.toUserRateOrderInputType(desc: Boolean): UserRateOrderInputType? {
+        return when (this) {
+            is RateSort.DateUpdated -> UserRateOrderInputType(
+                field = UserRateOrderFieldEnum.updated_at,
+                order = if (desc) SortOrderEnum.desc else SortOrderEnum.asc
+            )
+            is RateSort.Id -> UserRateOrderInputType(
+                field = UserRateOrderFieldEnum.id,
+                order = if (desc) SortOrderEnum.desc else SortOrderEnum.asc
+            )
+            else -> null
+        }
     }
 }

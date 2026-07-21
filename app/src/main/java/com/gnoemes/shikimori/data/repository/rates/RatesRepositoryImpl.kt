@@ -1,5 +1,6 @@
 package com.gnoemes.shikimori.data.repository.rates
 
+import com.gnoemes.shikimori.data.graphql.type.UserRateOrderInputType
 import com.gnoemes.shikimori.data.local.db.AnimeRateSyncDbSource
 import com.gnoemes.shikimori.data.local.db.ChapterDbSource
 import com.gnoemes.shikimori.data.local.db.EpisodeDbSource
@@ -24,19 +25,21 @@ class RatesRepositoryImpl @Inject constructor(
         private val mangaSyncSource: MangaRateSyncDbSource
 ) : RatesRepository {
 
-    override fun getAnimeRates(id: Long, page: Int, limit: Int, rateStatus: RateStatus): Single<List<Rate>> =
-            api.getUserAnimeRates(id, page, limit, rateStatus.status)
-                    .map(converter)
-                    .onErrorResumeNext { if (it is NoSuchElementException) Single.just(emptyList()) else Single.error(it) }
-                    .doOnSuccess { if (it.isNotEmpty() && page > 1) it.toMutableList().removeAt(0) }
+    override fun getAnimeRates(id: Long, page: Int, limit: Int, rateStatus: RateStatus, order: UserRateOrderInputType?): Single<List<Rate>> {
+        val offset = (page - 1) * limit
+        return api.getUserAnimeRates(id, offset, limit, rateStatus.status)
+                .map(converter)
+                .onErrorResumeNext { if (it is NoSuchElementException) Single.just(emptyList()) else Single.error(it) }
+    }
 
-    override fun getMangaRates(id: Long, page: Int, limit: Int, rateStatus: RateStatus): Single<List<Rate>> =
-            api.getUserMangaRates(id, page, limit, rateStatus.status)
-                    .map(converter)
-                    .onErrorResumeNext { if (it is NoSuchElementException) Single.just(emptyList()) else Single.error(it) }
-                    .doOnSuccess { if (it.isNotEmpty() && page > 1) it.toMutableList().removeAt(0) }
+    override fun getMangaRates(id: Long, page: Int, limit: Int, rateStatus: RateStatus, order: UserRateOrderInputType?): Single<List<Rate>> {
+        val offset = (page - 1) * limit
+        return api.getUserMangaRates(id, offset, limit, rateStatus.status)
+                .map(converter)
+                .onErrorResumeNext { if (it is NoSuchElementException) Single.just(emptyList()) else Single.error(it) }
+    }
 
-    override fun getUserRates(id: Long, targetId: Long?, target: Type?, statuses: String?, page: Int, limit: Int): Single<List<UserRate>> =
+    override fun getUserRates(id: Long, targetId: Long?, target: Type?, statuses: String?, page: Int, limit: Int, order: UserRateOrderInputType?): Single<List<UserRate>> =
             api.getUserRates(id, targetId, target?.name?.lowercase()?.firstUpperCase(), statuses, page, limit)
                     .map { list -> list.mapNotNull { converter.convertUserRateResponse(targetId, it) } }
 

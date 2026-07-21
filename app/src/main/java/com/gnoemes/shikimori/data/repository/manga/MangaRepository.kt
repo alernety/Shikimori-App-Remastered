@@ -9,6 +9,8 @@ import io.reactivex.Single
 
 interface MangaRepository {
 
+    fun getList(filters: Map<String, String>): Single<List<Manga>>
+
     fun getDetails(id: Long): Single<MangaDetails>
 
     fun getRoles(id: Long): Single<Roles>

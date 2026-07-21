@@ -16,5 +16,9 @@ enum class ForumType(val type : String) {
     @field:SerializedName("collections") COLLECTIONS("collections") ,
     @field:SerializedName("cosplay") COSPLAY("cosplay") ,
     @field:SerializedName("my_clubs") MY_CLUBS("my_clubs"),
-    @field:SerializedName("articles") ARTICLES("articles");
+    @field:SerializedName("articles") ARTICLES("articles"),
+    @field:SerializedName("hidden") HIDDEN("hidden"),
+    @field:SerializedName("premoderation") PREMODERATION("premoderation"),
+    @field:SerializedName("tierlists") TIERLISTS("tierlists"),
+    @field:SerializedName("critiques") CRITIQUES("critiques");
 }

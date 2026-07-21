@@ -2,9 +2,8 @@ package com.gnoemes.shikimori.di.person;
 
 import moxy.MvpPresenter;
 import com.gnoemes.shikimori.data.repository.roles.PersonRepository;
-import com.gnoemes.shikimori.data.repository.roles.PersonRepositoryImpl;
-import com.gnoemes.shikimori.data.repository.roles.converter.PersonDetailsResponseConverter;
-import com.gnoemes.shikimori.data.repository.roles.converter.PersonDetailsResponseConverterImpl;
+import com.gnoemes.shikimori.data.repository.roles.RestPersonRepositoryImpl;
+
 import com.gnoemes.shikimori.di.base.modules.BaseChildFragmentModule;
 import com.gnoemes.shikimori.di.base.scopes.BottomChildScope;
 import com.gnoemes.shikimori.domain.roles.PersonInteractor;
@@ -32,13 +31,9 @@ public interface PersonModule {
     PersonInteractor bindPersonInteractor(PersonInteractorImpl interactor);
 
     @Binds
-    PersonRepository bindPersonRepository(PersonRepositoryImpl repository);
-
+    PersonRepository bindPersonRepository(RestPersonRepositoryImpl repository);
     @Binds
-    PersonDetailsResponseConverter bindPersonDetailsResponseConverter(PersonDetailsResponseConverterImpl converter);
-
-    @Binds
-    PersonDetailsViewModelConverter bindPersonDetailsViewModelConverter(PersonDetailsViewModelConverterImpl conterter);
+    PersonDetailsViewModelConverter bindPersonDetailsViewModelConverter(PersonDetailsViewModelConverterImpl converter);
 
     @Binds
     @Reusable

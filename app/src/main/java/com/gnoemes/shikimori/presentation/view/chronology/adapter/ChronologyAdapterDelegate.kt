@@ -10,6 +10,7 @@ import com.gnoemes.shikimori.entity.chronology.ChronologyViewModel
 import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.rates.domain.RateStatus
 import com.gnoemes.shikimori.utils.*
+import com.gnoemes.shikimori.utils.images.GlideImageLoader
 import com.gnoemes.shikimori.utils.images.ImageLoader
 import com.hannesdorfmann.adapterdelegates4.AbsListItemAdapterDelegate
 
@@ -41,7 +42,7 @@ class ChronologyAdapterDelegate(
         fun bind(item: ChronologyViewModel) {
             this.item = item
             with(binding) {
-                imageLoader.setImageWithPlaceHolder(imageView, item.image.original)
+                imageLoader.setImageWithPlaceHolder(imageView, item.image.original, GlideImageLoader.entityType(item.type), item.id)
                 nameView.text = item.title
                 descriptionView.text = item.description
                 relationView.text = item.relation

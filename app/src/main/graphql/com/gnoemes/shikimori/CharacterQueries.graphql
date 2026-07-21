@@ -1,0 +1,29 @@
+query CharacterList($page: PositiveInt, $limit: PositiveInt, $ids: String, $search: String) {
+  characters(page: $page, limit: $limit, ids: $ids, search: $search) {
+    id
+    name
+    russian
+    japanese
+    url
+    poster {
+      mainUrl
+      previewUrl
+      preview2xUrl
+    }
+    malId
+    isAnime
+    isManga
+    isRanobe
+    description
+    descriptionHtml
+    descriptionSource
+    synonyms
+    topic {
+      id
+      title
+      url
+    }
+    createdAt
+    updatedAt
+  }
+}

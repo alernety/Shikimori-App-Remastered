@@ -1,5 +1,6 @@
 package com.gnoemes.shikimori.data.repository.rates
 
+import com.gnoemes.shikimori.data.graphql.type.UserRateOrderInputType
 import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.rates.domain.Rate
@@ -10,11 +11,11 @@ import io.reactivex.Single
 
 interface RatesRepository {
 
-    fun getAnimeRates(id: Long, page: Int, limit: Int, rateStatus: RateStatus): Single<List<Rate>>
+    fun getAnimeRates(id: Long, page: Int, limit: Int, rateStatus: RateStatus, order: UserRateOrderInputType? = null): Single<List<Rate>>
 
-    fun getMangaRates(id: Long, page: Int, limit: Int, rateStatus: RateStatus): Single<List<Rate>>
+    fun getMangaRates(id: Long, page: Int, limit: Int, rateStatus: RateStatus, order: UserRateOrderInputType? = null): Single<List<Rate>>
 
-    fun getUserRates(id: Long, targetId: Long? = null, target: Type? = null, statuses: String? = null, page: Int = 1, limit: Int = Constants.MAX_LIMIT): Single<List<UserRate>>
+    fun getUserRates(id: Long, targetId: Long? = null, target: Type? = null, statuses: String? = null, page: Int = 1, limit: Int = Constants.MAX_LIMIT, order: UserRateOrderInputType? = null): Single<List<UserRate>>
 
     fun syncRate(id: Long): Completable
 

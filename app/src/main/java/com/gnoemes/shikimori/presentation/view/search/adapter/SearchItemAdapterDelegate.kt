@@ -7,6 +7,7 @@ import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.databinding.ItemSearchBinding
 import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.search.presentation.SearchItem
+import com.gnoemes.shikimori.utils.images.GlideImageLoader
 import com.gnoemes.shikimori.utils.images.ImageLoader
 import com.gnoemes.shikimori.utils.inflate
 import com.gnoemes.shikimori.utils.onClick
@@ -39,7 +40,7 @@ class SearchItemAdapterDelegate(
 
         fun bind(item: SearchItem) {
             this.item = item
-            imageLoader.setImageListItem(binding.imageView, item.image.original)
+            imageLoader.setImageListItem(binding.imageView, item.image.original, GlideImageLoader.entityType(item.type), item.id)
             binding.nameView.text = item.name
             binding.typeView.text = item.typeText
             binding.typeView.visibleIf { !item.typeText.isNullOrEmpty() }

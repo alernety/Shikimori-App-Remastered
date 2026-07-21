@@ -5,6 +5,7 @@ import com.gnoemes.shikimori.data.local.preference.PlayerSettingsSource
 import com.gnoemes.shikimori.di.app.annotations.SettingsQualifier
 import com.gnoemes.shikimori.entity.app.domain.SettingsExtras
 import com.gnoemes.shikimori.utils.putBoolean
+import com.gnoemes.shikimori.utils.putFloat
 import com.gnoemes.shikimori.utils.putLong
 import javax.inject.Inject
 
@@ -47,4 +48,12 @@ class PlayerSettingsSourceImpl @Inject constructor(
     override var forwardRewindOffsetBig: Long
         get() = prefs.getLong(SettingsExtras.PLAYER_FORWARD_REWIND_OFFSET_BIG, 90000)
         set(value) = prefs.putLong(SettingsExtras.PLAYER_FORWARD_REWIND_OFFSET_BIG, value)
+
+    override var rotationButtonX: Float
+        get() = prefs.getFloat(SettingsExtras.PLAYER_ROTATION_BUTTON_X, 0f)
+        set(value) = prefs.putFloat(SettingsExtras.PLAYER_ROTATION_BUTTON_X, value)
+
+    override var rotationButtonY: Float
+        get() = prefs.getFloat(SettingsExtras.PLAYER_ROTATION_BUTTON_Y, 0f)
+        set(value) = prefs.putFloat(SettingsExtras.PLAYER_ROTATION_BUTTON_Y, value)
 }

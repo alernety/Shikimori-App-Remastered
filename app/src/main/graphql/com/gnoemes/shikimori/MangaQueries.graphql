@@ -1,0 +1,90 @@
+query MangaList($page: PositiveInt, $limit: PositiveInt, $order: OrderEnum, $kind: MangaKindString, $status: MangaStatusString, $season: SeasonString, $score: Int, $genre: String, $publisher: String, $franchise: String, $censored: Boolean, $mylist: MylistString, $ids: String, $excludeIds: String, $search: String) {
+  mangas(page: $page, limit: $limit, order: $order, kind: $kind, status: $status, season: $season, score: $score, genre: $genre, publisher: $publisher, franchise: $franchise, censored: $censored, mylist: $mylist, ids: $ids, excludeIds: $excludeIds, search: $search) {
+    id
+    name
+    russian
+    url
+    score
+    status
+    kind
+    chapters
+    volumes
+    poster {
+      mainUrl
+      main2xUrl
+      previewUrl
+      preview2xUrl
+    }
+    airedOn { year month day date }
+    releasedOn { year month day date }
+  }
+}
+
+query MangaById($ids: String!) {
+  mangas(ids: $ids, limit: 1) {
+    id
+    name
+    russian
+    url
+    score
+    status
+    kind
+    chapters
+    volumes
+    franchise
+    description
+    descriptionHtml
+    poster {
+      originalUrl
+      previewUrl
+      mainUrl
+    }
+    airedOn { year month day date }
+    releasedOn { year month day date }
+    genres { name }
+    scoresStats { score count }
+    statusesStats { status count }
+    userRate {
+      id score status episodes chapters volumes rewatches text
+      createdAt updatedAt
+    }
+    topic {
+      id
+    }
+    externalLinks {
+      id
+      url
+      kind
+    }
+    characterRoles {
+      character {
+        id
+        name
+        russian
+        url
+        poster {
+          originalUrl
+          mainUrl
+          main2xUrl
+          previewUrl
+        }
+      }
+    }
+    personRoles {
+      rolesEn
+      rolesRu
+      person {
+        id
+        name
+        russian
+        url
+        poster {
+          originalUrl
+          mainUrl
+          main2xUrl
+          previewUrl
+        }
+      }
+    }
+  }
+}

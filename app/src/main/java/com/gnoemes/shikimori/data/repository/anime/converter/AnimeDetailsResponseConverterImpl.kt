@@ -60,6 +60,6 @@ class AnimeDetailsResponseConverterImpl @Inject constructor(
             return null
         }
 
-        return videoResponses.map { AnimeVideo(it.id, it.name, it.imageUrl, it.url, it.type, it.hosting) }
+        return videoResponses.map { AnimeVideo(it.id, it.name, it.imageUrl?.appendHostIfNeed(), it.url, it.type, it.hosting) }
     }
 }

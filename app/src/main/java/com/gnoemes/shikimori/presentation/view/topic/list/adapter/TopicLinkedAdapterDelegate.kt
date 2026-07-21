@@ -15,6 +15,7 @@ import com.gnoemes.shikimori.entity.topic.domain.TopicType
 import com.gnoemes.shikimori.entity.topic.presentation.TopicViewModel
 import com.gnoemes.shikimori.presentation.view.topic.holders.TopicUserViewHolder
 import com.gnoemes.shikimori.utils.date.DateTimeConverter
+import com.gnoemes.shikimori.utils.images.GlideImageLoader
 import com.gnoemes.shikimori.utils.images.ImageLoader
 import com.gnoemes.shikimori.utils.inflate
 import com.gnoemes.shikimori.utils.toBold
@@ -67,7 +68,7 @@ class TopicLinkedAdapterDelegate(
 
 
                 if (linked !== null && linked is Anime) {
-                    imageLoader.setImageWithPlaceHolder(imageView, linked.imageUrl)
+                    imageLoader.setImageWithPlaceHolder(imageView, linked.imageUrl, GlideImageLoader.entityType(linked.linkedType), linked.linkedId)
 
                     val type = convertType(linked.type, linked.episodes)
                     val season = converter.convertAnimeSeasonToString(linked.dateAired)

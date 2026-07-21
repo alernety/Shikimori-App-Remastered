@@ -4,19 +4,27 @@ import android.content.Context
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.data.local.preference.SettingsSource
 import com.gnoemes.shikimori.data.local.services.FilterSource
+import com.gnoemes.shikimori.data.repository.common.GenreGraphQLSource
+import com.gnoemes.shikimori.data.repository.common.GenreResponseConverter
 import com.gnoemes.shikimori.entity.anime.domain.AnimeType
 import com.gnoemes.shikimori.entity.common.domain.*
 import com.gnoemes.shikimori.entity.manga.domain.MangaType
 import com.gnoemes.shikimori.entity.rates.domain.RateStatus
 import com.gnoemes.shikimori.entity.search.domain.FilterType
 import com.gnoemes.shikimori.entity.search.presentation.FilterCategory
+import io.reactivex.schedulers.Schedulers
 import org.joda.time.DateTime
 import javax.inject.Inject
 
 class FilterSourceImpl @Inject constructor(
         private val context: Context,
-        private val settingsSource: SettingsSource
+        private val settingsSource: SettingsSource,
+        private val genreGraphQLSource: GenreGraphQLSource,
+        private val genreConverter: GenreResponseConverter
 ) : FilterSource {
+
+    @Volatile
+    private var genreCache: List<Genre>? = null
 
     override fun getAnimeFilters(): List<FilterCategory> = listOf(
             FilterCategory(FilterType.GENRE, getGenreString(), getFilters(FilterType.GENRE, true)),
@@ -102,13 +110,40 @@ class FilterSourceImpl @Inject constructor(
                     .map { (name, value) -> convert(FilterType.STATUS.value, value, name) }
                     .toMutableList()
 
-    private fun getGenres(anime: Boolean): MutableList<FilterItem> =
+    private fun getGenres(anime: Boolean): MutableList<FilterItem> {
+        genreCache?.let { genres ->
+            return genres
+                    .asSequence()
+                    .filter { genre -> if (!settingsSource.allowR18Content && genre.isR18) false else genre.hasContentId(anime) }
+                    .map { genre -> FilterItem(FilterType.GENRE.value, if (anime) genre.animeId else genre.mangaId, genre.russianName) }
+                    .toMutableList()
+        }
+
+        // Trigger async preload from GraphQL for subsequent calls
+        preloadGenresAsync()
+
+        // Fall back to XML-based genres synchronously
+        return getGenresFromResources(anime)
+    }
+
+    private fun getGenresFromResources(anime: Boolean): MutableList<FilterItem> =
             getList(R.array.genres)
                     .zip(getList(R.array.genres_names))
                     .asSequence()
                     .mapNotNull { pair -> Genre.values().find { it.equalsName(pair.second) }?.let { if (it.hasContentId(anime)) it else null }?.let { if (!settingsSource.allowR18Content && it.isR18) null else it }?.let { Pair(pair.first, if (anime) it.animeId else it.mangaId) } }
                     .map { (name, value) -> convert(FilterType.GENRE.value, value, name) }
                     .toMutableList()
+
+    /**
+     * Asynchronously preload genres from GraphQL so subsequent calls use fresh server data.
+     * On failure silently keeps the XML fallback — errors are non-fatal for filtering.
+     */
+    private fun preloadGenresAsync() {
+        genreGraphQLSource.getAnimeGenres()
+                .map { genreConverter.apply(it) }
+                .subscribeOn(Schedulers.io())
+                .subscribe({ genres -> genreCache = genres }, { /* XML fallback remains active */ })
+    }
 
     private fun convert(action: String, value: String?, text: String?) = FilterItem(action, value, text)
 

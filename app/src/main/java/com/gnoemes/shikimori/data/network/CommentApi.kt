@@ -15,7 +15,7 @@ interface CommentApi {
                     @Query("limit") limit: Int,
                     @Query("desc") desc: Int): Single<List<CommentResponse>>
 
-    @GET("/api/comments/:id")
+    @GET("/api/comments/{id}")
     fun getComment(@Path("id") id: Long): Single<CommentResponse>
 
 }

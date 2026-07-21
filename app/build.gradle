@@ -6,6 +6,7 @@ apply plugin: 'kotlin-kapt'
 apply plugin: 'com.google.firebase.crashlytics'
 apply plugin: 'kotlin-parcelize'
 apply plugin: 'com.google.devtools.ksp'
+apply plugin: 'com.apollographql.apollo'
 
 
 
@@ -100,6 +101,12 @@ android {
     }
 }
 
+apollo {
+    service("shikimori") {
+        packageName.set("com.gnoemes.shikimori.data.graphql")
+    }
+}
+
 kapt {
     correctErrorTypes = true
     arguments {
@@ -141,6 +148,10 @@ dependencies {
 
     implementation 'io.reactivex.rxjava2:rxandroid:' + versions.rxAndroid
     implementation "io.reactivex.rxjava2:rxjava:" + versions.rxJava
+    implementation "com.apollographql.apollo:apollo-runtime:" + versions.apollo
+    // RxJava2 support was removed in Apollo 5; use coroutines-based API and wrap manually
+    implementation "com.apollographql.apollo:apollo-normalized-cache-api:" + versions.apollo
+    implementation "com.apollographql.apollo:apollo-normalized-cache-sqlite:" + versions.apollo
 
     implementation "com.squareup.retrofit2:retrofit:" + versions.retrofit
     implementation "com.squareup.retrofit2:converter-gson:" + versions.retrofit

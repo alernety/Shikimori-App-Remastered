@@ -4,7 +4,7 @@ import androidx.fragment.app.Fragment;
 
 import moxy.MvpPresenter;
 import com.gnoemes.shikimori.data.repository.calendar.CalendarRepository;
-import com.gnoemes.shikimori.data.repository.calendar.CalendarRepositoryImpl;
+import com.gnoemes.shikimori.data.repository.calendar.GraphQLCalendarRepositoryImpl;
 import com.gnoemes.shikimori.data.repository.calendar.converter.CalendarResponseConverter;
 import com.gnoemes.shikimori.data.repository.calendar.converter.CalendarResponseConverterImpl;
 import com.gnoemes.shikimori.di.base.modules.BaseChildFragmentModule;
@@ -38,7 +38,7 @@ public interface CalendarModule {
     CalendarInteractor bindCalendarInteractor(CalendarInteractorImpl interactor);
 
     @Binds
-    CalendarRepository bindCalendarRepository(CalendarRepositoryImpl repository);
+    CalendarRepository bindCalendarRepository(GraphQLCalendarRepositoryImpl repository);
 
     @Binds
     CalendarResponseConverter bindCalendarResponseConverter(CalendarResponseConverterImpl converter);

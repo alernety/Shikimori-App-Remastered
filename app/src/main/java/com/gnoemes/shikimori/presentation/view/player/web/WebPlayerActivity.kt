@@ -4,10 +4,14 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
+import android.content.res.Configuration
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
+import android.view.MotionEvent
 import android.view.View
+import android.view.ViewConfiguration
 import android.view.WindowManager
 import android.webkit.WebResourceRequest
 import android.webkit.WebSettings
@@ -29,6 +33,7 @@ import com.gnoemes.shikimori.databinding.ActivityWebPlayerBinding
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
 import java.util.regex.Pattern
+import kotlin.math.abs
 import javax.inject.Inject
 
 class WebPlayerActivity : BaseThemedActivity() {
@@ -45,8 +50,91 @@ class WebPlayerActivity : BaseThemedActivity() {
 
     private val compositeDisposable = CompositeDisposable()
 
+    private val rotationButtonHideJob = Runnable {
+        binding.rotationView.visibility = View.GONE
+    }
+
+    private val touchSlop by lazy { ViewConfiguration.get(this).scaledTouchSlop }
+
+    private var isDragging = false
+    private var isLongPressed = false
+    private var downX = 0f
+    private var downY = 0f
+    private var downRawX = 0f
+    private var downRawY = 0f
+    private var downTime = 0L
+    private var startTranslationX = 0f
+    private var startTranslationY = 0f
+
+    private fun showRotationButton() {
+        binding.rotationView.visibility = View.VISIBLE
+        binding.rotationView.removeCallbacks(rotationButtonHideJob)
+        binding.rotationView.postDelayed(rotationButtonHideJob, 3000L)
+    }
+
+    private fun setupRotationButton() {
+        binding.rotationView.setOnTouchListener { v, event ->
+            when (event.actionMasked) {
+                MotionEvent.ACTION_DOWN -> {
+                    isDragging = false
+                    isLongPressed = false
+                    downX = event.x
+                    downY = event.y
+                    downRawX = event.rawX
+                    downRawY = event.rawY
+                    downTime = System.currentTimeMillis()
+                    startTranslationX = v.translationX
+                    startTranslationY = v.translationY
+                    showRotationButton()
+                    return@setOnTouchListener true
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    val elapsed = System.currentTimeMillis() - downTime
+                    if (!isLongPressed && elapsed > ViewConfiguration.getLongPressTimeout().toLong()) {
+                        // Long-press detected!
+                        isLongPressed = true
+                        isDragging = true
+                        binding.rotationView.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS)
+                        return@setOnTouchListener true
+                    } else if (isDragging) {
+                        val rangeX = binding.frame.width.toFloat()
+                        val rangeY = binding.frame.height.toFloat()
+                        v.translationX = (startTranslationX + event.rawX - downRawX).coerceIn(-rangeX, rangeX)
+                        v.translationY = (startTranslationY + event.rawY - downRawY).coerceIn(-rangeY, rangeY)
+                        return@setOnTouchListener true
+                    } else {
+                        // Waiting for long-press — consume move to prevent view from cancelling
+                        return@setOnTouchListener true
+                    }
+                }
+                MotionEvent.ACTION_UP -> {
+                    if (isDragging) {
+                        isDragging = false
+                        isLongPressed = false
+                        settingsSource.rotationButtonX = v.translationX
+                        settingsSource.rotationButtonY = v.translationY
+                    } else {
+                        // Short tap — toggle orientation
+                        toggleOrientation()
+                    }
+                    showRotationButton()
+                    return@setOnTouchListener true
+                }
+                MotionEvent.ACTION_CANCEL -> {
+                    isDragging = false
+                    isLongPressed = false
+                    return@setOnTouchListener true
+                }
+            }
+            false
+        }
+    }
+
     private val animeId: Long by lazy { intent.getLongExtra(AppExtras.ARGUMENT_ANIME_ID, -1L) }
     private val episodeId: Long by lazy { intent.getLongExtra(AppExtras.ARGUMENT_EPISODE_ID, -1L) }
+
+    private val isEpisodeVideo: Boolean
+        get() = animeId != -1L && episodeId != -1L
 
     companion object {
         private val ANIME_365_REGEX = "smotret-anime\\.com".toRegex()
@@ -62,7 +150,11 @@ class WebPlayerActivity : BaseThemedActivity() {
 
         showNoAdsMessage()
 
-        if (settingsSource.isOpenLandscape) requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+        if (isEpisodeVideo) {
+            if (settingsSource.isOpenLandscape) requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+        } else {
+            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        }
 
         webView = WebView(applicationContext)
         binding.frame.addView(webView)
@@ -103,6 +195,34 @@ class WebPlayerActivity : BaseThemedActivity() {
             } else showError()
         } else onBackPressed()
 
+        // Show button for both preview and episode
+        showRotationButton()
+        setupRotationButton()
+
+        // Load saved position and clamp to visible area
+        binding.rotationView.post {
+            val v = binding.rotationView
+            val parent = binding.frame
+            if (parent.width == 0 || parent.height == 0) return@post
+
+            v.translationX = settingsSource.rotationButtonX.coerceIn(
+                -v.left.toFloat(),
+                (parent.width - v.left - v.width).toFloat()
+            )
+            v.translationY = settingsSource.rotationButtonY.coerceIn(
+                -v.top.toFloat(),
+                (parent.height - v.top - v.height).toFloat()
+            )
+        }
+
+    }
+
+    override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
+        if (ev?.action == MotionEvent.ACTION_UP) {
+            // Show rotation button on any tap anywhere on screen
+            showRotationButton()
+        }
+        return super.dispatchTouchEvent(ev)
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
@@ -110,6 +230,28 @@ class WebPlayerActivity : BaseThemedActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             if (hasFocus) hideSystemUi()
             else showSystemUI()
+        }
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        if (isAutoRotationEnabled) {
+            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+        }
+        // Clamp button to visible screen area after new layout
+        binding.rotationView.post {
+            val v = binding.rotationView
+            val parent = binding.frame
+            if (parent.width == 0 || parent.height == 0) return@post
+
+            v.translationX = v.translationX.coerceIn(
+                -v.left.toFloat(),
+                (parent.width - v.left - v.width).toFloat()
+            )
+            v.translationY = v.translationY.coerceIn(
+                -v.top.toFloat(),
+                (parent.height - v.top - v.height).toFloat()
+            )
         }
     }
 
@@ -155,6 +297,17 @@ class WebPlayerActivity : BaseThemedActivity() {
         WindowInsetsControllerCompat(window, window.decorView).let { controller ->
             controller.hide(WindowInsetsCompat.Type.systemBars())
             controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        }
+    }
+
+    private val isAutoRotationEnabled: Boolean
+        get() = Settings.System.getInt(contentResolver, Settings.System.ACCELEROMETER_ROTATION, 0) == 1
+
+    private fun toggleOrientation() {
+        val orientation = this.resources.configuration.orientation
+        when (orientation) {
+            Configuration.ORIENTATION_PORTRAIT -> requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+            Configuration.ORIENTATION_LANDSCAPE -> requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         }
     }
 

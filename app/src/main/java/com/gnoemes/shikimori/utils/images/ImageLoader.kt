@@ -6,9 +6,9 @@ interface ImageLoader {
 
     fun setCircleImage(image : ImageView, url : String?)
 
-    fun setImageWithPlaceHolder(image: ImageView, url: String?)
+    fun setImageWithPlaceHolder(image: ImageView, url: String?, entityType: String? = null, entityId: Long? = null)
 
-    fun setImageListItem(image: ImageView, url: String?)
+    fun setImageListItem(image: ImageView, url: String?, entityType: String? = null, entityId: Long? = null)
 
     fun setBlurredImage(image : ImageView, url : String?,  radius : Int = 25, sampling : Int = 1)
 

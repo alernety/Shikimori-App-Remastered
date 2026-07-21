@@ -27,6 +27,10 @@ class MangaRepositoryImpl @Inject constructor(
         private val rolesConverter: RolesResponseConverter
 ) : MangaRepository {
 
+    override fun getList(filters: Map<String, String>): Single<List<Manga>> =
+        api.getList(filters)
+            .map(mangaConverter)
+
     override fun getDetails(id: Long): Single<MangaDetails> =
             api.getDetails(id)
                     .map(detailsConverter)

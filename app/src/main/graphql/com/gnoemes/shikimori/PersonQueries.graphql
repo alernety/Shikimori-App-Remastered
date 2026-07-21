@@ -1,0 +1,29 @@
+query PersonList($page: PositiveInt, $limit: PositiveInt, $ids: [ID!], $search: String, $isSeyu: Boolean, $isProducer: Boolean, $isMangaka: Boolean) {
+  people(page: $page, limit: $limit, ids: $ids, search: $search, isSeyu: $isSeyu, isProducer: $isProducer, isMangaka: $isMangaka) {
+    id
+    name
+    russian
+    japanese
+    url
+    poster {
+      mainUrl
+      previewUrl
+      preview2xUrl
+    }
+    malId
+    isSeyu
+    isProducer
+    isMangaka
+    website
+    birthOn { year month day date }
+    deceasedOn { year month day date }
+    synonyms
+    topic {
+      id
+      title
+      url
+    }
+    createdAt
+    updatedAt
+  }
+}

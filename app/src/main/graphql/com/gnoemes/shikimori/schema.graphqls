@@ -1,0 +1,456 @@
+scalar PositiveInt
+scalar ISO8601DateTime
+scalar ISO8601Date
+
+scalar AnimeKindString
+scalar AnimeStatusString
+scalar MangaKindString
+scalar MangaStatusString
+scalar SeasonString
+scalar DurationString
+scalar RatingString
+scalar OriginString
+scalar MylistString
+
+enum OrderEnum {
+  id
+  id_desc
+  ranked
+  kind
+  popularity
+  name
+  aired_on
+  episodes
+  status
+  random
+  ranked_random
+  ranked_shiki
+  created_at
+  created_at_desc
+  updated_at
+  updated_at_desc
+}
+
+enum GenreKindEnum {
+  demographic
+  genre
+  theme
+}
+
+enum GenreEntryTypeEnum {
+  Anime
+  Manga
+}
+
+enum AnimeRatingEnum {
+  none
+  g
+  pg
+  pg_13
+  r
+  r_plus
+  rx
+}
+
+enum UserRateTargetTypeEnum {
+  Anime
+  Manga
+}
+
+enum UserRateStatusEnum {
+  planned
+  watching
+  rewatching
+  completed
+  on_hold
+  dropped
+}
+
+enum UserRateOrderFieldEnum {
+  id
+  updated_at
+}
+
+enum SortOrderEnum {
+  asc
+  desc
+}
+
+enum RelationKindEnum {
+  adaptation
+  alternative_setting
+  alternative_version
+  character
+  full_story
+  other
+  parent_story
+  prequel
+  sequel
+  side_story
+  spin_off
+  summary
+}
+
+enum VideoKindEnum {
+  pv
+  character_trailer
+  cm
+  op
+  ed
+  op_ed_clip
+  clip
+  other
+  episode_preview
+}
+
+enum ExternalLinkKindEnum {
+  official_site
+  wikipedia
+  anime_news_network
+  myanimelist
+  anime_db
+  world_art
+  kinopoisk
+  kage_project
+  twitter
+  smotret_anime
+  shiki
+  amediateka
+  crunchyroll
+  amazon
+  hidive
+  hulu
+  ivi
+  kinopoisk_hd
+  wink
+  netflix
+  okko
+  youtube
+  remanga
+  senkuro
+  mangalib
+  mangaupdates
+  readmanga
+  mangadex
+  mangafox
+  mangachan
+  mangahub
+  novel_tl
+  ruranobe
+  ranobelib
+  novelupdates
+}
+
+input UserRateOrderInputType {
+  field: UserRateOrderFieldEnum!
+  order: SortOrderEnum!
+}
+
+type Poster {
+  id: ID!
+  mainUrl: String!
+  main2xUrl: String!
+  mainAltUrl: String!
+  mainAlt2xUrl: String!
+  miniUrl: String!
+  mini2xUrl: String!
+  miniAltUrl: String!
+  miniAlt2xUrl: String!
+  previewUrl: String!
+  preview2xUrl: String!
+  previewAltUrl: String!
+  previewAlt2xUrl: String!
+  originalUrl: String!
+}
+
+type IncompleteDate {
+  year: Int
+  month: Int
+  day: Int
+  date: ISO8601Date
+}
+
+type Genre {
+  id: ID!
+  name: String!
+  russian: String!
+  kind: GenreKindEnum!
+  entryType: GenreEntryTypeEnum!
+}
+
+type Studio {
+  id: ID!
+  name: String!
+  imageUrl: String
+}
+
+type Screenshot {
+  id: ID!
+  originalUrl: String!
+  x166Url: String!
+  x332Url: String!
+}
+
+type Video {
+  id: ID!
+  url: String!
+  imageUrl: String!
+  playerUrl: String!
+  name: String
+  kind: VideoKindEnum!
+}
+
+type ScoreStat {
+  score: Int!
+  count: Int!
+}
+
+type StatusStat {
+  status: UserRateStatusEnum!
+  count: Int!
+}
+
+type ExternalLink {
+  id: ID
+  url: String!
+  kind: ExternalLinkKindEnum!
+  createdAt: ISO8601DateTime
+  updatedAt: ISO8601DateTime
+}
+
+type Character {
+  id: ID!
+  name: String!
+  russian: String
+  japanese: String
+  url: String!
+  poster: Poster
+  malId: ID
+  isAnime: Boolean!
+  isManga: Boolean!
+  isRanobe: Boolean!
+  description: String
+  descriptionHtml: String
+  descriptionSource: String
+  synonyms: [String!]!
+  topic: Topic
+  createdAt: ISO8601DateTime!
+  updatedAt: ISO8601DateTime!
+}
+
+type Person {
+  id: ID!
+  name: String!
+  russian: String
+  japanese: String
+  url: String!
+  poster: Poster
+  malId: ID
+  isSeyu: Boolean!
+  isProducer: Boolean!
+  isMangaka: Boolean!
+  website: String
+  birthOn: IncompleteDate
+  deceasedOn: IncompleteDate
+  synonyms: [String!]!
+  topic: Topic
+  createdAt: ISO8601DateTime!
+  updatedAt: ISO8601DateTime!
+}
+
+type CharacterRole {
+  id: ID!
+  rolesEn: [String!]!
+  rolesRu: [String!]!
+  character: Character!
+}
+
+type PersonRole {
+  id: ID!
+  rolesEn: [String!]!
+  rolesRu: [String!]!
+  person: Person!
+}
+
+type Related {
+  id: ID!
+  relationKind: RelationKindEnum!
+  relationText: String!
+  anime: Anime
+  manga: Manga
+}
+
+type Topic {
+  id: ID
+  title: String!
+  type: String!
+  url: String!
+  body: String!
+  htmlBody: String!
+  commentsCount: Int!
+  tags: [String!]!
+  createdAt: ISO8601DateTime!
+  updatedAt: ISO8601DateTime!
+}
+
+type Publisher {
+  id: ID!
+  name: String!
+}
+
+type UserRate {
+  id: ID!
+  score: Int!
+  status: UserRateStatusEnum!
+  episodes: Int!
+  chapters: Int!
+  volumes: Int!
+  rewatches: Int!
+  text: String
+  createdAt: ISO8601DateTime!
+  updatedAt: ISO8601DateTime!
+  anime: Anime
+  manga: Manga
+}
+
+type User {
+  id: ID!
+  nickname: String!
+  avatarUrl: String!
+  url: String!
+  lastOnlineAt: ISO8601DateTime!
+}
+
+type Anime {
+  id: ID!
+  name: String!
+  russian: String
+  english: String
+  japanese: String
+  url: String!
+  score: Float
+  status: AnimeStatusEnum
+  kind: AnimeKindEnum
+  episodes: Int!
+  episodesAired: Int!
+  duration: Int
+  season: String
+  rating: AnimeRatingEnum
+  isCensored: Boolean
+  licenseNameRu: String
+  franchise: String
+  description: String
+  descriptionHtml: String
+  descriptionSource: String
+  opengraphImageUrl: String
+  nextEpisodeAt: ISO8601DateTime
+  createdAt: ISO8601DateTime!
+  updatedAt: ISO8601DateTime!
+  malId: ID
+  synonyms: [String!]!
+  poster: Poster
+  airedOn: IncompleteDate
+  releasedOn: IncompleteDate
+  genres: [Genre!]
+  studios: [Studio!]!
+  licensors: [String!]
+  fansubbers: [String!]!
+  fandubbers: [String!]!
+  screenshots: [Screenshot!]!
+  videos: [Video!]!
+  scoresStats: [ScoreStat!]
+  statusesStats: [StatusStat!]
+  externalLinks: [ExternalLink!]
+  related: [Related!]
+  chronology: [Anime!]
+  characterRoles: [CharacterRole!]
+  personRoles: [PersonRole!]
+  userRate: UserRate
+  topic: Topic
+}
+
+type Manga {
+  id: ID!
+  name: String!
+  russian: String
+  english: String
+  japanese: String
+  url: String!
+  score: Float
+  status: MangaStatusEnum
+  kind: MangaKindEnum
+  chapters: Int!
+  volumes: Int!
+  isCensored: Boolean
+  licenseNameRu: String
+  franchise: String
+  description: String
+  descriptionHtml: String
+  descriptionSource: String
+  opengraphImageUrl: String
+  createdAt: ISO8601DateTime!
+  updatedAt: ISO8601DateTime!
+  malId: ID
+  synonyms: [String!]!
+  poster: Poster
+  airedOn: IncompleteDate
+  releasedOn: IncompleteDate
+  genres: [Genre!]
+  publishers: [Publisher!]!
+  licensors: [String!]
+  scoresStats: [ScoreStat!]
+  statusesStats: [StatusStat!]
+  externalLinks: [ExternalLink!]
+  related: [Related!]
+  chronology: [Manga!]
+  characterRoles: [CharacterRole!]
+  personRoles: [PersonRole!]
+  userRate: UserRate
+  topic: Topic
+}
+
+enum AnimeKindEnum {
+  tv
+  movie
+  ova
+  ona
+  special
+  music
+  tv_13
+  tv_24
+  tv_48
+}
+
+enum AnimeStatusEnum {
+  anons
+  ongoing
+  released
+}
+
+enum MangaKindEnum {
+  manga
+  manhwa
+  manhua
+  novel
+  one_shot
+  doujin
+}
+
+enum MangaStatusEnum {
+  anons
+  ongoing
+  released
+  paused
+  discontinued
+}
+
+type Query {
+  animes(page: PositiveInt, limit: PositiveInt, order: OrderEnum, kind: AnimeKindString, status: AnimeStatusString, season: SeasonString, score: Int, duration: DurationString, rating: RatingString, origin: OriginString, genre: String, studio: String, franchise: String, censored: Boolean, mylist: MylistString, ids: String, excludeIds: String, search: String): [Anime!]!
+  mangas(page: PositiveInt, limit: PositiveInt, order: OrderEnum, kind: MangaKindString, status: MangaStatusString, season: SeasonString, score: Int, genre: String, publisher: String, franchise: String, censored: Boolean, mylist: MylistString, ids: String, excludeIds: String, search: String): [Manga!]!
+  characters(page: PositiveInt, limit: PositiveInt, ids: String, search: String): [Character!]!
+  people(page: PositiveInt, limit: PositiveInt, ids: [ID!], search: String, isSeyu: Boolean, isProducer: Boolean, isMangaka: Boolean): [Person!]!
+  currentUser: User
+  users(page: PositiveInt, limit: PositiveInt, ids: [ID!], search: String): [User!]!
+  userRates(page: PositiveInt, limit: PositiveInt, userId: ID, targetType: UserRateTargetTypeEnum, status: UserRateStatusEnum, order: UserRateOrderInputType): [UserRate!]!
+  genres(entryType: GenreEntryTypeEnum!): [Genre!]!
+}

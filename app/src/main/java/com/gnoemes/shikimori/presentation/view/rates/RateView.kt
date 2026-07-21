@@ -40,4 +40,7 @@ interface RateView : BasePaginationView {
 
     @StateStrategyType(SkipStrategy::class)
     fun scrollToTop()
+
+    @StateStrategyType(SkipStrategy::class)
+    fun showLoadAllRatesProgress(show: Boolean)
 }
