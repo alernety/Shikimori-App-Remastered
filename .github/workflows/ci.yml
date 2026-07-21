@@ -48,11 +48,11 @@ jobs:
           VIDEO_BASE_URL: ${{ secrets.VIDEO_BASE_URL }}
           VK_RANDOM_TOKEN: ${{ secrets.VK_RANDOM_TOKEN }}
         run: |
-          [ -n "$SHIKIMORI_CLIENT_ID" ] && echo "ShikimoriClientId=$SHIKIMORI_CLIENT_ID" >> gradle.properties
-          [ -n "$SHIKIMORI_CLIENT_SECRET" ] && echo "ShikimoriClientSecret=$SHIKIMORI_CLIENT_SECRET" >> gradle.properties
-          [ -n "$SHIKIMORI_BASE_URL" ] && echo "ShikimoriBaseUrl=$SHIKIMORI_BASE_URL" >> gradle.properties
-          [ -n "$VIDEO_BASE_URL" ] && echo "VideoBaseUrl=$VIDEO_BASE_URL" >> gradle.properties
-          [ -n "$VK_RANDOM_TOKEN" ] && echo "VkRandomToken=$VK_RANDOM_TOKEN" >> gradle.properties
+          [ -n "$SHIKIMORI_CLIENT_ID" ] && echo "ShikimoriClientId=\"$SHIKIMORI_CLIENT_ID\"" >> gradle.properties
+          [ -n "$SHIKIMORI_CLIENT_SECRET" ] && echo "ShikimoriClientSecret=\"$SHIKIMORI_CLIENT_SECRET\"" >> gradle.properties
+          [ -n "$SHIKIMORI_BASE_URL" ] && echo "ShikimoriBaseUrl=\"$SHIKIMORI_BASE_URL\"" >> gradle.properties
+          [ -n "$VIDEO_BASE_URL" ] && echo "VideoBaseUrl=\"$VIDEO_BASE_URL\"" >> gradle.properties
+          [ -n "$VK_RANDOM_TOKEN" ] && echo "VkRandomToken=\"$VK_RANDOM_TOKEN\"" >> gradle.properties
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
