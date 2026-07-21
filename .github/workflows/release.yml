@@ -144,6 +144,26 @@ jobs:
           echo "signed_apk_path=$APK_SIGNED" >> "$GITHUB_ENV"
 
       # -----------------------------------------------------------------------
+      # Verify the signed APK using apksigner verify.
+      # -----------------------------------------------------------------------
+      - name: Verify Signed APK
+        run: |
+          ANDROID_HOME="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-/usr/local/lib/android/sdk}}"
+          BUILD_TOOLS_DIR=$(ls -d "$ANDROID_HOME"/build-tools/* 2>/dev/null | head -n 1)
+          APKSIGNER="$BUILD_TOOLS_DIR/apksigner"
+          "$APKSIGNER" verify --verbose "${{ env.signed_apk_path }}"
+
+      # -----------------------------------------------------------------------
+      # Upload the signed APK as a build artifact for later download.
+      # -----------------------------------------------------------------------
+      - name: Upload Signed APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-signed
+          path: ${{ env.signed_apk_path }}
+          if-no-files-found: error
+
+      # -----------------------------------------------------------------------
       # Create a GitHub Release and attach the signed APK.
       # Release notes are auto-generated from merged pull requests.
       # -----------------------------------------------------------------------
