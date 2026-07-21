@@ -104,6 +104,11 @@ jobs:
       #
       # apksigner supports env:VARNAME syntax for password arguments, which
       # avoids exposing secrets in the process command line.
+      #
+      # Keystore re-encoding (keystore.orig → PEM → keystore.jks):
+      # Some PKCS12 files use newer attribute tags (tag number > 30) that
+      # the JDK's DerValue parser cannot decode. Extracting to PEM (which
+      # has no tags) and re-exporting produces a file with standard tags.
       # -----------------------------------------------------------------------
       - name: Sign APK
         env:
@@ -112,7 +117,17 @@ jobs:
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
         run: |
           # Decode base64-encoded keystore
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > keystore.jks
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > keystore.orig
+
+          # Re-encode PKCS12 to strip non-standard DER tags (Tag number > 30)
+          # PEM format has no attribute tags; re-export creates standard tags
+          openssl pkcs12 -in keystore.orig \
+            -password env:KEYSTORE_PASSWORD \
+            -nodes 2>/dev/null | \
+          openssl pkcs12 -export \
+            -out keystore.jks \
+            -passout env:KEYSTORE_PASSWORD \
+            -name "$KEY_ALIAS" 2>/dev/null
 
           # Locate the unsigned APK
           APK_UNSIGNED=$(find app/build/outputs/apk/release -name "*-unsigned.apk" -type f | head -n 1)
