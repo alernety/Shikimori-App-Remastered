@@ -17,21 +17,21 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 0
 
       - name: Set up JDK 21
-        uses: actions/setup-java@3a4f6e1af504cf6a31855fa899c6aa5355ba6c12 # v4.7.0
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
         with:
           distribution: temurin
           java-version: '21'
 
       - name: Setup Android SDK
-        uses: android-actions/setup-android@b4880220a91f5ee11bb0b6a1cf0a59ff607ebc08 # v3.3.0
+        uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@94baf225fe0a50832b66a648b41af8d2a0e10ffd # v4.3.1
+        uses: gradle/actions/setup-gradle@0b6dd653ba04f4f93bf581ec31e66cbd7dcb644d # v4
 
       - name: Inject secrets into gradle.properties
         env:
@@ -127,7 +127,7 @@ jobs:
           "$BUILD_TOOLS_DIR/apksigner" verify --verbose "${{ env.signed_apk_path }}"
 
       - name: Upload Signed APK
-        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd6aab436354f7a5933 # v4.6.0
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: app-release-signed
           path: ${{ env.signed_apk_path }}
@@ -135,7 +135,7 @@ jobs:
           retention-days: 14
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@c95fe605939608e9df0c899fcbd7c35ff8d9ff72 # v2.2.1
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
         with:
           files: ${{ env.signed_apk_path }}
           generate_release_notes: true
